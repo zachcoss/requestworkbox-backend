@@ -1,8 +1,21 @@
-const mongoose = require('mongoose')
-const name = 'connection'
-const schema = new mongoose.Schema({
-    name: String
-})
-const model = mongoose.model(name, schema)
+const mongoose = require('mongoose'),
+    ObjectId = mongoose.ObjectId;
 
-export default model
+const availableConnectionSchema = new mongoose.Schema({
+    connectionName: String,
+    connectionBaseURL: String,
+    connectionHealthCheckEndpoint: String,
+    connectionHealthCheckMethod: String,
+    connectionPrimaryEndpoint: String,
+    connectionPrimaryMethod: String
+})
+
+const installedConnectionSchema = new mongoose.Schema({
+    connectionId: ObjectId,
+    accountId: ObjectId
+})
+
+module.exports = {
+    availableConnectionModel: mongoose.model('availableConnection', availableConnectionSchema),
+    installedConnectionModel: mongoose.model('installedConnection', installedConnectionSchema)
+}
