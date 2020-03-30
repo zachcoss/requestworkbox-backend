@@ -25,7 +25,7 @@ const indexRouter = require('./routes/index');
 const connectionRouter = require('./routes/connection');
 
 app.use('/', indexRouter);
-app.use('/connection', connectionRouter);
+app.use('/connection-management', connectionRouter);
 
 const server = http.createServer(app);
 
