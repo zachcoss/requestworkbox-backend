@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 const indexRouter = require('./routes/index');
-const connectionRouter = require('./routes/connection');
+const connectionRouter = require('./routes/connection').router;
 
 app.use('/', indexRouter);
 app.use('/connection-management', connectionRouter);
