@@ -166,10 +166,10 @@ router.post('/available-connections', async function (req, res, next) {
   try {
     const availableConnectionDocument = await module.exports.createAvailableConnectionDocumentFromRequestBody(req.body)
     await module.exports.createAvailableConnection(availableConnectionDocument)
-    return res.send('created connection')
+    return res.status(200).send('created connection')
   } catch (err) {
     console.log(err)
-    return res.send('error creating connection')
+    return res.status(500).send('error creating connection')
   }
 })
 
@@ -178,10 +178,10 @@ router.get('/available-connections', async function (req, res, next) {
   try {
     const queryObject = await module.exports.createQueryObjectForActiveAvailableConnections()
     const availableConnections = await module.exports.queryAvailableConnections(queryObject)
-    res.send(availableConnections)
+    res.status(200).send(availableConnections)
   } catch (err) {
     console.log(err)
-    res.send('error returning available connections')
+    res.status(500).send('error returning available connections')
   }
 })
 
@@ -190,10 +190,10 @@ router.post('/installed-connections', async function (req, res, next) {
   try {
     const installedConnectionDocument = await module.exports.createInstalledConnectionDocumentFromRequestBody(req.body)
     await module.exports.createInstalledConnection(installedConnectionDocument)
-    res.send('installed connection')
+    res.status(200).send('installed connection')
   } catch (err) {
     console.log(err)
-    res.send('error installing connection')
+    res.status(500).send('error installing connection')
   }
 })
 
@@ -202,10 +202,10 @@ router.get('/installed-connections', async function (req, res, next) {
   try {
     const pipeline = await module.exports.createPipelineForActiveInstalledConnections()
     const installedConnections = await module.exports.queryInstalledConnections(pipeline)
-    res.send(installedConnections)
+    res.status(200).send(installedConnections)
   } catch (err) {
     console.log(err)
-    res.send('error returning installed connections')
+    res.status(500).send('error returning installed connections')
   }
 })
 
@@ -219,7 +219,7 @@ router.put('/installed-connections/:connectionId', async function (req, res, nex
     res.status(200).send(req.body)
   } catch (err) {
     console.log(err)
-    res.send('error installing connection')
+    res.status(500).send('error installing connection')
   }
 })
 
