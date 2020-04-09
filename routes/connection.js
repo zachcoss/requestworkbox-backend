@@ -215,8 +215,8 @@ router.get('/installed-connections', async function (req, res, next) {
 // Update installed connection
 router.put('/installed-connections/:connectionId', async function (req, res, next) {
   try {
-    const queryObject = module.exports.createQueryObjectForUpdatingInstalledConnectionFromRequest(req)
-    const updateObject = module.exports.createUpdateObjectForUpdatingInstalledConnectionFromRequest(req)
+    const queryObject = await module.exports.createQueryObjectForUpdatingInstalledConnectionFromRequest(req)
+    const updateObject = await module.exports.createUpdateObjectForUpdatingInstalledConnectionFromRequest(req)
     await module.exports.updateInstalledConnection(queryObject, updateObject)
     // return response
     res.status(200).send(req.body)
