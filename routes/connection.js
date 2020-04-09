@@ -37,18 +37,6 @@ module.exports.createAvailableConnection = function (availableConnectionDocument
   })
 }
 
-// Create available connection
-router.post('/available-connections', async function(req, res, next) {
-  try {
-    const availableConnectionDocument = await module.exports.createAvailableConnectionDocumentFromRequestBody(req.body)
-    await module.exports.createAvailableConnection(availableConnectionDocument)
-    return res.send('created connection')
-  } catch(err) {
-    console.log(err)
-    return res.send('error creating connection')
-  }
-});
-
 module.exports.createQueryObjectForActiveAvailableConnections = function () {
   return new Promise(async (resolve, reject) => {
     try {
@@ -72,18 +60,6 @@ module.exports.queryAvailableConnections = function (queryObject) {
     }
   })
 }
-
-// Get available connections
-router.get('/available-connections', async function (req, res, next) {
-  try {
-    const queryObject = await module.exports.createQueryObjectForActiveAvailableConnections()
-    const availableConnections = await module.exports.queryAvailableConnections(queryObject)
-    res.send(availableConnections)
-  } catch (err) {
-    console.log(err)
-    res.send('error returning available connections')
-  }
-});
 
 module.exports.createInstalledConnectionDocumentFromRequestBody = function (requestBody) {
   return new Promise(async (resolve, reject) => {
@@ -112,18 +88,6 @@ module.exports.createInstalledConnection = function (installedConnectionDocument
     }
   })
 }
-
-// Create installed connection
-router.post('/installed-connections', async function (req, res, next) {
-  try {
-    const installedConnectionDocument = await module.exports.createInstalledConnectionDocumentFromRequestBody(req.body)
-    await module.exports.createInstalledConnection(installedConnectionDocument)
-    res.send('installed connection')
-  } catch (err) {
-    console.log(err)
-    res.send('error installing connection')
-  }
-});
 
 module.exports.createPipelineForActiveInstalledConnections = function () {
   return new Promise(async (resolve, reject) => {
@@ -161,18 +125,6 @@ module.exports.queryInstalledConnections = function (pipeline) {
   })
 }
 
-// Get installed connections
-router.get('/installed-connections', async function (req, res, next) {
-  try {
-    const pipeline = await module.exports.createPipelineForActiveInstalledConnections()
-    const installedConnections = await module.exports.queryInstalledConnections(pipeline)
-    res.send(installedConnections)
-  } catch (err) {
-    console.log(err)
-    res.send('error returning installed connections')
-  }
-});
-
 module.exports.createQueryObjectForUpdatingInstalledConnectionFromRequest = function (request) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -209,6 +161,55 @@ module.exports.updateInstalledConnection = function (queryObject, updateObject) 
   })
 }
 
+// Create available connection
+router.post('/available-connections', async function (req, res, next) {
+  try {
+    const availableConnectionDocument = await module.exports.createAvailableConnectionDocumentFromRequestBody(req.body)
+    await module.exports.createAvailableConnection(availableConnectionDocument)
+    return res.send('created connection')
+  } catch (err) {
+    console.log(err)
+    return res.send('error creating connection')
+  }
+})
+
+// Get available connections
+router.get('/available-connections', async function (req, res, next) {
+  try {
+    const queryObject = await module.exports.createQueryObjectForActiveAvailableConnections()
+    const availableConnections = await module.exports.queryAvailableConnections(queryObject)
+    res.send(availableConnections)
+  } catch (err) {
+    console.log(err)
+    res.send('error returning available connections')
+  }
+})
+
+// Create installed connection
+router.post('/installed-connections', async function (req, res, next) {
+  try {
+    const installedConnectionDocument = await module.exports.createInstalledConnectionDocumentFromRequestBody(req.body)
+    await module.exports.createInstalledConnection(installedConnectionDocument)
+    res.send('installed connection')
+  } catch (err) {
+    console.log(err)
+    res.send('error installing connection')
+  }
+})
+
+// Get installed connections
+router.get('/installed-connections', async function (req, res, next) {
+  try {
+    const pipeline = await module.exports.createPipelineForActiveInstalledConnections()
+    const installedConnections = await module.exports.queryInstalledConnections(pipeline)
+    res.send(installedConnections)
+  } catch (err) {
+    console.log(err)
+    res.send('error returning installed connections')
+  }
+})
+
+// Update installed connection
 router.put('/installed-connections/:connectionId', async function (req, res, next) {
   try {
     const queryObject = module.exports.createQueryObjectForUpdatingInstalledConnectionFromRequest(req)
@@ -220,6 +221,6 @@ router.put('/installed-connections/:connectionId', async function (req, res, nex
     console.log(err)
     res.send('error installing connection')
   }
-});
+})
 
 module.exports.router = router;
