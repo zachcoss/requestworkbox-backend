@@ -92,19 +92,22 @@ module.exports.createInstalledConnection = function (installedConnectionDocument
 module.exports.createPipelineForActiveInstalledConnections = function () {
   return new Promise(async (resolve, reject) => {
     try {
-      const pipeline = 
-        InstalledConnectionModel
-          .aggregate()
-          .match({
+      const pipeline = [
+        {
+          $match: {
             active: true
-          })
-          .lookup({
+          }
+        },
+        {
+          $lookup: {
             from: 'availableconnections',
             localField: 'connectionId',
             foreignField: '_id',
             as: 'connection'
-          })
-          .unwind('connection')
+          }
+        },
+        { $unwind: '$connection' }
+      ]
       return resolve(pipeline)
     } catch (err) {
       console.log(err)
@@ -116,7 +119,7 @@ module.exports.createPipelineForActiveInstalledConnections = function () {
 module.exports.queryInstalledConnections = function (pipeline) {
   return new Promise(async (resolve, reject) => {
     try {
-      const installedConnections = await pipeline.exec()
+      const installedConnections = await InstalledConnectionModel.aggregate(pipeline).exec()
       return resolve(installedConnections)
     } catch (err) {
       console.log(err)
