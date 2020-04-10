@@ -1,6 +1,8 @@
 const 
+  axios = require('axios'),
   express = require('express'),
   router = express.Router(),
+  googleURL = process.env.VUE_APP_GOOGLE_URL,
   connectionSchema = require('../schema/connection'),
   AvailableConnectionModel = connectionSchema.availableConnectionModel,
   InstalledConnectionModel = connectionSchema.installedConnectionModel;
@@ -171,6 +173,48 @@ module.exports.updateInstalledConnection = function (queryObject, updateObject) 
   })
 }
 
+module.exports.generateAuthURL = function (user) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log(user)
+      const requestURL = `${googleURL}/auth/install/${user}`
+      const authURLResponse = await axios.get(requestURL)
+      const authURL = authURLResponse.data
+      console.log(authURL)
+      return resolve(authURL)
+    } catch (err) {
+      console.log(err)
+      return reject()
+    }
+  })
+}
+
+module.exports.verifyUserAuthCode = function (user, userAuthCode) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log(user)
+      console.log(userAuthCode)
+      await axios.get(`${googleURL}/auth/install/${user}/${userAuthCode}`)
+      return resolve()
+    } catch (err) {
+      console.log(err)
+      return reject()
+    }
+  })
+}
+
+module.exports.createUpdateObjectToActivateInstallation = function () {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const update = { active: true }
+      return resolve(update)
+    } catch (err) {
+      console.log(err)
+      return reject()
+    }
+  })
+}
+
 // Create available connection
 router.post('/available-connections', async function (req, res, next) {
   try {
@@ -198,9 +242,13 @@ router.get('/available-connections', async function (req, res, next) {
 // Create installed connection
 router.post('/installed-connections', async function (req, res, next) {
   try {
+    const user = 'user'
+    console.log('abc')
     const installedConnectionDocument = await module.exports.createInstalledConnectionDocumentFromRequestBody(req.body)
     await module.exports.createInstalledConnection(installedConnectionDocument)
-    res.status(200).send('installed connection')
+    const authURL = await module.exports.generateAuthURL(user)
+    console.log(authURL)
+    res.status(200).send(authURL)
   } catch (err) {
     console.log(err)
     res.status(500).send('error installing connection')
@@ -230,6 +278,27 @@ router.put('/installed-connections/:connectionId', async function (req, res, nex
   } catch (err) {
     console.log(err)
     res.status(500).send('error installing connection')
+  }
+})
+
+// Complete installation
+router.put('/installed-connections/user-auth-code?code=:authcode', async function (req, res, next) {
+  try {
+    console.log('on')
+    const user = 'user'
+    const userauthcode = req.params.authcode
+    console.log(userauthcode)
+    await module.exports.verifyUserAuthCode(user, userauthcode)
+    const updateObject = await module.exports.createUpdateObjectToActivateInstallation()
+    console.log(updateObject)
+    await module.exports.updateInstalledConnection({
+      _id: "5e91037312a6ad2354301e91"
+    }, updateObject)
+    // return response
+    res.status(200).send('completed authorization')
+  } catch (err) {
+    console.log(err)
+    res.status(500).send('error authorizing')
   }
 })
 
