@@ -10,7 +10,7 @@ const availableConnectionSchema = new mongoose.Schema({
     connection: {
         name: String,
         description: String,
-        baseUrl: String,
+        baseURL: String,
         endpoint: String,
         method: String,
         query: String,
