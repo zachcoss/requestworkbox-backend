@@ -9,18 +9,20 @@ module.exports.createAvailableConnectionDocumentFromRequestBody = function(reque
   return new Promise( async (resolve, reject) => {
     try {
       const availableConnectionDocument = {
-        active: true,
-        name: requestBody.name,
-        description: requestBody.description,
-        baseURL: requestBody.baseURL,
-        endpoint: requestBody.endpoint,
-        method: requestBody.method,
-        query: requestBody.query,
-        body: requestBody.body,
-        returns: requestBody.returns,
-        returnsTo: requestBody.returnsTo,
-        receives: requestBody.receives,
-        receivesFrom: requestBody.receivesFrom,
+        connection: {
+          active: true,
+          name: requestBody.name,
+          description: requestBody.description,
+          baseURL: requestBody.baseURL,
+          endpoint: requestBody.endpoint,
+          method: requestBody.method,
+          query: requestBody.query,
+          body: requestBody.body,
+          returns: requestBody.returns,
+          returnsTo: requestBody.returnsTo,
+          receives: requestBody.receives,
+          receivesFrom: requestBody.receivesFrom,
+        }
       }
       return resolve(availableConnectionDocument)
     } catch(err) {
