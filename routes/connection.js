@@ -9,13 +9,18 @@ module.exports.createAvailableConnectionDocumentFromRequestBody = function(reque
   return new Promise( async (resolve, reject) => {
     try {
       const availableConnectionDocument = {
-        active: requestBody.active,
-        connectionName: requestBody.connectionName,
-        connectionBaseURL: requestBody.connectionBaseURL,
-        connectionHealthCheckEndpoint: requestBody.connectionHealthCheckEndpoint,
-        connectionHealthCheckMethod: requestBody.connectionHealthCheckMethod,
-        connectionPrimaryEndpoint: requestBody.connectionPrimaryEndpoint,
-        connectionPrimaryMethod: requestBody.connectionPrimaryMethod
+        active: true,
+        name: requestBody.name,
+        description: requestBody.description,
+        baseURL: requestBody.baseURL,
+        endpoint: requestBody.endpoint,
+        method: requestBody.method,
+        query: requestBody.query,
+        body: requestBody.body,
+        returns: requestBody.returns,
+        returnsTo: requestBody.returnsTo,
+        receives: requestBody.receives,
+        receivesFrom: requestBody.receivesFrom,
       }
       return resolve(availableConnectionDocument)
     } catch(err) {
@@ -65,7 +70,7 @@ module.exports.createInstalledConnectionDocumentFromRequestBody = function (requ
   return new Promise(async (resolve, reject) => {
     try {
       const installedConnectionDocument = {
-        active: true,
+        active: false,
         connectionId: requestBody.connectionId,
         accountId: requestBody.accountId,
       }

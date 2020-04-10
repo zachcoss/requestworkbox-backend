@@ -2,16 +2,24 @@ const mongoose = require('mongoose'),
     ObjectId = mongoose.ObjectId;
 
 const availableConnectionSchema = new mongoose.Schema({
-    connectionName: String,
-    connectionBaseURL: String,
-    connectionHealthCheckEndpoint: String,
-    connectionHealthCheckMethod: String,
-    connectionPrimaryEndpoint: String,
-    connectionPrimaryMethod: String,
+    accountId: ObjectId,
     active: {
         type: Boolean,
         default: true
-    }
+    },
+    connection: {
+        name: String,
+        description: String,
+        baseUrl: String,
+        endpoint: String,
+        method: String,
+        query: String,
+        body: String,
+        returns: String,
+        returnsTo: String,
+        receives: String,
+        receivesFrom: String
+    },
 })
 
 const installedConnectionSchema = new mongoose.Schema({
@@ -19,7 +27,7 @@ const installedConnectionSchema = new mongoose.Schema({
     accountId: ObjectId,
     active: {
         type: Boolean,
-        default: true
+        default: false
     }
 })
 
