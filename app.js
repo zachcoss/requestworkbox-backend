@@ -21,11 +21,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
-const indexRouter = require('./routes/index');
-const connectionRouter = require('./routes/connection').router;
-
-app.use('/', indexRouter);
-app.use('/connection-management', connectionRouter);
+app.use('/', require('./router').createRoutes())
 
 const server = http.createServer(app);
 
