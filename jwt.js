@@ -24,7 +24,8 @@ module.exports.config = () => {
             jwksRequestsPerMinute: 5,
             jwksUri: jwksUri
         }),
-        audience: jwksAud,
+        // allows access token instead of id token
+        // audience: jwksAud,
         issuer: jwksIss,
         algorithms: jwksAlg
     })
