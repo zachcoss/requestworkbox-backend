@@ -8,7 +8,9 @@ module.exports.createRoutes = function () {
      * **/
 
     router.get('/', require('./routes/index/index'))
-
+    router.all('*', require('./routes/index/interceptor'))
+    
+    
     /**
      * * Connection API routes
      * **/
