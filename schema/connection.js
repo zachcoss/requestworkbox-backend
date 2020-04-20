@@ -2,7 +2,7 @@ const mongoose = require('mongoose'),
     ObjectId = mongoose.ObjectId;
 
 const availableConnectionSchema = new mongoose.Schema({
-    accountId: ObjectId,
+    sub: String,
     active: {
         type: Boolean,
         default: true
@@ -23,12 +23,12 @@ const availableConnectionSchema = new mongoose.Schema({
 })
 
 const installedConnectionSchema = new mongoose.Schema({
-    connectionId: ObjectId,
-    accountId: ObjectId,
+    sub: String,
     active: {
         type: Boolean,
         default: false
-    }
+    },
+    connectionId: ObjectId,
 })
 
 module.exports = {

@@ -1,10 +1,15 @@
 module.exports = async function (req, res, next) {
     try {
         console.log('incoming user')
-        console.log(req.user)
-        return next()
+        
+        if (!req.user || !req.user.sub) {
+            return res.status(500).send('user not found')
+        } else {
+            console.log(req.user.sub)
+            return next()
+        }
     } catch (err) {
         console.log(err)
-        return next()
+        return res.status(500).send('error intercepting user')
     }
 }
