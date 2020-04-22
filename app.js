@@ -21,11 +21,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
-const jwt = require('./jwt')
-const router = require('./router')
+const jwt = require('./src/shared/plugins/network/jwt')
+const router = require('./src/shared/plugins/network/router')
 
 app.use(jwt.config())
-app.use('/', router.createRoutes())
+app.use('/', router.config())
 app.use(jwt.handler)
 
 const server = http.createServer(app);

@@ -13,10 +13,6 @@ const
  * **/
 module.exports.config = () => {
 
-    console.log(jwksUri)
-    console.log(jwksAud)
-    console.log(jwksIss)
-
     return jwt({
         secret: jwksRsa.expressJwtSecret({
             cache: true,
