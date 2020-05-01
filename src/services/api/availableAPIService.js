@@ -8,13 +8,13 @@ class AvailableService extends ExpressRequest {
         super(req)
     }
 
-    async create() {
+    async ['create']() {
         // create and return document based on body payload
         const doc = await new schema.available(this.body).save()
         return doc
     }
-
-    static async availableAPI() {
+    
+    static async ['availableAPI']() {
         const filter = {}
         filter.active = true
 

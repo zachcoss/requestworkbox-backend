@@ -37,6 +37,7 @@ server.on('listening', function() {
     console.log('listening')
     console.log('opening connection to db')
 
+    mongoose.set('debug', true)
     mongoose.set('useNewUrlParser', true);
     mongoose.set('useFindAndModify', false);
     mongoose.set('useCreateIndex', true);

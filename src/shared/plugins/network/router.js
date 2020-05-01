@@ -2,7 +2,8 @@ const
     express = require('express'),
     router = express.Router(),
     indexMiddleware = require('../../../services/middleware/indexMiddleware'),
-    apiMiddleware = require('../../../services/middleware/apiMiddleware');
+    apiMiddleware = require('../../../services/middleware/apiMiddleware'),
+    apiMiddlewareBeta = require('../../../services/middleware/apiMiddleware-beta');
 
 module.exports.config = function () {
 
@@ -25,6 +26,11 @@ module.exports.config = function () {
     router.post('/install', apiMiddleware.install)
     router.post('/authorize', apiMiddleware.authorize)
 
+    router.get('/developer/components*/all', apiMiddlewareBeta.all)
+    router.post('/developer/components*/create', apiMiddlewareBeta.create)
+    router.post('/developer/components*/edit', apiMiddlewareBeta.edit)
+    
+ 
     /**
      * * Task routes
      * TODO: create Task services
