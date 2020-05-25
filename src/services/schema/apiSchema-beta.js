@@ -166,18 +166,17 @@ const endpointSchema = new mongoose.Schema({
     endpointPath: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'path',
+        ref: 'Path',
         autopopulate: true,
     },
-    endpointAuthorization: {
+    endpointAuth: {
         type: Schema.Types.ObjectId,
         required: true,
-        refPath: 'endpointAuthorizationModel',
+        refPath: 'endpointAuthModel',
         autopopulate: true,
     },
-    endpointAuthorizationModel: {
+    endpointAuthModel: {
         type: String,
-        required: true,
         enum: ['O Auth', 'API Key', 'Open Auth'],
     },
     endpointAcceptOptions: [{
