@@ -7,9 +7,12 @@ module.exports = {
         try {
             const schema = req.path.replace('/developer/components/', '').replace('/all', '')
             console.log('schema', schema)
-            const docs = await ApiSchemaBeta[schema].find({
-                            sub: req.user.sub,
-                        }).exec()
+            const docs = await 
+            ApiSchemaBeta[schema]
+                .find({
+                    sub: req.user.sub,
+                }, {}, { autopopulate: false })
+                .exec()
 
             return res.status(200).send(docs)
         } catch (err) {
