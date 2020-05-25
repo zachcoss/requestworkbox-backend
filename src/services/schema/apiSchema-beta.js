@@ -142,7 +142,7 @@ const apiKeySchema = new mongoose.Schema({
     version: { type: String, default: 'v1' },
     
     apiKeyHeader: { type: String, required: true },
-    apiKeyHeaderValuePrefix: { type: String, required: true },
+    apiKeyPrefix: { type: String, required: false },
 }, { timestamps: true })
 
 const openAuthSchema = new mongoose.Schema({
