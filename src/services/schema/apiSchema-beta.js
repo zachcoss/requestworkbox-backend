@@ -119,16 +119,16 @@ const oAuthSchema = new mongoose.Schema({
     component: { type: String, default: 'oAuth' },
     version: { type: String, default: 'v1' },
 
-    oAuthRegistration: {
+    oAuthRegistrationPath: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'Endpoint',
+        ref: 'Path',
         autopopulate: true,
     },
-    oAuthConfirmation: {
+    oAuthConfirmationPath: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'Endpoint',
+        ref: 'Path',
         autopopulate: true,
     },
 }, { timestamps: true })
