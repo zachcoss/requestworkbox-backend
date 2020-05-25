@@ -73,12 +73,12 @@ const responseOptionSchema = new mongoose.Schema({
         ref: 'Parameter',
         autopopulate: true,
     }],
-    responseOptionResponseCodes: [{
+    responseOptionResponseCode: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Response Code',
         autopopulate: true,
-    }],
+    },
 }, { timestamps: true })
 
 const urlSchema = new mongoose.Schema({
