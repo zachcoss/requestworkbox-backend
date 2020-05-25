@@ -203,7 +203,7 @@ const apiEndpointSchema = new mongoose.Schema({
 
     apiEndpointStaging: {
         type: Schema.Types.ObjectId,
-        required: true,
+        required: false,
         ref: 'Endpoint',
         autopopulate: true,
     },
