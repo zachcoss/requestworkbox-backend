@@ -109,7 +109,6 @@ const pathSchema = new mongoose.Schema({
     },
     pathPath: { type: String, required: true },
     pathMethod: { type: String, required: true },
-    pathBase: { type: String, required: true },
 }, { timestamps: true })
 
 const oAuthSchema = new mongoose.Schema({
