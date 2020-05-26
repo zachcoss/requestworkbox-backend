@@ -7,11 +7,12 @@ module.exports = {
         try {
             const schema = req.path.replace('/developer/components/', '').replace('/all', '')
             console.log('schema', schema)
+            const populate = req.query && req.query.populate && (req.query.populate === true || req.query.populate === 'true') || false
             const docs = await 
             ApiSchemaBeta[schema]
                 .find({
                     sub: req.user.sub,
-                }, {}, { autopopulate: false })
+                }, {}, { autopopulate: Boolean(populate) })
                 .exec()
 
             return res.status(200).send(docs)
