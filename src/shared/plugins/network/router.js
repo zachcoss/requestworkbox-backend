@@ -12,5 +12,7 @@ module.exports.config = function () {
     router.post('/developer/components*/create', indexMiddleware.create)
     router.post('/developer/components*/edit', indexMiddleware.edit)
 
+    router.post('/developer/instance/:workflow/start', indexMiddleware.startWorkflow)
+
     return router;
 }

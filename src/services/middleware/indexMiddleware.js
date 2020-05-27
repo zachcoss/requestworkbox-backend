@@ -70,4 +70,20 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    startWorkflow: async (req, res, next) => {
+        try {
+            const schema = 'instance'
+            const payload = {
+                sub: req.user.sub,
+                workflow: req.params.workflow,
+            }
+            const doc = new indexSchema[schema](payload)
+            await doc.save()
+
+            return res.status(200).send(doc)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }
