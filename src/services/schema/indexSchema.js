@@ -226,6 +226,10 @@ const workflowSchema = new mongoose.Schema({
     name: { type: String, required: true },
     isActive: { type: Boolean, default: true },
 
+    frequency: { type: String, default: 'api' },
+    lastRun: { type: Date },
+    nextRun: { type: Date },
+
     tasks: [
         {
             type: Schema.Types.ObjectId,
@@ -234,6 +238,35 @@ const workflowSchema = new mongoose.Schema({
             autopopulate: true,
         }
     ],
+}, { timestamps: true })
+
+const instanceSchema = new mongoose.Schema({
+    model: { type: String, default: 'Instance' },
+    component: { type: String, default: 'instance' },
+    sub: { type: String, required: true },
+    
+    isActive: { type: Boolean, default: false },
+    closed: { type: Boolean, default: false },
+    processId: { type: Schema.Types.ObjectId },
+    
+    workflow: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Workflow',
+        autopopulate: true,
+    },
+}, { timestamps: true })
+
+const statSchema = new mongoose.Schema({
+    model: { type: String, default: 'Stat' },
+    component: { type: String, default: 'stat' },
+    sub: { type: String, required: true },
+    instance: { type: Schema.Types.ObjectId, required: true },
+    component: { type: Schema.Types.ObjectId, required: true },
+    start: { type: Date, required: true },
+    code: { type: String },
+    message: { type: String, },
+    end: { type: Date, },
 }, { timestamps: true })
 
 module.exports = {
@@ -260,5 +293,13 @@ module.exports = {
     [workflowSchema.obj.component.default]: new mongoose.model(
         workflowSchema.obj.model.default,
         workflowSchema
+    ),
+    [instanceSchema.obj.component.default]: new mongoose.model(
+        instanceSchema.obj.model.default,
+        instanceSchema
+    ),
+    [statSchema.obj.component.default]: new mongoose.model(
+        statSchema.obj.model.default,
+        statSchema
     ),
 }
