@@ -75,11 +75,13 @@ module.exports = {
                         data: currentState()
                     })
 
-                    console.log(result)
+                    _.each(result.data, (value, key) => {
+                        state[key] = value
+                    })
 
                     const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.globalContext._id })
-                    stat.code = result.statusCode
-                    stat.message = result.statusMessage
+                    stat.code = result.status
+                    stat.message = result.statusText
                     stat.end = moment().toDate()
                     await stat.save()
                 }
@@ -101,11 +103,13 @@ module.exports = {
                         data: currentState()
                     })
 
-                    console.log(result)
+                    _.each(result.data, (value, key) => {
+                        state[key] = value
+                    })
 
                     const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.authContext._id })
-                    stat.code = result.statusCode
-                    stat.message = result.statusMessage
+                    stat.code = result.status
+                    stat.message = result.statusText
                     stat.end = moment().toDate()
                     await stat.save()
                 }
@@ -127,11 +131,13 @@ module.exports = {
                         data: currentState()
                     })
 
-                    console.log(result)
+                    _.each(result.data, (value, key) => {
+                        state[key] = value
+                    })
 
                     const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.requestContext._id })
-                    stat.code = result.statusCode
-                    stat.message = result.statusMessage
+                    stat.code = result.status
+                    stat.message = result.statusText
                     stat.end = moment().toDate()
                     await stat.save()
                 }
@@ -139,13 +145,13 @@ module.exports = {
                 // Perform Task Request
 
                 const taskResult = await axios({
-                    method: state.method,
-                    url: state.url,
+                    method: state.method || '',
+                    url: state.url || '',
                 })
 
-                state.code = taskResult.statusCode
-                state.message = taskResult.statusMessage
-                results[task._id] = taskResult
+                state.code = taskResult.status
+                state.message = taskResult.statusText
+                results[task._id] = taskResult.data
 
                 if (task.responseContext) {
                     // Create global context
@@ -164,11 +170,11 @@ module.exports = {
                         data: currentState()
                     })
 
-                    console.log(result)
+                    if (result.data && result.data.results && result.data.results[task._id]) results[task._id] = result.data.results[task._id]
 
                     const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.responseContext._id })
-                    stat.code = result.statusCode
-                    stat.message = result.statusMessage
+                    stat.code = result.status
+                    stat.message = result.statusText
                     stat.end = moment().toDate()
                     await stat.save()
                 }
