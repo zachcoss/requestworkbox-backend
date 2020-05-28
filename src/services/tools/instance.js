@@ -1,8 +1,8 @@
 module.exports = {
     start: async (instance) => {
+        const stats = {}
 
         const results = {}
-        const stats = {}
         const state = {
             instance: instance._id,
             sub: instance.sub,
@@ -11,12 +11,6 @@ module.exports = {
             context: '',
             code: '',
             message: '',
-            headers: {},
-            cookies: '',
-            protocol: '',
-            url: '',
-            path: '',
-            method: '',
         }
 
         function createStatObject(componentId, isTask, context) {
@@ -32,6 +26,18 @@ module.exports = {
             stats[componentId].code = code
             stats[componentId].message = message
             stats[componentId].end = new Date()
+        }
+
+        function currentState() {
+            return { state: state, results: results }
+        }
+        
+        function parseContextResults(data) {
+            return _.omit(data, ['instance', 'sub', 'workflow', 'task', 'context', 'code', 'message'])
+        }
+
+        function parseResponseContextResults(data, taskId) {
+            return _.pick(data, [`results.${taskId}`])
         }
 
         const runInstance = async () => {
@@ -50,9 +56,8 @@ module.exports = {
                     state.context = task.globalContext._id
                     createStatObject(task.globalContext._id)
 
-                    const requestData = _.pick(state, task.globalContext.inputOptions)
-                    const result = await axios.post(task.globalContext.url).body(requestData)
-                    const resultData = _.pick(result.data, task.globalContext.outputOptions)
+                    const result = await axios.post(task.globalContext.url).body(currentState())
+                    const resultData = parseContextResults(result.data) 
 
                     _.each(resultData, (value, key) => {
                         state[key] = value
@@ -66,9 +71,8 @@ module.exports = {
                     state.context = task.authContext._id
                     createStatObject(task.authContext._id)
 
-                    const requestData = _.pick(state, task.authContext.inputOptions)
-                    const result = await axios.post(task.authContext.url).body(requestData)
-                    const resultData = _.pick(result.data, task.authContext.outputOptions)
+                    const result = await axios.post(task.authContext.url).body(currentState())
+                    const resultData = parseContextResults(result.data)
 
                     _.each(resultData, (value, key) => {
                         state[key] = value
@@ -82,9 +86,8 @@ module.exports = {
                     state.context = task.requestContext._id
                     createStatObject(task.requestContext._id)
 
-                    const requestData = _.pick(state, task.requestContext.inputOptions)
-                    const result = await axios.post(task.requestContext.url).body(requestData)
-                    const resultData = _.pick(result.data, task.requestContext.outputOptions)
+                    const result = await axios.post(task.requestContext.url).body(currentState())
+                    const resultData = parseContextResults(result.data)
 
                     _.each(resultData, (value, key) => {
                         state[key] = value
@@ -105,24 +108,18 @@ module.exports = {
                     state.context = task.responseContext._id
                     createStatObject(task.responseContext._id)
 
-                    const requestData = _.pick(taskResult, task.responseContext.inputOptions)
-                    const result = await axios.post(task.responseContext.url).body(requestData)
-                    const resultData = _.pick(result.data, task.responseContext.outputOptions)
-
-                    _.each(resultData, (value, key) => {
-                        results[task._id][key] = value
-                    })
+                    const result = await axios.post(task.responseContext.url).body(currentState())
+                    const resultData = parseResponseContextResults(result.data, task._id)
+                    results[task._id] = resultData
 
                     updateStatObject(task.responseContext._id, result.statusCode, result.statusMessage)
                 }
 
                 updateStatObject(task._id, state.statusCode, state.statusMessage)
 
-
             }
 
             updateStatObject(internalState.workflow, state.statusCode, state.statusMessage)
-
 
         }
 
