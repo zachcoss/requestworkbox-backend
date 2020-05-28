@@ -1,6 +1,9 @@
 const
     _ = require('lodash'),
-    indexSchema = require('../schema/indexSchema');
+    indexSchema = require('../schema/indexSchema'),
+    instanceTools = require('../tools/instance'),
+    moment = require('moment'),
+    CronJob = require('cron').CronJob;
 
 module.exports = {
     healthcheck: async function (req, res, next) {
@@ -72,13 +75,22 @@ module.exports = {
     },
     startWorkflow: async (req, res, next) => {
         try {
-            const schema = 'instance'
+            const workflow = await indexSchema['workflow'].findById(req.params.workflow)
+
             const payload = {
                 sub: req.user.sub,
-                workflow: req.params.workflow,
+                workflow: workflow._id,
             }
-            const doc = new indexSchema[schema](payload)
+            const doc = new indexSchema['instance'](payload)
             await doc.save()
+
+            const instanceJob = new CronJob({
+                cronTime: moment().add(5, 'seconds'),
+                onTick: () => {
+                    instanceTools.start(doc._id)
+                },
+                start: true,
+            })
 
             return res.status(200).send(doc)
         } catch (err) {

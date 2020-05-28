@@ -1,5 +1,10 @@
 module.exports = {
     start: async (instance) => {
+
+        console.log('starting instance')
+        console.log(instance)
+        return Promise.resolve()
+
         const stats = {}
 
         const results = {}
