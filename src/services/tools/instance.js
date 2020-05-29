@@ -27,14 +27,6 @@ module.exports = {
         function currentState() {
             return { state: state, results: results }
         }
-        
-        function parseContextResults(data) {
-            return _.omit(data, ['instance', 'sub', 'workflow', 'task', 'context', 'code', 'message'])
-        }
-
-        function parseResponseContextResults(data, taskId) {
-            return _.pick(data, [`results.${taskId}`])
-        }
 
         const runInstance = async () => {
             // Create workflow
@@ -180,8 +172,8 @@ module.exports = {
                 }
 
                 const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task._id })
-                stat.code = taskResult.statusCode
-                stat.message = taskResult.statusMessage
+                stat.code = taskResult.status
+                stat.message = taskResult.statusText
                 stat.end = moment().toDate()
                 await stat.save()
 
@@ -203,7 +195,6 @@ module.exports = {
         } catch(err) {
             console.log('err', err)
 
-            console.log(stats)
             console.log(results)
             console.log(state)
         }

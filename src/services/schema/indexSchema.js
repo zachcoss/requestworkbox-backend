@@ -4,218 +4,19 @@ const
 
 mongoose.plugin(require('mongoose-autopopulate'))
 
-const globalContextSchema =  new mongoose.Schema({
-    model: { type: String, default: 'Global Context' },
-    component: { type: String, default: 'globalContext' },
+const instanceSchema = new mongoose.Schema({
+    model: { type: String, default: 'Instance' },
+    component: { type: String, default: 'instance' },
     sub: { type: String, required: true },
 
-    name: { type: String, required: true },
     isActive: { type: Boolean, default: true },
-    url: { type: String, required: true },
 
-    inputOptions: [{
-        type: String, required: true, enum: [
-            'context',
-            'instance',
-            'task',
-            'sub',
-        ]
-    }],
-    outputOptions: [{
-        type: String, required: true, enum: [
-            'cookies',
-            'headers',
-            'query',
-            'protocol',
-            'url',
-            'path',
-            'formData',
-            'formDataUrlEncoded',
-            'xml',
-            'text',
-            'javascript',
-            'json',
-            'html',
-        ]
-    }],
-    
-}, { timestamps: true })
-
-const authContextSchema = new mongoose.Schema({
-    model: { type: String, default: 'Auth Context' },
-    component: { type: String, default: 'authContext' },
-    sub: { type: String, required: true },
-
-    name: { type: String, required: true },
-    isActive: { type: Boolean, default: true },
-    url: { type: String, required: true }, 
-
-    inputOptions: [{
-        type: String, required: true, enum: [
-            'context',
-            'instance',
-            'task',
-            'sub',
-        ]
-    }],
-    outputOptions: [{
-        type: String, required: true, enum: [
-            'cookies',
-            'headers',
-            'query',
-            'protocol',
-            'url',
-            'path',
-            'formData',
-            'formDataUrlEncoded',
-            'xml',
-            'text',
-            'javascript',
-            'json',
-            'html',
-        ]
-    }],
-
-}, { timestamps: true })
-
-const requestContextSchema = new mongoose.Schema({
-    model: { type: String, default: 'Request Context' },
-    component: { type: String, default: 'requestContext' },
-    sub: { type: String, required: true },
-
-    name: { type: String, required: true },
-    isActive: { type: Boolean, default: true },
-    url: { type: String, required: true },
-
-    inputOptions: [{
-        type: String, required: true, enum: [
-            'context',
-            'instance',
-            'task',
-            'sub',
-            'cookies',
-            'headers',
-            'query',
-            'protocol',
-            'url',
-            'path',
-            'formData',
-            'formDataUrlEncoded',
-            'xml',
-            'text',
-            'javascript',
-            'json',
-            'html',
-        ]
-    }],
-    outputOptions: [{
-        type: String, required: true, enum: [
-            'cookies',
-            'headers',
-            'query',
-            'protocol',
-            'url',
-            'path',
-            'formData',
-            'formDataUrlEncoded',
-            'xml',
-            'text',
-            'javascript',
-            'json',
-            'html',
-        ]
-    }],
-}, { timestamps: true })
-
-const responseContextSchema = new mongoose.Schema({
-    model: { type: String, default: 'Response Context' },
-    component: { type: String, default: 'responseContext' },
-    sub: { type: String, required: true },
-
-    name: { type: String, required: true },
-    isActive: { type: Boolean, default: true },
-    url: { type: String, required: true },
-
-    inputOptions: [{
-        type: String, required: true, enum: [
-            'context',
-            'instance',
-            'task',
-            'sub',
-            'statusCode',
-            'statusMessage',
-            'cookies',
-            'headers',
-            'query',
-            'protocol',
-            'url',
-            'path',
-            'formData',
-            'formDataUrlEncoded',
-            'xml',
-            'text',
-            'javascript',
-            'json',
-            'html',
-        ]
-    }],
-    outputOptions: [{
-        type: String, required: true, enum: [
-            'statusCode',
-            'statusMessage',
-            'cookies',
-            'headers',
-            'query',
-            'protocol',
-            'url',
-            'path',
-            'formData',
-            'formDataUrlEncoded',
-            'xml',
-            'text',
-            'javascript',
-            'json',
-            'html',
-        ]
-    }],
-}, { timestamps: true })
-
-const taskSchema = new mongoose.Schema({
-    model: { type: String, default: 'Task' },
-    component: { type: String, default: 'task' },
-    sub: { type: String, required: true },
-
-    name: { type: String, required: true },
-    isActive: { type: Boolean, default: true },
-    size: { type: Number, default: 25, enum: [
-        25, 50, 100, 250, 500, 1000
-    ] },
-    
-    globalContext: {
+    workflow: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'Global Context',
+        ref: 'Workflow',
         autopopulate: true,
     },
-    authContext: {
-        type: Schema.Types.ObjectId,
-        required: false,
-        ref: 'Auth Context',
-        autopopulate: true,
-    },
-    requestContext: {
-        type: Schema.Types.ObjectId,
-        required: false,
-        ref: 'Request Context',
-        autopopulate: true,
-    },
-    responseContext: {
-        type: Schema.Types.ObjectId,
-        required: false,
-        ref: 'Response Context',
-        autopopulate: true,
-    },
-
 }, { timestamps: true })
 
 const workflowSchema = new mongoose.Schema({
@@ -226,44 +27,140 @@ const workflowSchema = new mongoose.Schema({
     name: { type: String, required: true },
     isActive: { type: Boolean, default: true },
 
-    frequency: { type: String, default: 'api' },
-    lastRun: { type: Date },
-    nextRun: { type: Date },
-
-    tasks: [
+    endpoints: [
         {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: 'Task',
+            ref: 'Endpoint',
             autopopulate: true,
         }
     ],
 }, { timestamps: true })
 
-const instanceSchema = new mongoose.Schema({
-    model: { type: String, default: 'Instance' },
-    component: { type: String, default: 'instance' },
+const projectSchema = new mongoose.Schema({
+    model: { type: String, default: 'Project' },
+    component: { type: String, default: 'project' },
     sub: { type: String, required: true },
-    
-    isActive: { type: Boolean, default: false },
-    closed: { type: Boolean, default: false },
-    processId: { type: Schema.Types.ObjectId },
-    
-    workflow: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'Workflow',
-        autopopulate: true,
-    },
+
+    name: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
+
 }, { timestamps: true })
 
-const statSchema = new mongoose.Schema({
+const endpointSchema = new mongoose.Schema({
+    model: { type: String, default: 'Endpoint' },
+    component: { type: String, default: 'endpoint' },
+    sub: { type: String, required: true },
+
+    name: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
+
+    // apikey, endpoint results
+    parameters: [{ type: String }],
+
+    project: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Project',
+        autopopulate: true,
+    },
+
+    preRequests: [{
+        type: Schema.Types.ObjectId,
+        required: false,
+        ref: 'Request',
+        autopopulate: true,
+    }],
+
+    request: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Request',
+        autopopulate: true,
+    },
+
+    postRequests: [{
+        type: Schema.Types.ObjectId,
+        required: false,
+        ref: 'Request',
+        autopopulate: true,
+    }],
+
+}, { timestamps: true })
+
+const requestSchema = new mongoose.Schema({
+    model: { type: String, default: 'Request' },
+    component: { type: String, default: 'request' },
+    sub: { type: String, required: true },
+
+    name: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
+
+    request: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Project Environment',
+        autopopulate: true,
+    }
+
+}, { timestamps: true })
+
+
+// For creating parameter values
+// Inherits userEnvironment, results
+const userEnvironmentSchema = new mongoose.Schema({
+    model: { type: String, default: 'User Environment' },
+    component: { type: String, default: 'userEnvironment' },
+    sub: { type: String, required: true },
+
+    name: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
+
+    environmentType: {
+        type: String, enum: [
+            'parameter',
+        ], default: 'parameter'
+    },
+    json: { type: String, required: true },
+
+}, { timestamps: true })
+
+// For creating requests
+// For creating parameter values
+// Inherits userEnvironment, results, projectEnvironment, parameters
+// can meet { name: '', value: '${user/variableName}'  '${result/task}'  '${project/variableName}' '${parameter/parameterName}' } format
+const projectEnvironmentSchema = new mongoose.Schema({
+    model: { type: String, default: 'Project Environment' },
+    component: { type: String, default: 'projectEnvironment' },
+    sub: { type: String, required: true },
+
+    name: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
+
+    projectId: { type: Schema.Types.ObjectId, required: true },
+
+    environmentType: { type: String, enum: [
+        'parameter',
+        'request'
+    ], required: true },
+    json: { type: String, required: true },
+
+}, { timestamps: true })
+
+const requestStatSchema = new mongoose.Schema({
     model: { type: String, default: 'Stat' },
     component: { type: String, default: 'stat' },
     sub: { type: String, required: true },
-    componentId: { type: Schema.Types.ObjectId, required: true },
-    componentType: { type: String, required: true },
-    instance: { type: Schema.Types.ObjectId, required: true },
+
+    componentType: { type: String, enum: [
+        'instance','workflow','task','request',
+    ], required: true },
+
+    instanceId: { type: Schema.Types.ObjectId, required: true },
+    workflowId: { type: Schema.Types.ObjectId, required: true },
+    endpointId: { type: Schema.Types.ObjectId, required: true },
+    requestId: { type: Schema.Types.ObjectId },
+    requestName: { type: String },
     start: { type: Date, required: true },
     code: { type: String },
     message: { type: String, },
@@ -271,36 +168,36 @@ const statSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = {
-    [globalContextSchema.obj.component.default]: new mongoose.model(
-        globalContextSchema.obj.model.default,
-        globalContextSchema
-    ),
-    [authContextSchema.obj.component.default]: new mongoose.model(
-        authContextSchema.obj.model.default,
-        authContextSchema
-    ),
-    [requestContextSchema.obj.component.default]: new mongoose.model(
-        requestContextSchema.obj.model.default,
-        requestContextSchema
-    ),
-    [responseContextSchema.obj.component.default]: new mongoose.model(
-        responseContextSchema.obj.model.default,
-        responseContextSchema
-    ),
-    [taskSchema.obj.component.default]: new mongoose.model(
-        taskSchema.obj.model.default,
-        taskSchema
+    [instanceSchema.obj.component.default]: new mongoose.model(
+        instanceSchema.obj.model.default,
+        instanceSchema
     ),
     [workflowSchema.obj.component.default]: new mongoose.model(
         workflowSchema.obj.model.default,
         workflowSchema
     ),
-    [instanceSchema.obj.component.default]: new mongoose.model(
-        instanceSchema.obj.model.default,
-        instanceSchema
+    [projectSchema.obj.component.default]: new mongoose.model(
+        projectSchema.obj.model.default,
+        projectSchema
     ),
-    [statSchema.obj.component.default]: new mongoose.model(
-        statSchema.obj.model.default,
-        statSchema
+    [endpointSchema.obj.component.default]: new mongoose.model(
+        endpointSchema.obj.model.default,
+        endpointSchema
+    ),
+    [requestSchema.obj.component.default]: new mongoose.model(
+        requestSchema.obj.model.default,
+        requestSchema
+    ),
+    [userEnvironmentSchema.obj.component.default]: new mongoose.model(
+        userEnvironmentSchema.obj.model.default,
+        userEnvironmentSchema
+    ),
+    [projectEnvironmentSchema.obj.component.default]: new mongoose.model(
+        projectEnvironmentSchema.obj.model.default,
+        projectEnvironmentSchema
+    ),
+    [requestStatSchema.obj.component.default]: new mongoose.model(
+        requestStatSchema.obj.model.default,
+        requestStatSchema
     ),
 }
