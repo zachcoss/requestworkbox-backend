@@ -1,6 +1,7 @@
 const
     _ = require('lodash'),
     indexSchema = require('../schema/indexSchema'),
+    indexSchemaBeta = require('../schema/indexSchema-beta'),
     instanceTools = require('../tools/instance'),
     moment = require('moment'),
     CronJob = require('cron').CronJob;

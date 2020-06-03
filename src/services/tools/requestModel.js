@@ -3,7 +3,9 @@ module.exports = {
         sub: '',
         contextType: 'project, request, task',
         name: '',
-        value: {},
+        key:'',
+        template: '',
+        fallback: ''
     },
     project: {
         sub: '',

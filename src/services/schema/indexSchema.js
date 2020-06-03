@@ -168,36 +168,36 @@ const requestStatSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = {
-    [instanceSchema.obj.component.default]: new mongoose.model(
-        instanceSchema.obj.model.default,
-        instanceSchema
-    ),
-    [workflowSchema.obj.component.default]: new mongoose.model(
-        workflowSchema.obj.model.default,
-        workflowSchema
-    ),
-    [projectSchema.obj.component.default]: new mongoose.model(
-        projectSchema.obj.model.default,
-        projectSchema
-    ),
-    [endpointSchema.obj.component.default]: new mongoose.model(
-        endpointSchema.obj.model.default,
-        endpointSchema
-    ),
-    [requestSchema.obj.component.default]: new mongoose.model(
-        requestSchema.obj.model.default,
-        requestSchema
-    ),
+    // [instanceSchema.obj.component.default]: new mongoose.model(
+    //     instanceSchema.obj.model.default,
+    //     instanceSchema
+    // ),
+    // [workflowSchema.obj.component.default]: new mongoose.model(
+    //     workflowSchema.obj.model.default,
+    //     workflowSchema
+    // ),
+    // [projectSchema.obj.component.default]: new mongoose.model(
+    //     projectSchema.obj.model.default,
+    //     projectSchema
+    // ),
+    // [endpointSchema.obj.component.default]: new mongoose.model(
+    //     endpointSchema.obj.model.default,
+    //     endpointSchema
+    // ),
+    // [requestSchema.obj.component.default]: new mongoose.model(
+    //     requestSchema.obj.model.default,
+    //     requestSchema
+    // ),
     [userEnvironmentSchema.obj.component.default]: new mongoose.model(
         userEnvironmentSchema.obj.model.default,
         userEnvironmentSchema
     ),
-    [projectEnvironmentSchema.obj.component.default]: new mongoose.model(
-        projectEnvironmentSchema.obj.model.default,
-        projectEnvironmentSchema
-    ),
-    [requestStatSchema.obj.component.default]: new mongoose.model(
-        requestStatSchema.obj.model.default,
-        requestStatSchema
-    ),
+    // [projectEnvironmentSchema.obj.component.default]: new mongoose.model(
+    //     projectEnvironmentSchema.obj.model.default,
+    //     projectEnvironmentSchema
+    // ),
+    // [requestStatSchema.obj.component.default]: new mongoose.model(
+    //     requestStatSchema.obj.model.default,
+    //     requestStatSchema
+    // ),
 }
