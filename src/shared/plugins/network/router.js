@@ -2,9 +2,9 @@ const
     express = require('express'),
     router = express.Router(),
     indexMiddleware = require('../../../services/middleware/indexMiddleware'),
-    indexMiddlewareBeta = require('../../../services/middleware/indexMiddleware-beta'),
     RequestMenu = require('../../../services/middleware/RequestMenu'),
-    RequestProject = require('../../../services/middleware/RequestProject');
+    RequestProject = require('../../../services/middleware/RequestProject'),
+    RequestTable = require('../../../services/middleware/RequestTable');
 
 module.exports.config = function () {
 
@@ -19,6 +19,8 @@ module.exports.config = function () {
     router.post('/new-project', RequestMenu.newProject)
     // router.post('/add-to-workflow', RequestMenu.addToWorkflow)
     router.post('/test-request', RequestMenu.testRequest)
+
+    router.post('/get-requests', RequestTable.getRequests)
 
     return router;
 }
