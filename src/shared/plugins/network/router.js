@@ -21,6 +21,7 @@ module.exports.config = function () {
     router.post('/test-request', RequestMenu.testRequest)
 
     router.post('/get-requests', RequestTable.getRequests)
+    router.post('/get-request-details', RequestTable.getRequestDetails)
 
     return router;
 }

@@ -10,6 +10,7 @@ const ProjectSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const RequestSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
     sub: { type: String, required: true },
     project: {
         type: Schema.Types.ObjectId,
