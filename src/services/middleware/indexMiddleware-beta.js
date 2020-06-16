@@ -22,7 +22,7 @@ module.exports = {
     },
     createProject: async (req, res, next) => {
         try {
-            const project = await new IndexSchema.Project({ sub: req.sub, name: req.body.name })
+            const project = await new IndexSchema.Project({ sub: req.user.sub, name: req.body.name })
             return res.status(200).send({ _id: project._id })
         } catch(err) {
             return res.status(500).send(err)

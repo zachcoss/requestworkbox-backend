@@ -6,7 +6,7 @@ mongoose.plugin(require('mongoose-autopopulate'))
 
 const ProjectSchema = new mongoose.Schema({
     sub: { type: String, required: true },
-    name: { type: String, required: true },
+    name: { type: String, required: true, default: 'Untitled Project' },
 }, { timestamps: true })
 
 const RequestSchema = new mongoose.Schema({
