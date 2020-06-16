@@ -10,6 +10,7 @@ const ProjectSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const RequestSchema = new mongoose.Schema({
+    sub: { type: String, required: true },
     project: {
         type: Schema.Types.ObjectId,
         required: true,

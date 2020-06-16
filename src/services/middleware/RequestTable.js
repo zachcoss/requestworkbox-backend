@@ -5,7 +5,6 @@ const
 module.exports = {
     getRequests: async (req, res, next) => {
         try {
-            console.log('123')
             const findPayload = { sub: req.user.sub, project: req.body.projectId }
             const projection = 'name method protocol url'
             const requests = await IndexSchema.Request.find(findPayload, projection)
