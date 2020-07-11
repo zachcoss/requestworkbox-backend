@@ -18,8 +18,8 @@ const RequestSchema = new mongoose.Schema({
         ref: 'Project',
     },
     url: {
-        protocol: {type: String, default: ''},
-        method: {type: String, default: ''},
+        protocol: {type: String, default: 'HTTPS'},
+        method: {type: String, default: 'GET'},
         url: {type: String, default: ''},
         name: {type: String, default: ''},
     },
@@ -59,7 +59,7 @@ const RequestSchema = new mongoose.Schema({
     requestDetails: {
         description: String,
         // 'request','adapter'
-        requestType: String,
+        requestType: { type: String, default: 'request'},
         // 'request', 'response', 'task'
         adapterType: String,
         successCodes: String,
