@@ -17,83 +17,65 @@ const RequestSchema = new mongoose.Schema({
         required: true,
         ref: 'Project',
     },
-    name: { type: String },
-    description: { type: String },
-    
-    requestType: { type: String, enum: [
-        'request','plugin'
-    ]},
-    pluginType: { type: String, enum: [
-        'request', 'response', 'task'
-    ]},
-
-    ifRequestPluginFails: {
-        type: String, enum: [
-            'continue', 'stopWorkflow', 'repeatAttempt',
-        ]
+    url: {
+        protocol: {type: String, default: ''},
+        method: {type: String, default: ''},
+        url: {type: String, default: ''},
+        name: {type: String, default: ''},
     },
-    ifResponsePluginFails: {
-        type: String, enum: [
-            'continue', 'stopWorkflow', 'repeatAttempt',
-        ]
-    },
-
-    requestAvailableTo: {
-        type: String, enum: [
-            'any', 'project', 'none'
-        ]
-    },
-    responseAvailableTo: {
-        type: String, enum: [
-            'any', 'project', 'none'
-        ]
-    },
-
-    requestAvailableAs: { type: String, },
-    responseAvailableAs: { type: String },
-
-    successCodes: { type: String },
-    errorCodes: { type: String },
-
-    requestPlugins: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Request',
+    parameters: [{
+        key: String,
+        value: String,
+        acceptInput: Boolean,
     }],
-    responsePlugins: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Request',
+    query: [{
+        key: String,
+        value: String,
+        acceptInput: Boolean,
     }],
-    
-    url: { type: String },
-    parameters: { type: mongoose.Schema.Types.Mixed },
-    query: { type: mongoose.Schema.Types.Mixed },
-    headers: { type: mongoose.Schema.Types.Mixed },
-    cookies: { type: mongoose.Schema.Types.Mixed },
-    body: [{ type: mongoose.Schema.Types.Mixed }],
-    permissions: { type: mongoose.Schema.Types.Mixed },
-    plugins: { type: mongoose.Schema.Types.Mixed },
-    details: { type: mongoose.Schema.Types.Mixed },
-
-    query: { type: mongoose.Schema.Types.Mixed },
-    path: { type: mongoose.Schema.Types.Mixed },
-    header: { type: mongoose.Schema.Types.Mixed },
-    body: { type: mongoose.Schema.Types.Mixed },
-
-    method: {
-        type: String, enum: [
-            'GET',
-            'POST',
-            'PUT',
-            'PATCH',
-            'UPDATE'
-        ]
+    headers: [{
+        key: String,
+        value: String,
+        acceptInput: Boolean,
+    }],
+    cookies: [{
+        key: String,
+        value: String,
+        acceptInput: Boolean,
+    }],
+    body: [{
+        key: String,
+        value: String,
+        acceptInput: Boolean,
+    }],
+    taskPermissions: {
+        requestAvailableAs: String,
+        responseAvailableAs: String,
+        // 'any', 'project', 'none'
+        requestAvailableTo: String,
+        // 'any', 'project', 'none'
+        responseAvailableTo: String,
     },
-    protocol: {
-        type: String, enum: [
-            'HTTP',
-            'HTTPS',
-        ]
+    requestDetails: {
+        description: String,
+        // 'request','adapter'
+        requestType: String,
+        // 'request', 'response', 'task'
+        adapterType: String,
+        successCodes: String,
+        errorCodes: String,
     },
+
+    requestAdapters: [{
+        adapterId: Schema.Types.ObjectId,
+        // 'continue', 'stopWorkflow', 'repeatAttempt',
+        onAdapterFailure: String,
+    }],
+    responseAdapters: [{
+        adapterId: Schema.Types.ObjectId,
+        // 'continue', 'stopWorkflow', 'repeatAttempt',
+        onAdapterFailure: String,
+    }],
 }, { timestamps: true })
 
 const TaskSchema = new mongoose.Schema({
