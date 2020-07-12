@@ -65,12 +65,12 @@ const RequestSchema = new mongoose.Schema({
         // 'any', 'project', 'none'
         responseAvailableTo: { type: String, default: 'none'},
     },
-    requestDetails: {
+    requestSettings: {
         description: String,
         // 'request','adapter'
         requestType: { type: String, default: 'request'},
         // 'request', 'response', 'task'
-        adapterType: String,
+        adapterType: { type: String, default: 'request'},
         successCodes: String,
         errorCodes: String,
     },
