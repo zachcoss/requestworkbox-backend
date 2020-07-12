@@ -23,6 +23,7 @@ module.exports.config = function () {
     router.post('/get-requests', RequestTable.getRequests)
     router.post('/get-request-details', RequestTable.getRequestDetails)
     router.post('/save-changes', RequestTable.saveChanges)
+    router.post('/add-request-detail-item', RequestTable.addRequestDetailItem)
 
     return router;
 }

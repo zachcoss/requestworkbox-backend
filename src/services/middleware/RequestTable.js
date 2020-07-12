@@ -1,5 +1,6 @@
 const
     _ = require('lodash'),
+    mongoose = require('mongoose'),
     IndexSchema = require('../schema/indexSchema');
 
 module.exports = {
@@ -35,6 +36,26 @@ module.exports = {
             })
             await request.save()
             return res.status(200).send()
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    addRequestDetailItem: async (req, res, next) => {
+        try {
+
+            const requestDetailOption = req.body.requestDetailOption
+            const findPayload = { sub: req.user.sub, _id: req.body._id }
+            const request = await IndexSchema.Request.findOne(findPayload)
+            const newItem = {
+                _id: mongoose.Types.ObjectId(),
+                key: '',
+                value: '',
+                acceptInput: false,
+            }
+            request[requestDetailOption].push(newItem)
+            await request.save()
+            return res.status(200).send(newItem)
         } catch (err) {
             console.log(err)
             return res.status(500).send(err)
