@@ -24,6 +24,7 @@ module.exports.config = function () {
     router.post('/get-request-details', RequestTable.getRequestDetails)
     router.post('/save-changes', RequestTable.saveChanges)
     router.post('/add-request-detail-item', RequestTable.addRequestDetailItem)
+    router.post('/delete-request-detail-item', RequestTable.deleteRequestDetailItem)
 
     return router;
 }
