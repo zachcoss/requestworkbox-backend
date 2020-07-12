@@ -61,9 +61,9 @@ const RequestSchema = new mongoose.Schema({
         requestAvailableAs: String,
         responseAvailableAs: String,
         // 'any', 'project', 'none'
-        requestAvailableTo: String,
+        requestAvailableTo: { type: String, default: 'none'},
         // 'any', 'project', 'none'
-        responseAvailableTo: String,
+        responseAvailableTo: { type: String, default: 'none'},
     },
     requestDetails: {
         description: String,
