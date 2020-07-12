@@ -25,4 +25,19 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    saveChanges: async (req, res, next) => {
+        try {
+            const updates = _.pick(req.body, ['_id','url','parameters', 'query', 'headers', 'cookies', 'body', 'taskPermissions', 'requestDetails', 'requestAdapters', 'responseAdapters'])
+            const findPayload = { sub: req.user.sub, _id: updates._id }
+            const request = await IndexSchema.Request.findOne(findPayload)
+            _.each(updates, (value, key) => {
+                request[key] = value
+            })
+            await request.save()
+            return res.status(200).send()
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }
