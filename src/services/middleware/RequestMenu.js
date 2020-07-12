@@ -9,7 +9,15 @@ module.exports = {
             // IndexSchema.RequestSchema.eachPath((pathName) => requestAllowedKeys.push(pathName))
             // const requestKeys = _.omit(requestAllowedKeys, '_id')
 
-            const request = new IndexSchema.Request({ sub: req.user.sub, project: req.body.projectId })
+            const newRequest = { sub: req.user.sub, project: req.body.projectId }
+
+            if (req.body.adapter) {
+                newRequest['requestSettings'] = {
+                    requestType: 'adapter'
+                }
+            }
+
+            const request = new IndexSchema.Request(newRequest)
             await request.save()
             return res.status(200).send({ _id: request._id })
         } catch (err) {
