@@ -4,6 +4,20 @@ const
 
 mongoose.plugin(require('mongoose-autopopulate'))
 
+const KeyValueSchema = new mongoose.Schema({
+    key: String,
+    value: String,
+    acceptInput: Boolean,
+})
+
+const KeyValueDefault = () => {
+    return {
+        key: '',
+        value: '',
+        acceptInput: false,
+    }
+}
+
 const ProjectSchema = new mongoose.Schema({
     sub: { type: String, required: true },
     name: { type: String, required: true, default: 'Untitled Project' },
@@ -20,34 +34,29 @@ const RequestSchema = new mongoose.Schema({
     url: {
         protocol: {type: String, default: 'HTTPS'},
         method: {type: String, default: 'GET'},
-        url: {type: String, default: ''},
-        name: {type: String, default: ''},
+        url: {type: String, default: 'https://api.com'},
+        name: {type: String, default: 'API'},
     },
-    parameters: [{
-        key: String,
-        value: String,
-        acceptInput: Boolean,
-    }],
-    query: [{
-        key: String,
-        value: String,
-        acceptInput: Boolean,
-    }],
-    headers: [{
-        key: String,
-        value: String,
-        acceptInput: Boolean,
-    }],
-    cookies: [{
-        key: String,
-        value: String,
-        acceptInput: Boolean,
-    }],
-    body: [{
-        key: String,
-        value: String,
-        acceptInput: Boolean,
-    }],
+    parameters: {
+        type: [ KeyValueSchema ],
+        default: [ KeyValueDefault() ]
+    },
+    query: {
+        type: [ KeyValueSchema ],
+        default: [ KeyValueDefault() ]
+    },
+    headers: {
+        type: [ KeyValueSchema ],
+        default: [ KeyValueDefault() ]
+    },
+    cookies: {
+        type: [ KeyValueSchema ],
+        default: [ KeyValueDefault() ]
+    },
+    body: {
+        type: [ KeyValueSchema ],
+        default: [ KeyValueDefault() ]
+    },
     taskPermissions: {
         requestAvailableAs: String,
         responseAvailableAs: String,
