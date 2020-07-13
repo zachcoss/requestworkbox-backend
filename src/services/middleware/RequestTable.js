@@ -74,4 +74,34 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    addAdapter: async (req, res, next) => {
+        try {
+            const adapterType = req.body.adapterType
+            const findPayload = { sub: req.user.sub, _id: req.body._id }
+            const request = await IndexSchema.Request.findOne(findPayload)
+            const newItem = {
+                _id: mongoose.Types.ObjectId(),
+                onAdapterFailure: 'stopWorkflow'
+            }
+            request[adapterType].push(newItem)
+            await request.save()
+            return res.status(200).send(newItem)
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    deleteAdapter: async (req, res, next) => {
+        try {
+            const adapterType = req.body.adapterType
+            const findPayload = { sub: req.user.sub, _id: req.body._id }
+            const request = await IndexSchema.Request.findOne(findPayload)
+            request[adapterType].id(req.body.adapterId).remove()
+            await request.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    }
 }

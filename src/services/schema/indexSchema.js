@@ -75,16 +75,26 @@ const RequestSchema = new mongoose.Schema({
         errorCodes: String,
     },
 
-    requestAdapters: [{
-        adapterId: Schema.Types.ObjectId,
-        // 'continue', 'stopWorkflow', 'repeatAttempt',
-        onAdapterFailure: String,
-    }],
-    responseAdapters: [{
-        adapterId: Schema.Types.ObjectId,
-        // 'continue', 'stopWorkflow', 'repeatAttempt',
-        onAdapterFailure: String,
-    }],
+    requestAdapters: {
+        type: [new mongoose.Schema({
+            adapterId: Schema.Types.ObjectId,
+            // 'continue', 'stopWorkflow', 'repeatAttempt',
+            onAdapterFailure: String,
+        })],
+        default: [{
+            onAdapterFailure: 'stopWorkflow',
+        }],
+    },
+    responseAdapters: {
+        type: [new mongoose.Schema({
+            adapterId: Schema.Types.ObjectId,
+            // 'continue', 'stopWorkflow', 'repeatAttempt',
+            onAdapterFailure: String,
+        })],
+        default: [{
+            onAdapterFailure: 'stopWorkflow',
+        }],
+    },
 }, { timestamps: true })
 
 const TaskSchema = new mongoose.Schema({
