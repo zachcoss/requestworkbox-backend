@@ -7,7 +7,7 @@ module.exports = {
     getRequests: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, project: req.body.projectId }
-            const projection = 'name method protocol url active updatedAt'
+            const projection = '-__v'
             const requests = await IndexSchema.Request.find(findPayload, projection)
             return res.status(200).send(requests)
         } catch (err) {
