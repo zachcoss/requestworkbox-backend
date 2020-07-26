@@ -26,7 +26,7 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    saveChanges: async (req, res, next) => {
+    saveRequestChanges: async (req, res, next) => {
         try {
             const updates = _.pick(req.body, ['_id','url','parameters', 'query', 'headers', 'cookies', 'body', 'taskPermissions', 'requestSettings', 'requestAdapters', 'responseAdapters'])
             const findPayload = { sub: req.user.sub, _id: updates._id }
@@ -74,7 +74,7 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    addAdapter: async (req, res, next) => {
+    addRequestAdapter: async (req, res, next) => {
         try {
             const adapterType = req.body.adapterType
             const findPayload = { sub: req.user.sub, _id: req.body._id }
@@ -91,7 +91,7 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    deleteAdapter: async (req, res, next) => {
+    deleteRequestAdapter: async (req, res, next) => {
         try {
             const adapterType = req.body.adapterType
             const findPayload = { sub: req.user.sub, _id: req.body._id }

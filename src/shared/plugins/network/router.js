@@ -2,31 +2,34 @@ const
     express = require('express'),
     router = express.Router(),
     indexMiddleware = require('../../../services/middleware/indexMiddleware'),
-    RequestMenu = require('../../../services/middleware/RequestMenu'),
-    RequestProject = require('../../../services/middleware/RequestProject'),
-    RequestTable = require('../../../services/middleware/RequestTable');
+    Menu = require('../../../services/middleware/Menu'),
+    Project = require('../../../services/middleware/Project'),
+    Request = require('../../../services/middleware/Request'),
+    Workflow = require('../../../services/middleware/Workflow');
 
 module.exports.config = function () {
 
     router.get('/', indexMiddleware.healthcheck)
     router.all('*', indexMiddleware.interceptor)
 
-    router.post('/get-project-name', RequestProject.getProjectName)
-    router.post('/update-project-name', RequestProject.updateProjectName)
+    router.post('/get-project-name', Project.getProjectName)
+    router.post('/update-project-name', Project.updateProjectName)
 
-    router.post('/new-request', RequestMenu.newRequest)
-    router.post('/new-workflow', RequestMenu.newWorkflow)
-    router.post('/new-project', RequestMenu.newProject)
-    // router.post('/add-to-workflow', RequestMenu.addToWorkflow)
-    router.post('/test-request', RequestMenu.testRequest)
+    router.post('/new-request', Menu.newRequest)
+    router.post('/new-workflow', Menu.newWorkflow)
+    router.post('/new-project', Menu.newProject)
+    // router.post('/add-to-workflow', Menu.addToWorkflow)
+    router.post('/test-request', Menu.testRequest)
 
-    router.post('/get-requests', RequestTable.getRequests)
-    router.post('/get-request-details', RequestTable.getRequestDetails)
-    router.post('/save-changes', RequestTable.saveChanges)
-    router.post('/add-request-detail-item', RequestTable.addRequestDetailItem)
-    router.post('/delete-request-detail-item', RequestTable.deleteRequestDetailItem)
-    router.post('/add-adapter', RequestTable.addAdapter)
-    router.post('/delete-adapter', RequestTable.deleteAdapter)
+    router.post('/get-requests', Request.getRequests)
+    router.post('/get-request-details', Request.getRequestDetails)
+    router.post('/save-request-changes', Request.saveRequestChanges)
+    router.post('/add-request-detail-item', Request.addRequestDetailItem)
+    router.post('/delete-request-detail-item', Request.deleteRequestDetailItem)
+    router.post('/add-request-adapter', Request.addRequestAdapter)
+    router.post('/delete-request-adapter', Request.deleteRequestAdapter)
+
+    router.post('/get-workflows', Workflow.getWorkflows)
 
     return router;
 }
