@@ -26,9 +26,7 @@ module.exports = {
     },
     newWorkflow: async (req, res, next) => {
         try {
-            const task = new IndexSchema.Task({ sub: req.user.sub, request: req.body.requestId })
-            const workflow = new IndexSchema.Workflow({ sub: req.user.sub, tasks: [task] })
-            await task.save()
+            const workflow = new IndexSchema.Workflow({ sub: req.user.sub, project: req.body.projectId })
             await workflow.save()
             return res.status(200).send({ _id: workflow._id })
         } catch (err) {

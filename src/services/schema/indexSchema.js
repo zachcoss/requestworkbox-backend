@@ -113,12 +113,18 @@ const TaskSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const WorkflowSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
     sub: { type: String, required: true },
-    name: { type: String },
-
-    tasks: [{
+    name: { type: String, default: 'Untitled Workflow' },
+    project: {
         type: Schema.Types.ObjectId,
         required: true,
+        ref: 'Project',
+    },
+    
+    tasks: [{
+        type: Schema.Types.ObjectId,
+        required: false,
         ref: 'Task',
     }],
     timeout: { type: Number, default: 30 },
