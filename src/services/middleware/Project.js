@@ -22,4 +22,15 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    getProjects: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub }
+            const projection = 'name'
+            const projects = await IndexSchema.Project.find(findPayload, projection)
+            return res.status(200).send(projects)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }
