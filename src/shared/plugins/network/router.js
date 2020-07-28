@@ -31,6 +31,8 @@ module.exports.config = function () {
     router.post('/delete-request-adapter', Request.deleteRequestAdapter)
 
     router.post('/get-workflows', Workflow.getWorkflows)
+    router.post('/get-workflow-details', Workflow.getWorkflowDetails)
+    router.post('/save-workflow-changes', Workflow.saveWorkflowChanges)
 
     return router;
 }
