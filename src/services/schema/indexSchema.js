@@ -127,10 +127,10 @@ const WorkflowSchema = new mongoose.Schema({
         required: false,
         ref: 'Task',
     }],
-    timeout: { type: Number, default: 30 },
+    timeout: { type: String, default: '30seconds' },
     onTimeout: { type: String, enum: [
-        'timeout','send200Continue','send500Continue',
-    ], default: 'timeout' }
+        'stop','send200Continue','send500Continue',
+    ], default: 'stop' }
 }, { timestamps: true })
 
 const InstanceSchema = new mongoose.Schema({
