@@ -18,6 +18,15 @@ const KeyValueDefault = () => {
     }
 }
 
+const EnvironmentSchema = new mongoose.Schema({
+    sub: { type: String, required: true },
+    name: { type: String, required: true },
+    data: {
+        type: [ KeyValueSchema ],
+        default: [ KeyValueDefault() ]
+    },
+})
+
 const ProjectSchema = new mongoose.Schema({
     sub: { type: String, required: true },
     name: { type: String, required: true, default: 'Untitled Project' },
@@ -160,6 +169,7 @@ const StatSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = {
+    'Environment': new mongoose.model('Environment', EnvironmentSchema),
     'Project': new mongoose.model('Project', ProjectSchema),
     'Request': new mongoose.model('Request', RequestSchema),
     'Task': new mongoose.model('Task', TaskSchema),

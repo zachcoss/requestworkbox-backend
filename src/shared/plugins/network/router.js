@@ -5,7 +5,8 @@ const
     Menu = require('../../../services/middleware/Menu'),
     Project = require('../../../services/middleware/Project'),
     Request = require('../../../services/middleware/Request'),
-    Workflow = require('../../../services/middleware/Workflow');
+    Workflow = require('../../../services/middleware/Workflow'),
+    Environment = require('../../../services/middleware/Environment');
 
 module.exports.config = function () {
 
@@ -33,6 +34,12 @@ module.exports.config = function () {
     router.post('/get-workflows', Workflow.getWorkflows)
     router.post('/get-workflow-details', Workflow.getWorkflowDetails)
     router.post('/save-workflow-changes', Workflow.saveWorkflowChanges)
+
+    router.post('/get-environments', Environment.getEnvironments)
+    router.post('/get-environment-details', Environment.getEnvironmentDetails)
+    router.post('/save-environment-changes', Environment.saveEnvironmentChanges)
+    router.post('/add-environment-detail-item', Environment.addEnvironmentDetailItem)
+    router.post('/delete-environment-detail-item', Environment.deleteEnvironmentDetailItem)
 
     return router;
 }
