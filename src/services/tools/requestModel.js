@@ -52,7 +52,7 @@ module.exports = {
         sub: '',
         tasks: [task],
         timeout: '',
-        onTimeout: 'timeout, send 200 and continue, send 500 and continue',
+        onFailure: 'timeout, send 200 and continue, send 500 and continue',
     },
     instance: {
         sub: '',

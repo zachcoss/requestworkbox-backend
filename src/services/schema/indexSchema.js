@@ -108,37 +108,22 @@ const RequestSchema = new mongoose.Schema({
         type: [new mongoose.Schema({
             adapterId: Schema.Types.ObjectId,
             // 'continue', 'stopWorkflow', 'repeatAttempt',
-            onAdapterFailure: String,
+            onFailure: String,
         })],
         default: [{
-            onAdapterFailure: 'stopWorkflow',
+            onFailure: 'stopWorkflow',
         }],
     },
     responseAdapters: {
         type: [new mongoose.Schema({
             adapterId: Schema.Types.ObjectId,
             // 'continue', 'stopWorkflow', 'repeatAttempt',
-            onAdapterFailure: String,
+            onFailure: String,
         })],
         default: [{
-            onAdapterFailure: 'stopWorkflow',
+            onFailure: 'stopWorkflow',
         }],
     },
-}, { timestamps: true })
-
-const TaskSchema = new mongoose.Schema({
-    sub: { type: String, required: true },
-    request: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'Request',
-    },
-    ifTaskFails: {
-        type: String, enum: [
-            'continue', 'stopWorkflow', 'repeatAttempt',
-        ]
-    },
-    repeatTaskPerResultPath: [{ type: String }],
 }, { timestamps: true })
 
 const WorkflowSchema = new mongoose.Schema({
@@ -151,13 +136,21 @@ const WorkflowSchema = new mongoose.Schema({
         ref: 'Project',
     },
     
-    tasks: [{
-        type: Schema.Types.ObjectId,
-        required: false,
-        ref: 'Task',
-    }],
+    tasks: {
+        type: [new mongoose.Schema({
+            requestId: Schema.Types.ObjectId,
+            timeout: String,
+            // 'stop','send200Continue','send500Continue',
+            onFailure: String,
+            environment: Schema.Types.ObjectId,
+        })],
+        default: [{
+            timeout: '30seconds',
+            onFailure: 'stop',
+        }],
+    },
     timeout: { type: String, default: '30seconds' },
-    onTimeout: { type: String, enum: [
+    onFailure: { type: String, enum: [
         'stop','send200Continue','send500Continue',
     ], default: 'stop' },
 
@@ -198,7 +191,6 @@ module.exports = {
     'Environment': new mongoose.model('Environment', EnvironmentSchema),
     'Project': new mongoose.model('Project', ProjectSchema),
     'Request': new mongoose.model('Request', RequestSchema),
-    'Task': new mongoose.model('Task', TaskSchema),
     'Workflow': new mongoose.model('Workflow', WorkflowSchema),
     'Instance': new mongoose.model('Instance', InstanceSchema),
     'Stat': new mongoose.model('Stat', StatSchema),
