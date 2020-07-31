@@ -45,7 +45,7 @@ const EnvironmentSchema = new mongoose.Schema({
         type: [ environmentKeyValueSchema ],
         default: [ environmentKeyValueDefault() ]
     },
-})
+}, { timestamps: true })
 
 const ProjectSchema = new mongoose.Schema({
     sub: { type: String, required: true },
