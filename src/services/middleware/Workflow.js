@@ -28,7 +28,7 @@ module.exports = {
     },
     saveWorkflowChanges: async (req, res, next) => {
         try {
-            const updates = _.pick(req.body, ['name','timeout','onTimeout'])
+            const updates = _.pick(req.body, ['name','timeout','onTimeout','environment'])
             const findPayload = { sub: req.user.sub, _id: req.body._id }
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
             _.each(updates, (value, key) => {
