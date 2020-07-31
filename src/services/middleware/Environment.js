@@ -6,7 +6,7 @@ const
 module.exports = {
     getEnvironments: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.environmentId }
+            const findPayload = { sub: req.user.sub, project: req.body.projectId }
             const projection = '-__v'
             const environments = await IndexSchema.Environment.find(findPayload, projection)
             return res.status(200).send(environments)
@@ -51,7 +51,7 @@ module.exports = {
                 _id: mongoose.Types.ObjectId(),
                 key: '',
                 value: '',
-                acceptInput: false,
+                active: true,
             }
             environment[environmentDetailOption].push(newItem)
             await environment.save()

@@ -20,6 +20,7 @@ module.exports.config = function () {
     router.post('/new-request', Menu.newRequest)
     router.post('/new-workflow', Menu.newWorkflow)
     router.post('/new-project', Menu.newProject)
+    router.post('/new-environment', Menu.newEnvironment)
     // router.post('/add-to-workflow', Menu.addToWorkflow)
     router.post('/test-request', Menu.testRequest)
 

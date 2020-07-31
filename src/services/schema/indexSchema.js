@@ -18,12 +18,32 @@ const KeyValueDefault = () => {
     }
 }
 
+const environmentKeyValueSchema = new mongoose.Schema({
+    key: String,
+    value: String,
+    active: Boolean,
+})
+
+const environmentKeyValueDefault = () => {
+    return {
+        key: '',
+        value: '',
+        active: true,
+    }
+}
+
 const EnvironmentSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
     sub: { type: String, required: true },
-    name: { type: String, required: true },
+    name: { type: String, required: true, default: 'Untitled Environment' },
+    project: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Project',
+    },
     data: {
-        type: [ KeyValueSchema ],
-        default: [ KeyValueDefault() ]
+        type: [ environmentKeyValueSchema ],
+        default: [ environmentKeyValueDefault() ]
     },
 })
 
@@ -139,7 +159,13 @@ const WorkflowSchema = new mongoose.Schema({
     timeout: { type: String, default: '30seconds' },
     onTimeout: { type: String, enum: [
         'stop','send200Continue','send500Continue',
-    ], default: 'stop' }
+    ], default: 'stop' },
+
+    environment: {
+        type: Schema.Types.ObjectId,
+        required: false,
+        ref: 'Environment',
+    },
 }, { timestamps: true })
 
 const InstanceSchema = new mongoose.Schema({

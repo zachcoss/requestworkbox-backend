@@ -43,6 +43,16 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    newEnvironment: async (req, res, next) => {
+        try {
+            const environment = new IndexSchema.Environment({ sub: req.user.sub, project: req.body.projectId })
+            await environment.save()
+            return res.status(200).send({ _id: environment._id })
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
     // addToWorkflow: async (req, res, next) => {
     //     try {
     //         const task = new IndexSchema.Task({ sub: req.user.sub, request: req.body.requestId })
