@@ -28,7 +28,7 @@ module.exports = {
     },
     saveWorkflowChanges: async (req, res, next) => {
         try {
-            const updates = _.pick(req.body, ['name','timeout','onFailure','environment'])
+            const updates = _.pick(req.body, ['name','timeout','onFailure','environment','tasks'])
             const findPayload = { sub: req.user.sub, _id: req.body._id }
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
             _.each(updates, (value, key) => {
@@ -41,4 +41,33 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    addWorkflowTask: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body._id }
+            const workflow = await IndexSchema.Workflow.findOne(findPayload)
+            const newItem = {
+                _id: mongoose.Types.ObjectId(),
+                timeout: '30seconds',
+                onFailure: 'stop',
+            }
+            workflow.tasks.push(newItem)
+            await workflow.save()
+            return res.status(200).send(newItem)
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    deleteWorkflowTask: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body._id }
+            const workflow = await IndexSchema.Workflow.findOne(findPayload)
+            workflow.tasks.id(req.body.taskId).remove()
+            await workflow.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    }
 }

@@ -35,6 +35,8 @@ module.exports.config = function () {
     router.post('/get-workflows', Workflow.getWorkflows)
     router.post('/get-workflow-details', Workflow.getWorkflowDetails)
     router.post('/save-workflow-changes', Workflow.saveWorkflowChanges)
+    router.post('/add-workflow-task', Workflow.addWorkflowTask)
+    router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
 
     router.post('/get-environments', Environment.getEnvironments)
     router.post('/get-environment-details', Environment.getEnvironmentDetails)
