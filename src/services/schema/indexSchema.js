@@ -107,21 +107,31 @@ const RequestSchema = new mongoose.Schema({
     requestAdapters: {
         type: [new mongoose.Schema({
             adapterId: Schema.Types.ObjectId,
-            // 'continue', 'stopWorkflow', 'repeatAttempt',
+            timeout: String,
+            // 'stop','send200Continue','send500Continue',
             onFailure: String,
+            environment: Schema.Types.ObjectId,
+            inputs: Schema.Types.Mixed
         })],
         default: [{
-            onFailure: 'stopWorkflow',
+            timeout: '30seconds',
+            onFailure: 'stop',
+            inputs: {}
         }],
     },
     responseAdapters: {
         type: [new mongoose.Schema({
             adapterId: Schema.Types.ObjectId,
-            // 'continue', 'stopWorkflow', 'repeatAttempt',
+            timeout: String,
+            // 'stop','send200Continue','send500Continue',
             onFailure: String,
+            environment: Schema.Types.ObjectId,
+            inputs: Schema.Types.Mixed
         })],
         default: [{
-            onFailure: 'stopWorkflow',
+            timeout: '30seconds',
+            onFailure: 'stop',
+            inputs: {}
         }],
     },
 }, { timestamps: true })

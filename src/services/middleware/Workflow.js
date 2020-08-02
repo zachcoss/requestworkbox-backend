@@ -50,6 +50,7 @@ module.exports = {
                 _id: mongoose.Types.ObjectId(),
                 timeout: '30seconds',
                 onFailure: 'stop',
+                inputs: {}
             }
             workflow.tasks.push(newItem)
             await workflow.save()

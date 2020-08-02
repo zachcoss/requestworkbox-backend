@@ -81,7 +81,9 @@ module.exports = {
             const request = await IndexSchema.Request.findOne(findPayload)
             const newItem = {
                 _id: mongoose.Types.ObjectId(),
-                onFailure: 'stopWorkflow'
+                timeout: '30seconds',
+                onFailure: 'stop',
+                inputs: {}
             }
             request[adapterType].push(newItem)
             await request.save()
