@@ -143,10 +143,12 @@ const WorkflowSchema = new mongoose.Schema({
             // 'stop','send200Continue','send500Continue',
             onFailure: String,
             environment: Schema.Types.ObjectId,
+            inputs: Schema.Types.Mixed
         })],
         default: [{
             timeout: '30seconds',
             onFailure: 'stop',
+            inputs: {}
         }],
     },
     timeout: { type: String, default: '30seconds' },
