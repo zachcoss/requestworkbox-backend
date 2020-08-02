@@ -12,6 +12,7 @@ module.exports.config = function () {
 
     router.get('/', indexMiddleware.healthcheck)
     router.all('*', indexMiddleware.interceptor)
+    router.post('/start-workflow/:workflowId', indexMiddleware.startWorkflow)
 
     router.post('/get-project-name', Project.getProjectName)
     router.post('/update-project-name', Project.updateProjectName)
