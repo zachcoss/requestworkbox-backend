@@ -1,202 +1,115 @@
 const
     _ = require('lodash'),
     moment = require('moment'),
-    axios = require('axios'),
-    indexSchema = require('../schema/indexSchema');
+    Axios = require('axios'),
+    indexSchema = require('../schema/indexSchema'),
+    async = require('async'),
+    template = require('url-template'),
+    Agent = require('agentkeepalive'),
+    keepAliveAgent = new Agent({
+        maxSockets: 100,
+        maxFreeSockets: 10,
+        timeout: 60000, // active socket keepalive for 60 seconds
+        freeSocketTimeout: 30000, // free socket keepalive for 30 seconds
+    }),
+    axios = Axios.create({httpAgent: keepAliveAgent});
 
 module.exports = {
     start: async (instanceId) => {
 
-        console.log('instance start')
-
-        const instance = await indexSchema['instance'].findById(instanceId)
-
-        console.log(instance._id)
-
-        const results = {}
         const state = {
-            instance: instance._id,
-            sub: instance.sub,
-            workflow: instance.workflow._id,
-            task: '',
-            context: '',
-            code: '',
-            message: '',
+            instance: {},
+            workflow: {},
+            requests: {},
+            environments: {}
         }
 
-        function currentState() {
-            return { state: state, results: results }
+        async function getInstance() {
+            const instance = await indexSchema.Instance.findById(instanceId, '', {lean: true})
+            state.instance = instance
+            // console.log('instance found', instance)
+            return
         }
 
-        const runInstance = async () => {
-            // Create workflow
-            await new indexSchema['stat']({
-                instance: state.instance,
-                sub: state.sub,
-                componentId: state.workflow,
-                componentType: 'workflow',
-                start: moment().toDate(),
-            }).save()
+        async function getWorkflow() {
+            const workflow = await indexSchema.Workflow.findById(state.instance.workflow, '', {lean: true})
+            state.workflow = workflow
+            // console.log('workflow found', workflow)
+            return
+        }
 
-            // Loop through tasks
-            for (const task of instance.workflow.tasks) {
-                // Create task
-                state.task = task._id
-                await new indexSchema['stat']({
-                    instance: state.instance,
-                    sub: state.sub,
-                    componentId: task._id,
-                    componentType: 'task',
-                    start: moment().toDate(),
-                }).save()
+        async function getRequests() {
+            await async.eachOfSeries(state.workflow.tasks, async function (task, index) {
+                if (!task.requestId || task.requestId === '') return;
+                if (state.requests[task.requestId]) return;
+                const request = await indexSchema.Request.findById(task.requestId, '', {lean: true})
+                state.requests[task.requestId] = request
+            });
+        }
 
-                if (task.globalContext) {
-                    // Create global context
-                    state.context = task.globalContext._id
-                    await new indexSchema['stat']({
-                        instance: state.instance,
-                        sub: state.sub,
-                        componentId: task.globalContext._id,
-                        componentType: 'globalContext',
-                        start: moment().toDate(),
-                    }).save()
-
-                    const result = await axios({
-                        method: 'post',
-                        url: task.globalContext.url,
-                        data: currentState()
-                    })
-
-                    _.each(result.data, (value, key) => {
-                        state[key] = value
-                    })
-
-                    const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.globalContext._id })
-                    stat.code = result.status
-                    stat.message = result.statusText
-                    stat.end = moment().toDate()
-                    await stat.save()
-                }
-
-                if (task.authContext) {
-                    // Create global context
-                    state.context = task.authContext._id
-                    await new indexSchema['stat']({
-                        instance: state.instance,
-                        sub: state.sub,
-                        componentId: task.authContext._id,
-                        componentType: 'authContext',
-                        start: moment().toDate(),
-                    }).save()
-
-                    const result = await axios({
-                        method: 'post',
-                        url: task.authContext.url,
-                        data: currentState()
-                    })
-
-                    _.each(result.data, (value, key) => {
-                        state[key] = value
-                    })
-
-                    const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.authContext._id })
-                    stat.code = result.status
-                    stat.message = result.statusText
-                    stat.end = moment().toDate()
-                    await stat.save()
-                }
-
-                if (task.requestContext) {
-                    // Create global context
-                    state.context = task.requestContext._id
-                    await new indexSchema['stat']({
-                        instance: state.instance,
-                        sub: state.sub,
-                        componentId: task.requestContext._id,
-                        componentType: 'requestContext',
-                        start: moment().toDate(),
-                    }).save()
-
-                    const result = await axios({
-                        method: 'post',
-                        url: task.requestContext.url,
-                        data: currentState()
-                    })
-
-                    _.each(result.data, (value, key) => {
-                        state[key] = value
-                    })
-
-                    const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.requestContext._id })
-                    stat.code = result.status
-                    stat.message = result.statusText
-                    stat.end = moment().toDate()
-                    await stat.save()
-                }
-
-                // Perform Task Request
-
-                const taskResult = await axios({
-                    method: state.method || '',
-                    url: state.url || '',
+        async function getAdapters() {
+            await async.eachOfSeries(state.requests, async function (request, index) {
+                await async.eachOfSeries(request.requestAdapters, async function(requestAdapter, index) {
+                    if (!requestAdapter.adapterId || requestAdapter.adapterId === '') return;
+                    if (state.requests[requestAdapter.adapterId]) return;
+                    const adapter = await indexSchema.Request.findById(requestAdapter.adapterId, '', {lean: true})
+                    state.requests[requestAdapter.adapterId] = adapter
                 })
-
-                state.code = taskResult.status
-                state.message = taskResult.statusText
-                results[task._id] = taskResult.data
-
-                if (task.responseContext) {
-                    // Create global context
-                    state.context = task.responseContext._id
-                    await new indexSchema['stat']({
-                        instance: state.instance,
-                        sub: state.sub,
-                        componentId: task.responseContext._id,
-                        componentType: 'responseContext',
-                        start: moment().toDate(),
-                    }).save()
-
-                    const result = await axios({
-                        method: 'post',
-                        url: task.responseContext.url,
-                        data: currentState()
-                    })
-
-                    if (result.data && result.data.results && result.data.results[task._id]) results[task._id] = result.data.results[task._id]
-
-                    const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task.responseContext._id })
-                    stat.code = result.status
-                    stat.message = result.statusText
-                    stat.end = moment().toDate()
-                    await stat.save()
-                }
-
-                const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: task._id })
-                stat.code = taskResult.status
-                stat.message = taskResult.statusText
-                stat.end = moment().toDate()
-                await stat.save()
-
-            }
-
-            const stat = await indexSchema['stat'].findOne({ instance: state.instance, componentId: state.workflow })
-            stat.code = 200
-            stat.message = 'OK'
-            stat.end = moment().toDate()
-            await stat.save()
-
-            console.log('instance complete')
+                await async.eachOfSeries(request.responseAdapters, async function(responseAdapter, index) {
+                    if (!responseAdapter.adapterId || responseAdapter.adapterId === '') return;
+                    if (state.requests[responseAdapter.adapterId]) return;
+                    const adapter = await indexSchema.Request.findById(responseAdapter.adapterId, '', {lean: true})
+                    state.requests[responseAdapter.adapterId] = adapter
+                })
+            });
         }
 
+        async function getWorkflowEnvironment() {
+            if (!state.workflow.environment || state.workflow.environment === '') return;
+            if (state.environments[state.workflow.environment]) return;
+            const environment = await indexSchema.Environment.findById(state.workflow.environment, '', {lean: true})
+            state.environments[state.workflow.environment] = environment
+        }
+
+        async function getRequestEnvironments() {
+            await async.eachOfSeries(state.requests, async function(request, index) {
+                if (!request.environment || request.environment === '') return;
+                if (state.environments[request.environment]) return;
+                const environment = await indexSchema.Environment.findById(request.environment, '', {lean: true})
+                state.environments[request.environment] = environment
+            })
+        }
+
+        async function listRequestManifest() {
+            await async.eachOfSeries(state.workflow.tasks, async function(task, index) {
+                await async.eachOfSeries(state.requests[task.requestId].requestAdapters, async function(requestAdapter, index) {
+                    const request = state.requests[requestAdapter.adapterId]
+                    console.log(request.url.name)
+                })
+                console.log(state.requests[task.requestId].url.name)
+                await async.eachOfSeries(state.requests[task.requestId].responseAdapters, async function(responseAdapter, index) {
+                    const request = state.requests[responseAdapter.adapterId]
+                    console.log(request.url.name)
+                })
+            })
+        }
+
+        const init = async () => {
+            await getInstance() 
+            await getWorkflow()
+            await getRequests()
+            await getAdapters()
+            await getWorkflowEnvironment()
+            await getRequestEnvironments()
+            await listRequestManifest()
+            return
+        }
 
         try {
-            console.log('running instance')
-            const workflowLoop = await runInstance()
+            console.log('instance start')
+            await init()
         } catch(err) {
             console.log('err', err)
-
-            console.log(results)
-            console.log(state)
         }
 
     },

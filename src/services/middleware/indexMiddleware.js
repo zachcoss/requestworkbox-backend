@@ -75,24 +75,25 @@ module.exports = {
     },
     startWorkflow: async (req, res, next) => {
         try {
-            const workflow = await indexSchema['workflow'].findById(req.params.workflow)
+            const workflow = await indexSchema.Workflow.findById(req.params.workflowId)
 
             const payload = {
                 sub: req.user.sub,
                 workflow: workflow._id,
             }
-            const doc = new indexSchema['instance'](payload)
-            await doc.save()
+
+            const instance = new indexSchema.Instance(payload)
+            await instance.save()
 
             const instanceJob = new CronJob({
                 cronTime: moment().add(5, 'seconds'),
                 onTick: () => {
-                    instanceTools.start(doc._id)
+                    instanceTools.start(instance._id)
                 },
                 start: true,
             })
 
-            return res.status(200).send(doc)
+            return res.status(200).send(instance._id)
         } catch (err) {
             console.log(err)
             return res.status(500).send(err)
