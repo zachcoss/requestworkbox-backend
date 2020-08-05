@@ -4,7 +4,6 @@ const
     Axios = require('axios'),
     indexSchema = require('../schema/indexSchema'),
     async = require('async'),
-    template = require('url-template'),
     Agent = require('agentkeepalive'),
     keepAliveAgent = new Agent({
         maxSockets: 100,
@@ -80,14 +79,88 @@ module.exports = {
             })
         }
 
+
+        function templateRequest(request) {
+
+            // request adapters can only be templated
+            // using their own enviroment
+
+            // if adapter key allows input
+            // it can use values from the
+            // task or workflow environments
+
+            // template environment values
+
+            // const request = {
+            //     url: {
+            //         protocol: '',
+            //         method: '',
+            //         url: '',
+            //         name: ''
+            //     },
+            //     parameters: {},
+            //     query: {},
+            //     headers: {},
+            //     body: {}
+            // }
+        }
+        function applyInputs(requestId, inputs) {
+            const request = state.requests[requestId]
+            const details = _.pick(request, ['parameters','query','headers','body'])
+
+            const requestAfterInputs = {
+                url: {
+                    protocol: '',
+                    method: '',
+                    url: '',
+                    name: ''
+                },
+                parameters: {},
+                query: {},
+                headers: {},
+                body: {}
+            }
+
+            // Apply url
+            _.each(request.url, (value, key) => {
+                requestAfterInputs.url[key] = value
+            })
+
+            // Apply inputs
+            _.each(details, (detailArray, detailKey) => {
+                _.each(detailArray, (detailObj, detailIndex) => {
+                    if (detailObj.key === '') return;
+                    
+                    requestAfterInputs[detailKey][detailObj.key] = detailObj.value
+
+                    if (detailObj.acceptInput && inputs[detailKey] && inputs[detailKey][detailObj.key]) {
+                        requestAfterInputs[detailKey][detailObj.key] = inputs[detailKey][detailObj.key]
+                    }
+                })
+            })
+
+            return requestAfterInputs
+        }
+        function interpretRequestResponse() {
+
+        }
+        function interpretAdapterResponse() {
+
+        }
+        function createSnapshot() {
+
+        }
+
         async function listRequestManifest() {
             await async.eachOfSeries(state.workflow.tasks, async function(task, index) {
-                await async.eachOfSeries(state.requests[task.requestId].requestAdapters, async function(requestAdapter, index) {
-                    const request = state.requests[requestAdapter.adapterId]
-                    console.log(request.url.name)
+                const request = state.requests[task.requestId]
+                await async.eachOfSeries(request.requestAdapters, async function(requestAdapter, index) {
+                    const requestAfterInputs = applyInputs(requestAdapter.adapterId, requestAdapter.inputs)
+                    console.log(requestAfterInputs)
+                    throw new Error('err123')
                 })
-                console.log(state.requests[task.requestId].url.name)
-                await async.eachOfSeries(state.requests[task.requestId].responseAdapters, async function(responseAdapter, index) {
+                console.log(request.url.name)
+                await async.eachOfSeries(request.responseAdapters, async function(responseAdapter, index) {
                     const request = state.requests[responseAdapter.adapterId]
                     console.log(request.url.name)
                 })
