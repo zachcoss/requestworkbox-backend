@@ -4,7 +4,7 @@ const
     Axios = require('axios'),
     indexSchema = require('../schema/indexSchema'),
     async = require('async'),
-    asyncEachOf = async.eachOf,
+    asyncEachOf = async.eachSeries,
     Agent = require('agentkeepalive'),
     keepAliveAgent = new Agent({
         maxSockets: 100,
@@ -115,6 +115,35 @@ module.exports = {
                 })
 
                 return requestTemplate
+            },
+            performRequest: async function(requestTemplate) {
+
+            },
+            performRequestAdapter: async function(requestTemplate, taskId) {
+                const requestConfig = {
+                    url: requestTemplate.url.url,
+                    method: requestTemplate.url.method,
+                    headers: requestTemplate.headers,
+                    params: requestTemplate.query,
+                    data: requestTemplate.body,
+                }
+                try {
+                    console.log('starting request')
+                    const request = await axios(requestConfig)
+                    console.log('request complete')
+                    return _.pick(request, ['data', 'status', 'statusText'])
+                } catch(err) {
+                    console.log('request error', err)
+                    throw new Error(err)
+                }
+            },
+            processRequestAdapterResponse: async function(requestAdapterResponse, taskId) {
+                console.log('request adapter response', requestAdapterResponse)
+                // if body contains
+                // url, method, headers, params, data, update that template
+                console.log('request to change', snapshot[taskId].request)
+                const updates = _.pick(requestAdapterResponse.data, ['url', 'parameters', 'query','headers','body'])
+                console.log('updates to make ', updates)
             }
         }
 
@@ -132,6 +161,11 @@ module.exports = {
             startRequestAdapter: async function(taskId) {
                 const adapterIndex = _.size(snapshot[taskId].allRequestAdapters) - 1
                 const requestTemplate = snapshot[taskId].allRequestAdapters[adapterIndex]
+                console.log('starting request adapter', requestTemplate.url.name)
+                console.log(requestTemplate)
+                const requestAdapterResponse = await requestFunctions.performRequestAdapter(requestTemplate)
+                requestFunctions.processRequestAdapterResponse(requestAdapterResponse, taskId)
+                // throw new Error()
             },
             startResponseAdapter: async function(taskId) {
                 const adapterIndex = _.size(snapshot[taskId].allResponseAdapters) - 1
@@ -148,20 +182,24 @@ module.exports = {
                     allResponseAdapters: []
                 }
             },
+            startRequest: async function(taskId) {
+
+            },
             start: async function() {
-                await asyncEachOf(state.workflow.tasks, async function(task, taskIndex) {
+                for (const task of state.workflow.tasks) {
                     const request = state.requests[task.requestId]
-                    // initialize request
+                    console.log(request.url.name)
                     await initFunctions.initializeRequest(task._id, task.requestId, task.inputs)
-                    // loop through request adapters
-                    await asyncEachOf(request.requestAdapters, async function(requestAdapter, requestAdapterIndex) {
+
+                    for (const requestAdapter of request.requestAdapters) {
                         await initFunctions.initializeRequestAdapter(task._id, requestAdapter.adapterId, requestAdapter.inputs)
-                    })
-                    await asyncEachOf(request.responseAdapters, async function(responseAdapter, responseAdapterIndex) {
-                        await initFunctions.initializeResponseAdapter(task._id, responseAdapter.adapterId, responseAdapter.inputs)
-                    })
-                })
-            }
+                        await initFunctions.startRequestAdapter(task._id)
+                    }
+                    // for (const responseAdapter of request.responseAdapters) {
+                    //     await initFunctions.initializeResponseAdapter(task._id, responseAdapter.adapterId, responseAdapter.inputs)
+                    // }
+                }
+            },
         }
 
         const init = async () => {
