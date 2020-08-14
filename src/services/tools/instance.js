@@ -25,7 +25,7 @@ module.exports = {
             environments: {}
         }
 
-        const stateFunctions = {
+        const getFunctions = {
             getInstance: async function() {
                 const instance = await indexSchema.Instance.findById(instanceId, '', {lean: true})
                 state.instance = instance
@@ -78,8 +78,8 @@ module.exports = {
             }
         }
 
-        const requestFunctions = {
-            applyInputs: function(requestId, inputs = {}) {
+        const templateFunctions = {
+            templateInputs: function(requestId, inputs = {}) {
                 const request = state.requests[requestId]
                 const details = _.pick(request, ['parameters','query','headers','body'])
 
@@ -116,10 +116,10 @@ module.exports = {
 
                 return requestTemplate
             },
-            performRequest: async function(requestTemplate) {
+        }
 
-            },
-            performRequestAdapter: async function(requestTemplate, taskId) {
+        const runFunctions = {
+            runRequest: async function(requestTemplate, taskId) {
                 const requestConfig = {
                     url: requestTemplate.url.url,
                     method: requestTemplate.url.method,
@@ -137,43 +137,38 @@ module.exports = {
                     throw new Error(err)
                 }
             },
+        }
+
+        const processFunctions = {
             processRequestAdapterResponse: async function(requestAdapterResponse, taskId) {
                 console.log('request adapter response', requestAdapterResponse)
                 // if body contains
                 // url, method, headers, params, data, update that template
-                console.log('request to change', snapshot[taskId].request)
+                const requestToChange = snapshot[taskId].request
+                console.log('request to change', requestToChange)
                 const updates = _.pick(requestAdapterResponse.data, ['url', 'parameters', 'query','headers','body'])
                 console.log('updates to make ', updates)
-            }
+
+                // make updates
+                _.each(updates, (value, key) => {
+                    snapshot[taskId].request[key] = value
+                })
+
+            },
+            processRequestResponse: async function(requestResponse, taskId) {
+                console.log('request response', requestResponse)
+                snapshot[taskId].response = requestResponse.data
+            },
+            processResponseAdapterResponse: async function(responseAdapterResponse, taskId) {
+                console.log('response adapter response', responseAdapterResponse)
+                snapshot[taskId].response = responseAdapterResponse.data
+            },
         }
 
         const initFunctions = {
-            initializeRequestAdapter: async function(taskId, requestId, inputs) {
-                // apply inputs
-                const requestTemplate = await requestFunctions.applyInputs(requestId, inputs)
-                snapshot[taskId].allRequestAdapters.push(requestTemplate)
-            },
-            initializeResponseAdapter: async function(taskId, requestId, inputs) {
-                // apply inputs
-                const requestTemplate = await requestFunctions.applyInputs(requestId, inputs)
-                snapshot[taskId].allResponseAdapters.push(requestTemplate)
-            },
-            startRequestAdapter: async function(taskId) {
-                const adapterIndex = _.size(snapshot[taskId].allRequestAdapters) - 1
-                const requestTemplate = snapshot[taskId].allRequestAdapters[adapterIndex]
-                console.log('starting request adapter', requestTemplate.url.name)
-                console.log(requestTemplate)
-                const requestAdapterResponse = await requestFunctions.performRequestAdapter(requestTemplate)
-                requestFunctions.processRequestAdapterResponse(requestAdapterResponse, taskId)
-                // throw new Error()
-            },
-            startResponseAdapter: async function(taskId) {
-                const adapterIndex = _.size(snapshot[taskId].allResponseAdapters) - 1
-                const requestTemplate = snapshot[taskId].allResponseAdapters[adapterIndex]
-            },
             initializeRequest: async function(taskId, requestId, inputs) {
                 // apply inputs
-                const requestTemplate = await requestFunctions.applyInputs(requestId, inputs)
+                const requestTemplate = await templateFunctions.templateInputs(requestId, inputs)
                 // initialize snapshot
                 snapshot[taskId] = {
                     request: requestTemplate,
@@ -182,36 +177,80 @@ module.exports = {
                     allResponseAdapters: []
                 }
             },
-            startRequest: async function(taskId) {
-
+            initializeRequestAdapter: async function(taskId, requestId, inputs) {
+                // apply inputs
+                const requestTemplate = await templateFunctions.templateInputs(requestId, inputs)
+                // store template
+                snapshot[taskId].allRequestAdapters.push(requestTemplate)
             },
-            start: async function() {
-                for (const task of state.workflow.tasks) {
-                    const request = state.requests[task.requestId]
-                    console.log(request.url.name)
-                    await initFunctions.initializeRequest(task._id, task.requestId, task.inputs)
+            initializeResponseAdapter: async function(taskId, requestId, inputs) {
+                // apply inputs
+                const requestTemplate = await templateFunctions.templateInputs(requestId, inputs)
+                snapshot[taskId].allResponseAdapters.push(requestTemplate)
+            },
+        }
 
+        const startFunctions = {
+            startRequest: async function(taskId) {
+                const requestTemplate = snapshot[taskId].request
+                // perform request
+                const requestResponse = await runFunctions.runRequest(requestTemplate)
+                // perform updates
+                processFunctions.processRequestResponse(requestResponse, taskId)
+            },
+            
+            startRequestAdapter: async function(taskId) {
+                const requestAdapterTemplateIndex = _.size(snapshot[taskId].allRequestAdapters) - 1
+                // apply inputs
+                const requestAdapterTemplate = snapshot[taskId].allRequestAdapters[requestAdapterTemplateIndex]
+                // perform request
+                const requestAdapterResponse = await runFunctions.runRequest(requestAdapterTemplate)
+                // perform updates
+                processFunctions.processRequestAdapterResponse(requestAdapterResponse, taskId)
+            },
+
+            startResponseAdapter: async function(taskId) {
+                const responseAdapterTemplateIndex = _.size(snapshot[taskId].allResponseAdapters) - 1
+                // apply inputs
+                const responseAdapterTemplate = snapshot[taskId].allResponseAdapters[responseAdapterTemplateIndex]
+                // perform request
+                const responseAdapterResponse = await runFunctions.runRequest(responseAdapterTemplate)
+                // perform updates
+                processFunctions.processResponseAdapterResponse(responseAdapterResponse, taskId)
+            },
+
+            startWorkflow: async function() {
+                for (const task of state.workflow.tasks) {
+
+                    const request = state.requests[task.requestId]
+                    await initFunctions.initializeRequest(task._id, task.requestId, task.inputs)
+    
                     for (const requestAdapter of request.requestAdapters) {
                         await initFunctions.initializeRequestAdapter(task._id, requestAdapter.adapterId, requestAdapter.inputs)
-                        await initFunctions.startRequestAdapter(task._id)
+                        await startFunctions.startRequestAdapter(task._id)
                     }
-                    // for (const responseAdapter of request.responseAdapters) {
-                    //     await initFunctions.initializeResponseAdapter(task._id, responseAdapter.adapterId, responseAdapter.inputs)
-                    // }
+    
+                    await startFunctions.startRequest(task._id)
+
+                    for (const responseAdapter of request.responseAdapters) {
+                        await initFunctions.initializeResponseAdapter(task._id, responseAdapter.adapterId, responseAdapter.inputs)
+                        await startFunctions.startResponseAdapter(task._id)
+                    }
                 }
             },
         }
 
         const init = async () => {
             // initialize state
-            await stateFunctions.getInstance() 
-            await stateFunctions.getWorkflow()
-            await stateFunctions.getRequests()
-            await stateFunctions.getAdapters()
-            await stateFunctions.getWorkflowEnvironment()
-            await stateFunctions.getRequestEnvironments()
-            // begin
-            await initFunctions.start()
+            await getFunctions.getInstance() 
+            await getFunctions.getWorkflow()
+            await getFunctions.getRequests()
+            await getFunctions.getAdapters()
+            await getFunctions.getWorkflowEnvironment()
+            await getFunctions.getRequestEnvironments()
+
+            // start workflow
+            await startFunctions.startWorkflow()
             console.log(snapshot)
             return
         }
