@@ -1,7 +1,10 @@
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
-    IndexSchema = require('../schema/indexSchema');
+    IndexSchema = require('../schema/indexSchema'),
+    instanceTools = require('../tools/instance'),
+    moment = require('moment'),
+    CronJob = require('cron').CronJob;
 
 module.exports = {
     getWorkflows: async (req, res, next) => {
@@ -71,5 +74,33 @@ module.exports = {
             console.log(err)
             return res.status(500).send(err)
         }
-    }
+    },
+    startWorkflow: async (req, res, next) => {
+        try {
+            const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
+
+            const payload = {
+                sub: req.user.sub,
+                project: workflow.project,
+                workflow: workflow._id,
+                workflowName: workflow.name,
+            }
+
+            const instance = new IndexSchema.Instance(payload)
+            await instance.save()
+
+            const instanceJob = new CronJob({
+                cronTime: moment().add(5, 'seconds'),
+                onTick: () => {
+                    instanceTools.start(instance._id)
+                },
+                start: true,
+            })
+
+            return res.status(200).send(instance._id)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }

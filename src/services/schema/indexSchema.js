@@ -174,15 +174,23 @@ const WorkflowSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const InstanceSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
     sub: { type: String, required: true },
+    project: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Project',
+    },
     workflow: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Workflow',
     },
+    workflowName: { type: String },
 }, { timestamps: true })
 
 const StatSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
     instance: {
         type: Schema.Types.ObjectId,
         required: true,

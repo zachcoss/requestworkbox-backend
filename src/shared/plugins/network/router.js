@@ -6,13 +6,13 @@ const
     Project = require('../../../services/middleware/Project'),
     Request = require('../../../services/middleware/Request'),
     Workflow = require('../../../services/middleware/Workflow'),
-    Environment = require('../../../services/middleware/Environment');
+    Environment = require('../../../services/middleware/Environment'),
+    Statistic = require('../../../services/middleware/Statistic');
 
 module.exports.config = function () {
 
     router.get('/', indexMiddleware.healthcheck)
     router.all('*', indexMiddleware.interceptor)
-    router.post('/start-workflow/:workflowId', indexMiddleware.startWorkflow)
 
     router.post('/get-project-name', Project.getProjectName)
     router.post('/update-project-name', Project.updateProjectName)
@@ -38,12 +38,16 @@ module.exports.config = function () {
     router.post('/save-workflow-changes', Workflow.saveWorkflowChanges)
     router.post('/add-workflow-task', Workflow.addWorkflowTask)
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
+    router.post('/start-workflow/:workflowId', Workflow.startWorkflow)
 
     router.post('/get-environments', Environment.getEnvironments)
     router.post('/get-environment-details', Environment.getEnvironmentDetails)
     router.post('/save-environment-changes', Environment.saveEnvironmentChanges)
     router.post('/add-environment-detail-item', Environment.addEnvironmentDetailItem)
     router.post('/delete-environment-detail-item', Environment.deleteEnvironmentDetailItem)
+
+    router.post('/get-instances', Statistic.getInstances)
+    router.post('/get-statistics', Statistic.getStatistics)
 
     return router;
 }
