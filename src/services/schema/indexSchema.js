@@ -183,20 +183,19 @@ const InstanceSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const StatSchema = new mongoose.Schema({
-    sub: { type: String, required: true },
     instance: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'Workflow',
+        ref: 'Instance',
     },
     requestName: { type: String },
-    payloadType: { type: String, enum: [
-        'request','response'
-    ]},
-    size: { type: Number },
-    statusCode: { type: Number },
-    statusMessage: { type: String },
-    payload: { type: mongoose.Schema.Types.Mixed },
+    status: { type: Number },
+    statusText: { type: String },
+    requestType: { type: String },
+    requestPayload: { type: mongoose.Schema.Types.Mixed },
+    responsePayload: { type: mongoose.Schema.Types.Mixed },
+    startTime: { type: Date },
+    endTime: { type: Date },
 }, { timestamps: true })
 
 module.exports = {

@@ -118,8 +118,18 @@ module.exports = {
             },
         }
 
+        const statFunctions = {
+            createStat: async function(statConfig) {
+                try {
+                    await indexSchema.Stat(statConfig).save()
+                } catch(err) {
+                    console.log('stat error', err)
+                }
+            }
+        }
+
         const runFunctions = {
-            runRequest: async function(requestTemplate, taskId) {
+            runRequest: async function(requestTemplate, requestType) {
                 const requestConfig = {
                     url: requestTemplate.url.url,
                     method: requestTemplate.url.method,
@@ -127,11 +137,31 @@ module.exports = {
                     params: requestTemplate.query,
                     data: requestTemplate.body,
                 }
+                const statConfig = {
+                    instance: instanceId,
+                    requestName: requestTemplate.url.name,
+                    requestType: requestType,
+                    requestPayload: requestConfig,
+                    responsePayload: {},
+                    status: 0,
+                    statusText: '',
+                    startTime: new Date(),
+                    endTime: new Date(),
+                }
                 try {
                     console.log('starting request')
                     const request = await axios(requestConfig)
                     console.log('request complete')
-                    return _.pick(request, ['data', 'status', 'statusText'])
+                    const requestResults = _.pick(request, ['data', 'status', 'statusText'])
+                    
+                    statConfig.responsePayload = requestResults.data
+                    statConfig.status = requestResults.status
+                    statConfig.statusText = requestResults.statusText
+                    statConfig.endTime = new Date()
+
+                    await statFunctions.createStat(statConfig)
+
+                    return requestResults
                 } catch(err) {
                     console.log('request error', err)
                     throw new Error(err)
@@ -194,7 +224,7 @@ module.exports = {
             startRequest: async function(taskId) {
                 const requestTemplate = snapshot[taskId].request
                 // perform request
-                const requestResponse = await runFunctions.runRequest(requestTemplate)
+                const requestResponse = await runFunctions.runRequest(requestTemplate, 'request')
                 // perform updates
                 processFunctions.processRequestResponse(requestResponse, taskId)
             },
@@ -204,7 +234,7 @@ module.exports = {
                 // apply inputs
                 const requestAdapterTemplate = snapshot[taskId].allRequestAdapters[requestAdapterTemplateIndex]
                 // perform request
-                const requestAdapterResponse = await runFunctions.runRequest(requestAdapterTemplate)
+                const requestAdapterResponse = await runFunctions.runRequest(requestAdapterTemplate, 'requestAdapter')
                 // perform updates
                 processFunctions.processRequestAdapterResponse(requestAdapterResponse, taskId)
             },
@@ -214,7 +244,7 @@ module.exports = {
                 // apply inputs
                 const responseAdapterTemplate = snapshot[taskId].allResponseAdapters[responseAdapterTemplateIndex]
                 // perform request
-                const responseAdapterResponse = await runFunctions.runRequest(responseAdapterTemplate)
+                const responseAdapterResponse = await runFunctions.runRequest(responseAdapterTemplate, 'responseAdapter')
                 // perform updates
                 processFunctions.processResponseAdapterResponse(responseAdapterResponse, taskId)
             },
