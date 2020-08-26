@@ -48,6 +48,7 @@ const EnvironmentSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const ProjectSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
     sub: { type: String, required: true },
     name: { type: String, required: true, default: 'Untitled Project' },
 }, { timestamps: true })
