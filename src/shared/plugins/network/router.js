@@ -31,12 +31,9 @@ module.exports.config = function () {
     router.post('/delete-request-detail-item', Request.deleteRequestDetailItem)
     router.post('/add-request-adapter', Request.addRequestAdapter)
     router.post('/delete-request-adapter', Request.deleteRequestAdapter)
-    // archive/restore/delete request
     router.post('/archive-request', Request.archiveRequest)
     router.post('/restore-request', Request.restoreRequest)
     router.post('/delete-request', Request.deleteRequest)
-
-    // archive/restore/delete adapter
     router.post('/archive-adapter', Request.archiveAdapter)
     router.post('/restore-adapter', Request.restoreAdapter)
     router.post('/delete-adapter', Request.deleteAdapter)
@@ -47,6 +44,9 @@ module.exports.config = function () {
     router.post('/add-workflow-task', Workflow.addWorkflowTask)
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
     router.post('/start-workflow/:workflowId', Workflow.startWorkflow)
+    router.post('/archive-workflow', Workflow.archiveWorkflow)
+    router.post('/restore-workflow', Workflow.restoreWorkflow)
+    router.post('/delete-workflow', Workflow.deleteWorkflow)
 
     router.post('/get-environments', Environment.getEnvironments)
     router.post('/get-environment-details', Environment.getEnvironmentDetails)

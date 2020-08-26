@@ -75,6 +75,41 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    archiveWorkflow: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.workflowId }
+            const workflow = await IndexSchema.Workflow.findOne(findPayload)
+            workflow.active = false
+            await workflow.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    restoreWorkflow: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.workflowId }
+            const workflow = await IndexSchema.Workflow.findOne(findPayload)
+            workflow.active = true
+            await workflow.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    deleteWorkflow: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.workflowId }
+            const workflow = await IndexSchema.Workflow.findOne(findPayload)
+            await workflow.remove()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
     startWorkflow: async (req, res, next) => {
         try {
             const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
