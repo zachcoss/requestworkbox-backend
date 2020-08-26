@@ -74,4 +74,39 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    archiveEnvironment: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.environmentId }
+            const environment = await IndexSchema.Environment.findOne(findPayload)
+            environment.active = false
+            await environment.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    restoreEnvironment: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.environmentId }
+            const environment = await IndexSchema.Environment.findOne(findPayload)
+            environment.active = true
+            await environment.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    deleteEnvironment: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.environmentId }
+            const environment = await IndexSchema.Environment.findOne(findPayload)
+            await environment.remove()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }

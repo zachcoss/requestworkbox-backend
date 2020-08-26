@@ -53,6 +53,9 @@ module.exports.config = function () {
     router.post('/save-environment-changes', Environment.saveEnvironmentChanges)
     router.post('/add-environment-detail-item', Environment.addEnvironmentDetailItem)
     router.post('/delete-environment-detail-item', Environment.deleteEnvironmentDetailItem)
+    router.post('/archive-environment', Environment.archiveEnvironment)
+    router.post('/restore-environment', Environment.restoreEnvironment)
+    router.post('/delete-environment', Environment.deleteEnvironment)
 
     router.post('/get-instances', Statistic.getInstances)
     router.post('/get-statistics', Statistic.getStatistics)
