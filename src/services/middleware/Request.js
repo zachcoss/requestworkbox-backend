@@ -105,5 +105,40 @@ module.exports = {
             console.log(err)
             return res.status(500).send(err)
         }
-    }
+    },
+    archiveAdapter: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.adapterId }
+            const request = await IndexSchema.Request.findOne(findPayload)
+            request.active = false
+            await request.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    restoreAdapter: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.adapterId }
+            const request = await IndexSchema.Request.findOne(findPayload)
+            request.active = true
+            await request.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    deleteAdapter: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.adapterId }
+            const request = await IndexSchema.Request.findOne(findPayload)
+            await request.remove()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }

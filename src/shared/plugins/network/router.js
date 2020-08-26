@@ -22,7 +22,6 @@ module.exports.config = function () {
     router.post('/new-workflow', Menu.newWorkflow)
     router.post('/new-project', Menu.newProject)
     router.post('/new-environment', Menu.newEnvironment)
-    // router.post('/add-to-workflow', Menu.addToWorkflow)
     router.post('/test-request', Menu.testRequest)
 
     router.post('/get-requests', Request.getRequests)
@@ -32,6 +31,10 @@ module.exports.config = function () {
     router.post('/delete-request-detail-item', Request.deleteRequestDetailItem)
     router.post('/add-request-adapter', Request.addRequestAdapter)
     router.post('/delete-request-adapter', Request.deleteRequestAdapter)
+    // archive/delete
+    router.post('/archive-adapter', Request.archiveAdapter)
+    router.post('/restore-adapter', Request.restoreAdapter)
+    router.post('/delete-adapter', Request.deleteAdapter)
 
     router.post('/get-workflows', Workflow.getWorkflows)
     router.post('/get-workflow-details', Workflow.getWorkflowDetails)
