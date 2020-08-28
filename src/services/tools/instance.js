@@ -12,7 +12,8 @@ const
         timeout: 60000, // active socket keepalive for 60 seconds
         freeSocketTimeout: 30000, // free socket keepalive for 30 seconds
     }),
-    axios = Axios.create({httpAgent: keepAliveAgent});
+    axios = Axios.create({httpAgent: keepAliveAgent}),
+    socketService = require('./socket');
 
 module.exports = {
     start: async (instanceId) => {
@@ -127,6 +128,8 @@ module.exports = {
                     // save stat to instance
                     state.instance.stats.push(stat._id)
                     await state.instance.save()
+                    // emit to socket
+                    socketService.io.emit(state.instance.sub, statConfig);
                 } catch(err) {
                     console.log('stat error', err)
                     throw new Error('Error creating stat')

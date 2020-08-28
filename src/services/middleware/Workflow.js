@@ -125,7 +125,7 @@ module.exports = {
             await instance.save()
 
             const instanceJob = new CronJob({
-                cronTime: moment().add(5, 'seconds'),
+                cronTime: moment().add(1, 'seconds'),
                 onTick: () => {
                     instanceTools.start(instance._id)
                 },
