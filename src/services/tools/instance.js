@@ -27,7 +27,7 @@ module.exports = {
 
         const getFunctions = {
             getInstance: async function() {
-                const instance = await indexSchema.Instance.findById(instanceId, '', {lean: true})
+                const instance = await indexSchema.Instance.findById(instanceId)
                 state.instance = instance
                 // console.log('instance found', instance)
                 return
@@ -121,9 +121,15 @@ module.exports = {
         const statFunctions = {
             createStat: async function(statConfig) {
                 try {
-                    await indexSchema.Stat(statConfig).save()
+                    // save stat
+                    const stat = indexSchema.Stat(statConfig)
+                    await stat.save()
+                    // save stat to instance
+                    state.instance.stats.push(stat._id)
+                    await state.instance.save()
                 } catch(err) {
                     console.log('stat error', err)
+                    throw new Error('Error creating stat')
                 }
             }
         }

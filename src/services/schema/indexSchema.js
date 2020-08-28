@@ -188,6 +188,11 @@ const InstanceSchema = new mongoose.Schema({
         ref: 'Workflow',
     },
     workflowName: { type: String },
+    stats: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Stat',
+        autopopulate: true
+    }]
 }, { timestamps: true })
 
 const StatSchema = new mongoose.Schema({
