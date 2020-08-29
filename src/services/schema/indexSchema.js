@@ -93,37 +93,25 @@ const RequestSchema = new mongoose.Schema({
         requestType: { type: String, default: 'request'},
         // 'request', 'response', 'task'
         adapterType: { type: String, default: 'request'},
-        successCodes: String,
-        errorCodes: String,
     },
 
     requestAdapters: {
         type: [new mongoose.Schema({
             adapterId: Schema.Types.ObjectId,
-            timeout: String,
-            // 'stop','send200Continue','send500Continue',
-            onFailure: String,
             environment: Schema.Types.ObjectId,
             inputs: Schema.Types.Mixed
         })],
         default: [{
-            timeout: '30seconds',
-            onFailure: 'stop',
             inputs: {}
         }],
     },
     responseAdapters: {
         type: [new mongoose.Schema({
             adapterId: Schema.Types.ObjectId,
-            timeout: String,
-            // 'stop','send200Continue','send500Continue',
-            onFailure: String,
             environment: Schema.Types.ObjectId,
             inputs: Schema.Types.Mixed
         })],
         default: [{
-            timeout: '30seconds',
-            onFailure: 'stop',
             inputs: {}
         }],
     },

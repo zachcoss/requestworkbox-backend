@@ -81,8 +81,6 @@ module.exports = {
             const request = await IndexSchema.Request.findOne(findPayload)
             const newItem = {
                 _id: mongoose.Types.ObjectId(),
-                timeout: '30seconds',
-                onFailure: 'stop',
                 inputs: {}
             }
             request[adapterType].push(newItem)
