@@ -86,7 +86,6 @@ module.exports = {
 
                 const requestTemplate = {
                     url: {
-                        protocol: '',
                         method: '',
                         url: '',
                         name: ''

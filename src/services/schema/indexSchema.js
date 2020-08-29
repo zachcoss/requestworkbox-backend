@@ -62,7 +62,6 @@ const RequestSchema = new mongoose.Schema({
         ref: 'Project',
     },
     url: {
-        protocol: {type: String, default: 'HTTPS'},
         method: {type: String, default: 'GET'},
         url: {type: String, default: 'https://api.com'},
         name: {type: String, default: 'API'},
