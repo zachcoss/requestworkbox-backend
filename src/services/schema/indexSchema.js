@@ -87,14 +87,6 @@ const RequestSchema = new mongoose.Schema({
         type: [ KeyValueSchema ],
         default: [ KeyValueDefault() ]
     },
-    taskPermissions: {
-        requestAvailableAs: String,
-        responseAvailableAs: String,
-        // 'any', 'project', 'none'
-        requestAvailableTo: { type: String, default: 'none'},
-        // 'any', 'project', 'none'
-        responseAvailableTo: { type: String, default: 'none'},
-    },
     requestSettings: {
         description: String,
         // 'request','adapter'
