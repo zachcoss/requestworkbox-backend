@@ -164,6 +164,7 @@ const StatSchema = new mongoose.Schema({
     requestType: { type: String },
     requestPayload: { type: mongoose.Schema.Types.Mixed },
     responsePayload: { type: mongoose.Schema.Types.Mixed },
+    headers: { type: mongoose.Schema.Types.Mixed },
     startTime: { type: Date },
     endTime: { type: Date },
 }, { timestamps: true })

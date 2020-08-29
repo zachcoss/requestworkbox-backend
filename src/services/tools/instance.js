@@ -159,11 +159,12 @@ module.exports = {
                     console.log('starting request')
                     const request = await axios(requestConfig)
                     console.log('request complete')
-                    const requestResults = _.pick(request, ['data', 'status', 'statusText'])
+                    const requestResults = _.pick(request, ['data', 'status', 'statusText','headers'])
                     
                     statConfig.responsePayload = requestResults.data
                     statConfig.status = requestResults.status
                     statConfig.statusText = requestResults.statusText
+                    statConfig.headers = requestResults.headers
                     statConfig.endTime = new Date()
 
                     await statFunctions.createStat(statConfig)
