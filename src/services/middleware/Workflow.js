@@ -31,7 +31,7 @@ module.exports = {
     },
     saveWorkflowChanges: async (req, res, next) => {
         try {
-            const updates = _.pick(req.body, ['name','timeout','onFailure','environment','tasks'])
+            const updates = _.pick(req.body, ['name','tasks'])
             const findPayload = { sub: req.user.sub, _id: req.body._id }
             console.log(updates)
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
@@ -51,8 +51,6 @@ module.exports = {
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
             const newItem = {
                 _id: mongoose.Types.ObjectId(),
-                timeout: '30seconds',
-                onFailure: 'stop',
                 inputs: {}
             }
             workflow.tasks.push(newItem)
