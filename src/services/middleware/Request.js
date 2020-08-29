@@ -28,7 +28,7 @@ module.exports = {
     },
     saveRequestChanges: async (req, res, next) => {
         try {
-            const updates = _.pick(req.body, ['url','parameters', 'query', 'headers', 'cookies', 'body', 'requestSettings', 'requestAdapters', 'responseAdapters'])
+            const updates = _.pick(req.body, ['url', 'query', 'headers', 'body', 'requestSettings', 'requestAdapters', 'responseAdapters'])
             const findPayload = { sub: req.user.sub, _id: req.body._id }
             const request = await IndexSchema.Request.findOne(findPayload)
             _.each(updates, (value, key) => {

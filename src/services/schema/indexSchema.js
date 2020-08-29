@@ -67,19 +67,11 @@ const RequestSchema = new mongoose.Schema({
         url: {type: String, default: 'https://api.com'},
         name: {type: String, default: 'API'},
     },
-    parameters: {
-        type: [ KeyValueSchema ],
-        default: [ KeyValueDefault() ]
-    },
     query: {
         type: [ KeyValueSchema ],
         default: [ KeyValueDefault() ]
     },
     headers: {
-        type: [ KeyValueSchema ],
-        default: [ KeyValueDefault() ]
-    },
-    cookies: {
         type: [ KeyValueSchema ],
         default: [ KeyValueDefault() ]
     },
@@ -91,7 +83,7 @@ const RequestSchema = new mongoose.Schema({
         description: String,
         // 'request','adapter'
         requestType: { type: String, default: 'request'},
-        // 'request', 'response', 'task'
+        // 'request', 'response'
         adapterType: { type: String, default: 'request'},
     },
 

@@ -82,7 +82,7 @@ module.exports = {
         const templateFunctions = {
             templateInputs: function(requestId, inputs = {}) {
                 const request = state.requests[requestId]
-                const details = _.pick(request, ['parameters','query','headers','body'])
+                const details = _.pick(request, ['query','headers','body'])
 
                 const requestTemplate = {
                     url: {
@@ -91,7 +91,6 @@ module.exports = {
                         url: '',
                         name: ''
                     },
-                    parameters: {},
                     query: {},
                     headers: {},
                     body: {}
@@ -185,7 +184,7 @@ module.exports = {
                 // url, method, headers, params, data, update that template
                 const requestToChange = snapshot[taskId].request
                 console.log('request to change', requestToChange)
-                const updates = _.pick(requestAdapterResponse.data, ['url', 'parameters', 'query','headers','body'])
+                const updates = _.pick(requestAdapterResponse.data, ['url', 'query','headers','body'])
                 console.log('updates to make ', updates)
 
                 // make updates
