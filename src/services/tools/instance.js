@@ -13,7 +13,9 @@ const
         freeSocketTimeout: 30000, // free socket keepalive for 30 seconds
     }),
     axios = Axios.create({httpAgent: keepAliveAgent}),
-    socketService = require('./socket');
+    socketService = require('./socket'),
+    AWS = require('aws-sdk'),
+    S3 = new AWS.S3();
 
 module.exports = {
     start: async (instanceId) => {
@@ -126,6 +128,16 @@ module.exports = {
                     // save stat to instance
                     state.instance.stats.push(stat._id)
                     await state.instance.save()
+                    console.log('uploading to s3')
+                    // save full stat to s3
+                    await S3.upload({
+                        Bucket: "connector-storage",
+                        Key: `${state.instance.sub}/instance-statistics/${state.instance._id}/${stat._id}`,
+                        Body: JSON.stringify(statConfig)
+                    }).promise()
+                    // console.log(s3upload)
+                    console.log('done uploading')
+                    console.log('emitting to socket')
                     // emit to socket
                     socketService.io.emit(state.instance.sub, statConfig);
                 } catch(err) {
