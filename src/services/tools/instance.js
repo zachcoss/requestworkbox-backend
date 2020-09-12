@@ -122,26 +122,26 @@ module.exports = {
         const statFunctions = {
             createStat: async function(statConfig) {
                 try {
-                    // save stat
-                    const stat = indexSchema.Stat(statConfig)
-                    await stat.save()
-                    // save stat to instance
-                    state.instance.stats.push(stat._id)
+                    // Stat for Db
+                    const safeStat = _.omit(statConfig, ['requestPayload','responsePayload', 'headers'])
+                    const dbStat = indexSchema.Stat(safeStat)
+                    await dbStat.save()
+
+                    state.instance.stats.push(dbStat._id)
                     await state.instance.save()
-                    console.log('uploading to s3')
-                    // save full stat to s3
+
+                    // Stat for S3
+                    const completeStat = _.assign(statConfig, {_id: dbStat._id})
                     await S3.upload({
                         Bucket: "connector-storage",
-                        Key: `${state.instance.sub}/instance-statistics/${state.instance._id}/${stat._id}`,
-                        Body: JSON.stringify(statConfig)
+                        Key: `${state.instance.sub}/instance-statistics/${completeStat.instance}/${completeStat._id}`,
+                        Body: JSON.stringify(completeStat)
                     }).promise()
-                    // console.log(s3upload)
-                    console.log('done uploading')
-                    console.log('emitting to socket')
-                    // emit to socket
-                    socketService.io.emit(state.instance.sub, statConfig);
+
+                    // Emit
+                    socketService.io.emit(state.instance.sub, safeStat);
                 } catch(err) {
-                    console.log('stat error', err)
+                    console.log('create stat error', err)
                     throw new Error('Error creating stat')
                 }
             }
