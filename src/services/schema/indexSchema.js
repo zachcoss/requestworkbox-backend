@@ -91,7 +91,6 @@ const WorkflowSchema = new mongoose.Schema({
     tasks: {
         type: [new mongoose.Schema({
             requestId: Schema.Types.ObjectId,
-            environment: Schema.Types.ObjectId,
         })],
         default: [{}],
     },

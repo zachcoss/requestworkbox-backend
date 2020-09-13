@@ -25,21 +25,16 @@ module.exports = {
             instance: {},
             workflow: {},
             requests: {},
-            environments: {}
         }
 
         const getFunctions = {
             getInstance: async function() {
                 const instance = await indexSchema.Instance.findById(instanceId)
                 state.instance = instance
-                // console.log('instance found', instance)
-                return
             },
             getWorkflow: async function() {
                 const workflow = await indexSchema.Workflow.findById(state.instance.workflow, '', {lean: true})
                 state.workflow = workflow
-                // console.log('workflow found', workflow)
-                return
             },
             getRequests: async function() {
                 await asyncEachOf(state.workflow.tasks, async function (task, index) {
@@ -49,20 +44,6 @@ module.exports = {
                     state.requests[task.requestId] = request
                 });
             },
-            getWorkflowEnvironment: async function() {
-                if (!state.workflow.environment || state.workflow.environment === '') return;
-                if (state.environments[state.workflow.environment]) return;
-                const environment = await indexSchema.Environment.findById(state.workflow.environment, '', {lean: true})
-                state.environments[state.workflow.environment] = environment
-            },
-            getRequestEnvironments: async function() {
-                await asyncEachOf(state.requests, async function(request, index) {
-                    if (!request.environment || request.environment === '') return;
-                    if (state.environments[request.environment]) return;
-                    const environment = await indexSchema.Environment.findById(request.environment, '', {lean: true})
-                    state.environments[request.environment] = environment
-                })
-            }
         }
 
         const templateFunctions = {
@@ -211,8 +192,6 @@ module.exports = {
             await getFunctions.getInstance() 
             await getFunctions.getWorkflow()
             await getFunctions.getRequests()
-            await getFunctions.getWorkflowEnvironment()
-            await getFunctions.getRequestEnvironments()
 
             // start workflow
             await startFunctions.startWorkflow()
