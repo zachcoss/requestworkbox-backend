@@ -58,6 +58,7 @@ module.exports.config = function () {
     router.post('/delete-environment', Environment.deleteEnvironment)
 
     router.post('/get-instances', Statistic.getInstances)
+    router.post('/get-instance-detail', Statistic.getInstanceDetail)
 
     return router;
 }
