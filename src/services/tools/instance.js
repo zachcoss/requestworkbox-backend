@@ -114,7 +114,7 @@ module.exports = {
                     url: requestTemplate.url.url,
                     method: requestTemplate.url.method,
                     headers: requestTemplate.headers,
-                    params: requestTemplate.query,
+                    query: requestTemplate.query,
                     data: requestTemplate.body,
                 }
                 const statConfig = {
