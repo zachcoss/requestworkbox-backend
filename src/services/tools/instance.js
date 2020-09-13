@@ -114,7 +114,9 @@ module.exports = {
                     url: requestTemplate.url.url,
                     method: requestTemplate.url.method,
                     headers: requestTemplate.headers,
-                    query: requestTemplate.query,
+                    // axios requires params field rather than query
+                    params: requestTemplate.query,
+                    // axios requires data field rather than body
                     data: requestTemplate.body,
                 }
                 const statConfig = {
