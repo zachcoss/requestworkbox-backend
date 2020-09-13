@@ -51,7 +51,6 @@ module.exports = {
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
             const newItem = {
                 _id: mongoose.Types.ObjectId(),
-                inputs: {}
             }
             workflow.tasks.push(newItem)
             await workflow.save()

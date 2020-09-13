@@ -49,22 +49,6 @@ module.exports = {
                     state.requests[task.requestId] = request
                 });
             },
-            getAdapters: async function() {
-                await asyncEachOf(state.requests, async function (request, index) {
-                    await asyncEachOf(request.requestAdapters, async function(requestAdapter, index) {
-                        if (!requestAdapter.adapterId || requestAdapter.adapterId === '') return;
-                        if (state.requests[requestAdapter.adapterId]) return;
-                        const adapter = await indexSchema.Request.findById(requestAdapter.adapterId, '', {lean: true})
-                        state.requests[requestAdapter.adapterId] = adapter
-                    })
-                    await asyncEachOf(request.responseAdapters, async function(responseAdapter, index) {
-                        if (!responseAdapter.adapterId || responseAdapter.adapterId === '') return;
-                        if (state.requests[responseAdapter.adapterId]) return;
-                        const adapter = await indexSchema.Request.findById(responseAdapter.adapterId, '', {lean: true})
-                        state.requests[responseAdapter.adapterId] = adapter
-                    })
-                });
-            },
             getWorkflowEnvironment: async function() {
                 if (!state.workflow.environment || state.workflow.environment === '') return;
                 if (state.environments[state.workflow.environment]) return;
@@ -108,10 +92,6 @@ module.exports = {
                         if (detailObj.key === '') return;
                         
                         requestTemplate[detailKey][detailObj.key] = detailObj.value
-
-                        if (detailObj.acceptInput && inputs[detailKey] && inputs[detailKey][detailObj.key]) {
-                            requestTemplate[detailKey][detailObj.key] = inputs[detailKey][detailObj.key]
-                        }
                     })
                 })
 
@@ -190,28 +170,9 @@ module.exports = {
         }
 
         const processFunctions = {
-            processRequestAdapterResponse: async function(requestAdapterResponse, taskId) {
-                console.log('request adapter response', requestAdapterResponse)
-                // if body contains
-                // url, method, headers, params, data, update that template
-                const requestToChange = snapshot[taskId].request
-                console.log('request to change', requestToChange)
-                const updates = _.pick(requestAdapterResponse.data, ['url', 'query','headers','body'])
-                console.log('updates to make ', updates)
-
-                // make updates
-                _.each(updates, (value, key) => {
-                    snapshot[taskId].request[key] = value
-                })
-
-            },
             processRequestResponse: async function(requestResponse, taskId) {
                 console.log('request response', requestResponse)
                 snapshot[taskId].response = requestResponse.data
-            },
-            processResponseAdapterResponse: async function(responseAdapterResponse, taskId) {
-                console.log('response adapter response', responseAdapterResponse)
-                snapshot[taskId].response = responseAdapterResponse.data
             },
         }
 
@@ -223,20 +184,7 @@ module.exports = {
                 snapshot[taskId] = {
                     request: requestTemplate,
                     response: {},
-                    allRequestAdapters: [],
-                    allResponseAdapters: []
                 }
-            },
-            initializeRequestAdapter: async function(taskId, requestId, inputs) {
-                // apply inputs
-                const requestTemplate = await templateFunctions.templateInputs(requestId, inputs)
-                // store template
-                snapshot[taskId].allRequestAdapters.push(requestTemplate)
-            },
-            initializeResponseAdapter: async function(taskId, requestId, inputs) {
-                // apply inputs
-                const requestTemplate = await templateFunctions.templateInputs(requestId, inputs)
-                snapshot[taskId].allResponseAdapters.push(requestTemplate)
             },
         }
 
@@ -248,44 +196,12 @@ module.exports = {
                 // perform updates
                 processFunctions.processRequestResponse(requestResponse, taskId)
             },
-            
-            startRequestAdapter: async function(taskId) {
-                const requestAdapterTemplateIndex = _.size(snapshot[taskId].allRequestAdapters) - 1
-                // apply inputs
-                const requestAdapterTemplate = snapshot[taskId].allRequestAdapters[requestAdapterTemplateIndex]
-                // perform request
-                const requestAdapterResponse = await runFunctions.runRequest(requestAdapterTemplate, 'requestAdapter')
-                // perform updates
-                processFunctions.processRequestAdapterResponse(requestAdapterResponse, taskId)
-            },
-
-            startResponseAdapter: async function(taskId) {
-                const responseAdapterTemplateIndex = _.size(snapshot[taskId].allResponseAdapters) - 1
-                // apply inputs
-                const responseAdapterTemplate = snapshot[taskId].allResponseAdapters[responseAdapterTemplateIndex]
-                // perform request
-                const responseAdapterResponse = await runFunctions.runRequest(responseAdapterTemplate, 'responseAdapter')
-                // perform updates
-                processFunctions.processResponseAdapterResponse(responseAdapterResponse, taskId)
-            },
 
             startWorkflow: async function() {
                 for (const task of state.workflow.tasks) {
-
                     const request = state.requests[task.requestId]
                     await initFunctions.initializeRequest(task._id, task.requestId, task.inputs)
-    
-                    for (const requestAdapter of request.requestAdapters) {
-                        await initFunctions.initializeRequestAdapter(task._id, requestAdapter.adapterId, requestAdapter.inputs)
-                        await startFunctions.startRequestAdapter(task._id)
-                    }
-    
                     await startFunctions.startRequest(task._id)
-
-                    for (const responseAdapter of request.responseAdapters) {
-                        await initFunctions.initializeResponseAdapter(task._id, responseAdapter.adapterId, responseAdapter.inputs)
-                        await startFunctions.startResponseAdapter(task._id)
-                    }
                 }
             },
         }
@@ -295,7 +211,6 @@ module.exports = {
             await getFunctions.getInstance() 
             await getFunctions.getWorkflow()
             await getFunctions.getRequests()
-            await getFunctions.getAdapters()
             await getFunctions.getWorkflowEnvironment()
             await getFunctions.getRequestEnvironments()
 

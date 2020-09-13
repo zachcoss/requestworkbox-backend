@@ -5,18 +5,7 @@ const
 module.exports = {
     newRequest: async (req, res, next) => {
         try {
-            // const requestAllowedKeys = []
-            // IndexSchema.RequestSchema.eachPath((pathName) => requestAllowedKeys.push(pathName))
-            // const requestKeys = _.omit(requestAllowedKeys, '_id')
-
             const newRequest = { sub: req.user.sub, project: req.body.projectId }
-
-            if (req.body.adapter) {
-                newRequest['requestSettings'] = {
-                    requestType: 'adapter'
-                }
-            }
-
             const request = new IndexSchema.Request(newRequest)
             await request.save()
             return res.status(200).send({ _id: request._id })

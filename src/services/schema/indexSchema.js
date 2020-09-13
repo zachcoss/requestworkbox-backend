@@ -7,14 +7,12 @@ mongoose.plugin(require('mongoose-autopopulate'))
 const KeyValueSchema = new mongoose.Schema({
     key: String,
     value: String,
-    acceptInput: Boolean,
 })
 
 const KeyValueDefault = () => {
     return {
         key: '',
         value: '',
-        acceptInput: false,
     }
 }
 
@@ -78,34 +76,6 @@ const RequestSchema = new mongoose.Schema({
         type: [ KeyValueSchema ],
         default: [ KeyValueDefault() ]
     },
-    requestSettings: {
-        description: String,
-        // 'request','adapter'
-        requestType: { type: String, default: 'request'},
-        // 'request', 'response'
-        adapterType: { type: String, default: 'request'},
-    },
-
-    requestAdapters: {
-        type: [new mongoose.Schema({
-            adapterId: Schema.Types.ObjectId,
-            environment: Schema.Types.ObjectId,
-            inputs: Schema.Types.Mixed
-        })],
-        default: [{
-            inputs: {}
-        }],
-    },
-    responseAdapters: {
-        type: [new mongoose.Schema({
-            adapterId: Schema.Types.ObjectId,
-            environment: Schema.Types.ObjectId,
-            inputs: Schema.Types.Mixed
-        })],
-        default: [{
-            inputs: {}
-        }],
-    },
 }, { timestamps: true })
 
 const WorkflowSchema = new mongoose.Schema({
@@ -122,11 +92,8 @@ const WorkflowSchema = new mongoose.Schema({
         type: [new mongoose.Schema({
             requestId: Schema.Types.ObjectId,
             environment: Schema.Types.ObjectId,
-            inputs: Schema.Types.Mixed
         })],
-        default: [{
-            inputs: {}
-        }],
+        default: [{}],
     },
 }, { timestamps: true })
 
@@ -164,7 +131,6 @@ const StatSchema = new mongoose.Schema({
     requestType: { type: String },
     requestPayload: { type: mongoose.Schema.Types.Mixed },
     responsePayload: { type: mongoose.Schema.Types.Mixed },
-    headers: { type: mongoose.Schema.Types.Mixed },
     startTime: { type: Date },
     endTime: { type: Date },
 }, { timestamps: true })
