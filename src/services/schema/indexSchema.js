@@ -16,33 +16,16 @@ const KeyValueDefault = () => {
     }
 }
 
-const environmentKeyValueSchema = new mongoose.Schema({
-    key: String,
-    value: String,
-    active: Boolean,
-})
-
-const environmentKeyValueDefault = () => {
-    return {
-        key: '',
-        value: '',
-        active: true,
-    }
-}
-
-const EnvironmentSchema = new mongoose.Schema({
+const StorageSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     sub: { type: String, required: true },
-    name: { type: String, required: true, default: 'Untitled Environment' },
+    name: { type: String, required: true, default: 'Untitled Storage' },
     project: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Project',
     },
-    data: {
-        type: [ environmentKeyValueSchema ],
-        default: [ environmentKeyValueDefault() ]
-    },
+    valueType: { type: String, enum: ['text', 'file'] }
 }, { timestamps: true })
 
 const ProjectSchema = new mongoose.Schema({
@@ -135,7 +118,7 @@ const StatSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = {
-    'Environment': new mongoose.model('Environment', EnvironmentSchema),
+    'Storage': new mongoose.model('Storage', StorageSchema),
     'Project': new mongoose.model('Project', ProjectSchema),
     'Request': new mongoose.model('Request', RequestSchema),
     'Workflow': new mongoose.model('Workflow', WorkflowSchema),
