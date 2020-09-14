@@ -2,7 +2,8 @@ const
     _ = require('lodash'),
     mongoose = require('mongoose'),
     IndexSchema = require('../schema/indexSchema'),
-    moment = require('moment');
+    AWS = require('aws-sdk'),
+    S3 = new AWS.S3();
 
 module.exports = {
     getStorages: async (req, res, next) => {
@@ -16,11 +17,36 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    getStorageDetails: async (req, res, next) => {
+    getStorageDetail: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const projection = '-__v'
-            const storage = await IndexSchema.Storage.findOne(findPayload, projection)
+            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
+
+            const storageValue = await S3.getObject({
+                Bucket: "connector-storage",
+                Key: `${findPayload.sub}/storage/${findPayload._id}`,
+            }).promise()
+
+            const fullStorageValue = String(storageValue.Body)
+            storage.storageValue = fullStorageValue
+
+            return res.status(200).send(storage)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    updateStorageDetail: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.storageId }
+            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
+
+            await S3.upload({
+                Bucket: "connector-storage",
+                Key: `${findPayload.sub}/storage/${findPayload._id}`,
+                Body: req.body.storageValue
+            }).promise()
+
             return res.status(200).send(storage)
         } catch (err) {
             console.log(err)

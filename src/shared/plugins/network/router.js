@@ -43,7 +43,8 @@ module.exports.config = function () {
     router.post('/delete-workflow', Workflow.deleteWorkflow)
 
     router.post('/get-storages', Storage.getStorages)
-    router.post('/get-storage-details', Storage.getStorageDetails)
+    router.post('/get-storage-detail', Storage.getStorageDetail)
+    router.post('/update-storage-detail', Storage.updateStorageDetail)
     router.post('/save-storage-changes', Storage.saveStorageChanges)
     router.post('/archive-storage', Storage.archiveStorage)
     router.post('/restore-storage', Storage.restoreStorage)
