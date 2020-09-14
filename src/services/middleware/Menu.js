@@ -32,4 +32,14 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    newStorage: async (req, res, next) => {
+        try {
+            const storage = new IndexSchema.Storage({ sub: req.user.sub, project: req.body.projectId, storageType: req.body.storageType })
+            await storage.save()
+            return res.status(200).send({ _id: storage._id })
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }

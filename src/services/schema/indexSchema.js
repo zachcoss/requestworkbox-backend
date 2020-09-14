@@ -25,7 +25,7 @@ const StorageSchema = new mongoose.Schema({
         required: true,
         ref: 'Project',
     },
-    valueType: { type: String, enum: ['text', 'file'] }
+    storageType: { type: String, enum: ['text', 'file'] }
 }, { timestamps: true })
 
 const ProjectSchema = new mongoose.Schema({

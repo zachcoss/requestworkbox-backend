@@ -33,7 +33,6 @@ module.exports = {
         try {
             const updates = _.pick(req.body, ['name','tasks'])
             const findPayload = { sub: req.user.sub, _id: req.body._id }
-            console.log(updates)
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
             _.each(updates, (value, key) => {
                 workflow[key] = value
