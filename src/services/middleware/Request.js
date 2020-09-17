@@ -51,6 +51,7 @@ module.exports = {
                 _id: mongoose.Types.ObjectId(),
                 key: '',
                 value: '',
+                valueType: 'textInput',
             }
             request[requestDetailOption].push(newItem)
             await request.save()

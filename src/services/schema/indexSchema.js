@@ -7,12 +7,14 @@ mongoose.plugin(require('mongoose-autopopulate'))
 const KeyValueSchema = new mongoose.Schema({
     key: String,
     value: String,
+    valueType: { type: String, enum: ['textInput','storage','runtimeResult'] }
 })
 
 const KeyValueDefault = () => {
     return {
         key: '',
         value: '',
+        valueType: ''
     }
 }
 
