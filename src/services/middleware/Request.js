@@ -34,6 +34,10 @@ module.exports = {
             _.each(updates, (value, key) => {
                 request[key] = value
             })
+            // fix headers
+            _.each(request.headers, (headerObj) => {
+                headerObj.key = headerObj.key.replace(/ /g,'-')
+            })
             await request.save()
             return res.status(200).send()
         } catch (err) {

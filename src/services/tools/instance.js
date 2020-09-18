@@ -25,6 +25,7 @@ module.exports = {
             instance: {},
             workflow: {},
             requests: {},
+            storages: {},
         }
 
         const getFunctions = {
@@ -44,14 +45,47 @@ module.exports = {
                     state.requests[task.requestId] = request
                 });
             },
+            getStorages: async function() {
+                await asyncEachOf(state.requests, async function(request) {
+                    await asyncEachOf(request.query, async function (obj) {
+                        if (obj.valueType !== 'storage') return;
+                        if (state.storages[obj.value]) return;
+
+                        const storage = await indexSchema.Storage.findById(obj.value, '', {lean: true})
+                        state.storages[obj.value] = storage
+                    })
+                    await asyncEachOf(request.headers, async function (obj) {
+                        if (obj.valueType !== 'storage') return;
+                        if (state.storages[obj.value]) return;
+
+                        const storage = await indexSchema.Storage.findById(obj.value, '', {lean: true})
+                        state.storages[obj.value] = storage
+                    })
+                    await asyncEachOf(request.body, async function (obj) {
+                        if (obj.valueType !== 'storage') return;
+                        if (state.storages[obj.value]) return;
+                        
+                        const storage = await indexSchema.Storage.findById(obj.value, '', {lean: true})
+                        state.storages[obj.value] = storage
+                    })
+                })
+            },
+            getStorageDetails: async function() {
+                await asyncEachOf(state.storages, async function(storage) {
+                    const storageValue = await S3.getObject({
+                        Bucket: "connector-storage",
+                        Key: `${state.instance.sub}/storage/${storage._id}`,
+                    }).promise()
+                    const fullStorageValue = String(storageValue.Body)
+                    storage.storageValue = fullStorageValue
+                })
+            }
         }
 
         const templateFunctions = {
             templateInputs: function(requestId, inputs = {}) {
-                const request = state.requests[requestId]
-                const details = _.pick(request, ['query','headers','body'])
-
                 const requestTemplate = {
+                    requestId: requestId,
                     url: {
                         method: '',
                         url: '',
@@ -62,17 +96,32 @@ module.exports = {
                     body: {}
                 }
 
+                const request = state.requests[requestId]
+                const requestDetails = _.pick(request, ['query','headers','body'])
+
+                
+
                 // Apply url
                 _.each(request.url, (value, key) => {
                     requestTemplate.url[key] = value
                 })
 
                 // Apply inputs
-                _.each(details, (detailArray, detailKey) => {
-                    _.each(detailArray, (detailObj, detailIndex) => {
-                        if (detailObj.key === '') return;
+                _.each(requestDetails, (requestDetailArray, requestDetailKey) => {
+                    _.each(requestDetailArray, (requestDetailObj) => {
+                        if (requestDetailObj.key === '') return;
                         
-                        requestTemplate[detailKey][detailObj.key] = detailObj.value
+                        if (requestDetailObj.valueType === 'textInput') {
+                            requestTemplate[requestDetailKey][requestDetailObj.key] = requestDetailObj.value
+                        } else if (requestDetailObj.valueType === 'storage') {
+                            const storageId = requestDetailObj.value
+                            const storageValue = state.storages[storageId].storageValue
+                            requestTemplate[requestDetailKey][requestDetailObj.key] = storageValue
+                        } else if (requestDetailObj.valueType === 'runtimeResult') {
+                            
+                        } else if (requestDetailObj.valueType === 'incomingField') {
+                            
+                        }
                     })
                 })
 
@@ -123,6 +172,7 @@ module.exports = {
                     instance: instanceId,
                     requestName: requestTemplate.url.name,
                     requestType: requestType,
+                    requestId: requestTemplate.requestId,
                     requestPayload: requestConfig,
                     responsePayload: {},
                     status: 0,
@@ -194,6 +244,8 @@ module.exports = {
             await getFunctions.getInstance() 
             await getFunctions.getWorkflow()
             await getFunctions.getRequests()
+            await getFunctions.getStorages()
+            await getFunctions.getStorageDetails()
 
             // start workflow
             await startFunctions.startWorkflow()

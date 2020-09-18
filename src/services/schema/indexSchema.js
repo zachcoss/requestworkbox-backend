@@ -7,7 +7,7 @@ mongoose.plugin(require('mongoose-autopopulate'))
 const KeyValueSchema = new mongoose.Schema({
     key: String,
     value: String,
-    valueType: { type: String, enum: ['textInput','storage','runtimeResult'] }
+    valueType: { type: String, enum: ['textInput','storage','runtimeResult','incomingField'] }
 })
 
 const KeyValueDefault = () => {
@@ -113,6 +113,7 @@ const StatSchema = new mongoose.Schema({
     status: { type: Number },
     statusText: { type: String },
     requestType: { type: String },
+    requestId: { type: Schema.Types.ObjectId },
     requestPayload: { type: mongoose.Schema.Types.Mixed },
     responsePayload: { type: mongoose.Schema.Types.Mixed },
     startTime: { type: Date },
