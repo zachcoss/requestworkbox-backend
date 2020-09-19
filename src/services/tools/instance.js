@@ -18,7 +18,9 @@ const
     S3 = new AWS.S3();
 
 module.exports = {
-    start: async (instanceId) => {
+    // incoming fields is the request payload body
+    // sent through start-workflow and return-workflow
+    start: async (instanceId, incomingFields) => {
 
         const snapshot = {}
         const state = {
@@ -118,9 +120,17 @@ module.exports = {
                             const storageValue = state.storages[storageId].storageValue
                             requestTemplate[requestDetailKey][requestDetailObj.key] = storageValue
                         } else if (requestDetailObj.valueType === 'runtimeResult') {
-                            
+                            const runtimeResultName = requestDetailObj.value
+                            _.each(snapshot, (task) => {
+                                if (task.request.url.name === runtimeResultName) {
+                                    requestTemplate[requestDetailKey][requestDetailObj.key] = task.response
+                                }
+                            })
                         } else if (requestDetailObj.valueType === 'incomingField') {
-                            
+                            const incomingFieldName = requestDetailObj.value
+                            if (incomingFields[incomingFieldName]) {
+                                requestTemplate[requestDetailKey][requestDetailObj.key] = incomingFields[incomingFieldName]
+                            }  
                         }
                     })
                 })
@@ -249,15 +259,18 @@ module.exports = {
 
             // start workflow
             await startFunctions.startWorkflow()
-            console.log(snapshot)
-            return
+            return snapshot
         }
 
         try {
             console.log('instance start')
-            await init()
+            const finalSnapshot = await init()
+            console.log('instance complete')
+            console.log(finalSnapshot)
+            return finalSnapshot
         } catch(err) {
             console.log('err', err)
+            return err
         }
 
     },

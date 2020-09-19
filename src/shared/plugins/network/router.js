@@ -38,6 +38,7 @@ module.exports.config = function () {
     router.post('/add-workflow-task', Workflow.addWorkflowTask)
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
     router.post('/start-workflow/:workflowId', Workflow.startWorkflow)
+    router.post('/return-workflow/:workflowId', Workflow.returnWorkflow)
     router.post('/archive-workflow', Workflow.archiveWorkflow)
     router.post('/restore-workflow', Workflow.restoreWorkflow)
     router.post('/delete-workflow', Workflow.deleteWorkflow)
