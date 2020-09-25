@@ -36,6 +36,17 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    getStorageDetails: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.storageId }
+            const storage = await IndexSchema.Storage.findOne(findPayload)
+
+            return res.status(200).send(storage)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
     updateStorageDetail: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }

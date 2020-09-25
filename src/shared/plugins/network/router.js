@@ -45,6 +45,7 @@ module.exports.config = function () {
 
     router.post('/get-storages', Storage.getStorages)
     router.post('/get-storage-detail', Storage.getStorageDetail)
+    router.post('/get-storage-details', Storage.getStorageDetails)
     router.post('/update-storage-detail', Storage.updateStorageDetail)
     router.post('/save-storage-changes', Storage.saveStorageChanges)
     router.post('/archive-storage', Storage.archiveStorage)
