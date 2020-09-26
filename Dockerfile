@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+RUN mv .env.production .env
+
 EXPOSE 3000
 
 CMD ["node","app.js"]
