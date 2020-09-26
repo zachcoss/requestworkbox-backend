@@ -10,6 +10,6 @@ COPY . .
 
 RUN mv .env.production .env
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["node","app.js"]
