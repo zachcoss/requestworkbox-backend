@@ -4,8 +4,7 @@ const
     _ = require('lodash'),
     mongoose = require('mongoose'),
     IndexSchema = require('../schema/indexSchema'),
-    AWS = require('aws-sdk'),
-    S3 = new AWS.S3();
+    S3 = require('../tools/s3').S3;
 
 module.exports = {
     getInstances: async (req, res, next) => {

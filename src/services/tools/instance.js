@@ -14,8 +14,7 @@ const
     }),
     axios = Axios.create({httpAgent: keepAliveAgent}),
     socketService = require('./socket'),
-    AWS = require('aws-sdk'),
-    S3 = new AWS.S3();
+    S3 = require('../tools/s3').S3;
 
 module.exports = {
     // incoming fields is the request payload body
@@ -176,7 +175,7 @@ module.exports = {
                     socketService.io.emit(state.instance.sub, safeStat);
                     const socketEnd = new Date()
                     console.log('socket end', socketEnd - socketStart)
-                    
+
                 } catch(err) {
                     console.log('create stat error', err)
                     throw new Error('Error creating stat')
