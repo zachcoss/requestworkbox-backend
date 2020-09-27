@@ -1,7 +1,8 @@
 const 
     AWS = require('aws-sdk'),
     S3 = new AWS.S3({
-        useAccelerateEndpoint: true
+        region: 'us-east-1',
+        sslEnabled: true,
     });
 
 module.exports = {
