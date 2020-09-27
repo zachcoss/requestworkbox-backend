@@ -142,14 +142,24 @@ module.exports = {
         const statFunctions = {
             createStat: async function(statConfig) {
                 try {
+                    console.log('db stat start')
+                    const dbStatStart = new Date()
                     // Stat for Db
                     const safeStat = _.omit(statConfig, ['requestPayload','responsePayload', 'headers'])
                     const dbStat = indexSchema.Stat(safeStat)
                     await dbStat.save()
+                    const dbStatEnd = new Date()
+                    console.log('db stat end', dbStatEnd - dbStatStart)
 
+                    console.log('instance stat start')
+                    const instanceStatStart = new Date()
                     state.instance.stats.push(dbStat._id)
                     await state.instance.save()
+                    const instanceStatEnd = new Date()
+                    console.log('instance stat end', instanceStatEnd - instanceStatStart)
 
+                    console.log('s3 stat start')
+                    const s3StatStart = new Date()
                     // Stat for S3
                     const completeStat = _.assign(statConfig, {_id: dbStat._id})
                     await S3.upload({
@@ -157,9 +167,16 @@ module.exports = {
                         Key: `${state.instance.sub}/instance-statistics/${completeStat.instance}/${completeStat._id}`,
                         Body: JSON.stringify(completeStat)
                     }).promise()
+                    const s3StatEnd = new Date()
+                    console.log('s3 stat end', s3StatEnd - s3StatStart)
 
+                    console.log('socket start')
+                    const socketStart = new Date()
                     // Emit
                     socketService.io.emit(state.instance.sub, safeStat);
+                    const socketEnd = new Date()
+                    console.log('socket end', socketEnd - socketStart)
+                    
                 } catch(err) {
                     console.log('create stat error', err)
                     throw new Error('Error creating stat')
@@ -191,9 +208,13 @@ module.exports = {
                     endTime: new Date(),
                 }
                 try {
-                    console.log('starting request')
+                    console.log('request start')
+                    const requestStart = new Date()
                     const request = await axios(requestConfig)
-                    console.log('request complete')
+                    const requestEnd = new Date()
+                    console.log('request end', requestEnd - requestStart)
+
+
                     const requestResults = _.pick(request, ['data', 'status', 'statusText','headers'])
                     
                     statConfig.responsePayload = requestResults.data
