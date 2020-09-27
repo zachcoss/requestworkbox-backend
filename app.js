@@ -9,8 +9,6 @@ const logger = require('morgan');
 const cors = require('cors');
 
 const http = require('http');
-http.globalAgent.keepAlive = true;
-
 const app = express();
 const port = process.env.PORT
 
@@ -31,8 +29,6 @@ app.use('/', router.config())
 app.use(jwt.handler)
 
 const server = http.createServer(app);
-server.keepAliveTimeout = 61 * 1000;
-server.headersTimeout = 65 * 1000; // This should be bigger than `keepAliveTimeout + your server's expected response time`
 
 const socketService = require('./src/services/tools/socket')
 socketService.io = require('socket.io')(server);
