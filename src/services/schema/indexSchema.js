@@ -18,6 +18,13 @@ const KeyValueDefault = () => {
     }
 }
 
+const FeedbackSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
+    sub: { type: String, required: true },
+    feedbackType: { type: String, required: true, default: 'general' },
+    feedbackText: { type: String, },
+}, { timestamps: true })
+
 const StorageSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     sub: { type: String, required: true },
@@ -121,6 +128,7 @@ const StatSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = {
+    'Feedback': new mongoose.model('Feedback', FeedbackSchema),
     'Storage': new mongoose.model('Storage', StorageSchema),
     'Project': new mongoose.model('Project', ProjectSchema),
     'Request': new mongoose.model('Request', RequestSchema),

@@ -7,6 +7,7 @@ const
     Request = require('../../../services/middleware/Request'),
     Workflow = require('../../../services/middleware/Workflow'),
     Storage = require('../../../services/middleware/Storage'),
+    Feedback = require('../../../services/middleware/Feedback'),
     Statistic = require('../../../services/middleware/Statistic');
 
 module.exports.config = function () {
@@ -54,6 +55,8 @@ module.exports.config = function () {
 
     router.post('/get-instances', Statistic.getInstances)
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
+
+    router.post('/submit-feedback', Feedback.submitFeedback)
 
     return router;
 }
