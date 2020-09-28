@@ -28,7 +28,6 @@ module.exports = {
             await project.save()
             return res.status(200).send({ _id: project._id })
         } catch (err) {
-            console.log(err)
             return res.status(500).send(err)
         }
     },

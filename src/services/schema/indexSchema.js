@@ -14,7 +14,7 @@ const KeyValueDefault = () => {
     return {
         key: '',
         value: '',
-        valueType: ''
+        valueType: 'textInput'
     }
 }
 
