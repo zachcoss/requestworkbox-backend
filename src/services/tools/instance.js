@@ -270,15 +270,33 @@ module.exports = {
         }
 
         const init = async () => {
+
             // initialize state
             await getFunctions.getInstance() 
+
+            socketService.io.emit(state.instance.sub, {
+                statusUpdate: true,
+                status: 'Dowloading Request Information...'
+            });
+
             await getFunctions.getWorkflow()
             await getFunctions.getRequests()
             await getFunctions.getStorages()
             await getFunctions.getStorageDetails()
 
+            socketService.io.emit(state.instance.sub, {
+                statusUpdate: true,
+                status: 'Initializing Workflow...'
+            });
+
             // start workflow
             await startFunctions.startWorkflow()
+
+            socketService.io.emit(state.instance.sub, {
+                statusUpdate: true,
+                status: 'Workflow Complete'
+            });
+
             return snapshot
         }
 

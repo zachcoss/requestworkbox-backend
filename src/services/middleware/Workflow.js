@@ -4,6 +4,7 @@ const
     IndexSchema = require('../schema/indexSchema'),
     instanceTools = require('../tools/instance'),
     moment = require('moment'),
+    socketService = require('../tools/socket'),
     CronJob = require('cron').CronJob;
 
 module.exports = {
@@ -120,6 +121,11 @@ module.exports = {
             const instance = new IndexSchema.Instance(payload)
             await instance.save()
 
+            socketService.io.emit(req.user.sub, {
+                statusUpdate: true,
+                status: 'Received workflow request...'
+            });
+
             const instanceJob = new CronJob({
                 cronTime: moment().add(1, 'seconds'),
                 onTick: () => {
@@ -147,6 +153,11 @@ module.exports = {
 
             const instance = new IndexSchema.Instance(payload)
             await instance.save()
+
+            socketService.io.emit(req.user.sub, {
+                statusUpdate: true,
+                status: 'Received workflow request...'
+            });
 
             const workflowResult = await instanceTools.start(instance._id, req.body)
 
