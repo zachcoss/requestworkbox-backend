@@ -234,7 +234,7 @@ module.exports = {
 
         const processFunctions = {
             processRequestResponse: async function(requestResponse, taskId) {
-                console.log('request response', requestResponse)
+                // console.log('request response', requestResponse)
                 snapshot[taskId].response = requestResponse.data
             },
         }
@@ -304,7 +304,7 @@ module.exports = {
             console.log('instance start')
             const finalSnapshot = await init()
             console.log('instance complete')
-            console.log(finalSnapshot)
+            // console.log(finalSnapshot)
             return finalSnapshot
         } catch(err) {
             console.log('err', err)
