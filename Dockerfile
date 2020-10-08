@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . .
 
-RUN mv .env.production .env
+RUN bash movecreds
 
 EXPOSE 80
 
