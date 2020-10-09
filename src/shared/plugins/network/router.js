@@ -23,6 +23,7 @@ module.exports.config = function () {
     router.post('/new-workflow', Menu.newWorkflow)
     router.post('/new-project', Menu.newProject)
     router.post('/new-storage', Menu.newStorage)
+    router.post('/delete-entire-project', Menu.deleteEntireProject)
 
     router.post('/get-requests', Request.getRequests)
     router.post('/get-request-details', Request.getRequestDetails)

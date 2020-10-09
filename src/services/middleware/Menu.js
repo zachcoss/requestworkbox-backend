@@ -41,4 +41,37 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    deleteEntireProject: async (req, res, next) => {
+        try {
+            // Delete Requests
+            const requestDeletePayload = ({ sub: req.user.sub, project: req.body.projectId })
+            const requestDelete = await IndexSchema.Request.deleteMany(requestDeletePayload)
+            console.log(requestDelete.deletedCount)
+
+            // Delete Workflows
+            const workflowDeletePayload = ({ sub: req.user.sub, project: req.body.projectId })
+            const workflowDelete = await IndexSchema.Workflow.deleteMany(workflowDeletePayload)
+            console.log(workflowDelete.deletedCount)
+
+            // Delete Storage
+            const storageDeletePayload = ({ sub: req.user.sub, project: req.body.projectId })
+            const storageDelete = await IndexSchema.Storage.deleteMany(storageDeletePayload)
+            console.log(storageDelete.deletedCount)
+
+            // Archive Stats (Archive)
+            const statArchivePayload = { sub: req.user.sub, project: req.body.projectId, active: true }
+            const statArchive = await IndexSchema.Instance.updateMany(statArchivePayload, { active: false })
+            console.log(statArchive.nModified)
+
+            // Archive Project (Archive)
+            const project = await IndexSchema.Project.findOne({ sub: req.user.sub, _id: req.body.projectId })
+            project.active = false
+            await project.save()
+
+            return res.status(200).send('OK')
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }
