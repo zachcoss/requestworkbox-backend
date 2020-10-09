@@ -9,7 +9,7 @@ const
 module.exports = {
     getInstances: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId }
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, active: true }
             const projection = '-__v'
             // autopopulates stats
             const instances = await IndexSchema.Instance.find(findPayload, projection)
@@ -45,4 +45,14 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    deleteStats: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, active: true }
+            const statDelete = await IndexSchema.Instance.updateMany(findPayload, { active: false })
+            return res.status(200).send('OK')
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    }
 }

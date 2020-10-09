@@ -55,6 +55,7 @@ module.exports.config = function () {
 
     router.post('/get-instances', Statistic.getInstances)
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
+    router.post('/delete-stats', Statistic.deleteStats)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 
