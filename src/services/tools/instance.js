@@ -172,7 +172,17 @@ module.exports = {
                     console.log('socket start')
                     const socketStart = new Date()
                     // Emit
-                    socketService.io.emit(state.instance.sub, safeStat);
+                    socketService.io.emit(state.instance.sub, {
+                        eventDetail: 'Running...',
+                        instanceId: state.instance._id,
+                        workflowName: state.workflow.name,
+                        requestName: safeStat.requestName,
+                        statusCode: safeStat.status,
+                        duration: statConfig.duration,
+                        responseSize: statConfig.responseSize,
+                        message: 'Request Complete',
+                    });
+
                     const socketEnd = new Date()
                     console.log('socket end', socketEnd - socketStart)
 
@@ -219,8 +229,10 @@ module.exports = {
                     statConfig.responsePayload = requestResults.data
                     statConfig.status = requestResults.status
                     statConfig.statusText = requestResults.statusText
-                    statConfig.headers = requestResults.headers
                     statConfig.endTime = new Date()
+                    statConfig.duration = requestEnd - requestStart
+                    statConfig.responseSize = requestResults.headers['content-length']
+                    statConfig.responseType = requestResults.headers['content-type']
 
                     await statFunctions.createStat(statConfig)
 
@@ -272,29 +284,47 @@ module.exports = {
         const init = async () => {
 
             // initialize state
-            await getFunctions.getInstance() 
+            await getFunctions.getInstance()
+            await getFunctions.getWorkflow()
 
             socketService.io.emit(state.instance.sub, {
-                statusUpdate: true,
-                status: 'Dowloading Request Information...'
+                eventDetail: 'Loading...',
+                instanceId: state.instance._id,
+                workflowName: state.workflow.name,
+                requestName: '',
+                statusCode: '',
+                duration: '',
+                responseSize: '',
+                message: '',
             });
 
-            await getFunctions.getWorkflow()
             await getFunctions.getRequests()
             await getFunctions.getStorages()
             await getFunctions.getStorageDetails()
 
             socketService.io.emit(state.instance.sub, {
-                statusUpdate: true,
-                status: 'Initializing Workflow...'
+                eventDetail: 'Initializing...',
+                instanceId: state.instance._id,
+                workflowName: state.workflow.name,
+                requestName: '',
+                statusCode: '',
+                duration: '',
+                responseSize: '',
+                message: '',
             });
 
             // start workflow
             await startFunctions.startWorkflow()
 
             socketService.io.emit(state.instance.sub, {
-                statusUpdate: true,
-                status: 'Workflow Complete'
+                eventDetail: 'Complete',
+                instanceId: state.instance._id,
+                workflowName: state.workflow.name,
+                requestName: '',
+                statusCode: '',
+                duration: '',
+                responseSize: '',
+                message: '',
             });
 
             return snapshot

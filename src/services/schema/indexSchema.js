@@ -125,6 +125,9 @@ const StatSchema = new mongoose.Schema({
     responsePayload: { type: mongoose.Schema.Types.Mixed },
     startTime: { type: Date },
     endTime: { type: Date },
+    duration: { type: Number },
+    responseSize: { type: Number },
+    responseType: { type: String }, 
 }, { timestamps: true })
 
 module.exports = {

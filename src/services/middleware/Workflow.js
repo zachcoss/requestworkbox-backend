@@ -122,8 +122,14 @@ module.exports = {
             await instance.save()
 
             socketService.io.emit(req.user.sub, {
-                statusUpdate: true,
-                status: 'Received workflow request...'
+                eventDetail: 'Received...',
+                instanceId: instance._id,
+                workflowName: workflow.name,
+                requestName: '',
+                statusCode: '',
+                duration: '',
+                responseSize: '',
+                message: '',
             });
 
             const instanceJob = new CronJob({
@@ -155,8 +161,14 @@ module.exports = {
             await instance.save()
 
             socketService.io.emit(req.user.sub, {
-                statusUpdate: true,
-                status: 'Received workflow request...'
+                eventDetail: 'Received...',
+                instanceId: instance._id,
+                workflowName: workflow.name,
+                requestName: '',
+                statusCode: '',
+                duration: '',
+                responseSize: '',
+                message: '',
             });
 
             const workflowResult = await instanceTools.start(instance._id, req.body)
