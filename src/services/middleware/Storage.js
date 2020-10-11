@@ -1,6 +1,12 @@
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
+    util = require('util'),
+    path = require('path'),
+    fs = require('fs'),
+    readFile = util.promisify(fs.readFile),
+    writeFile = util.promisify(fs.writeFile),
+    mkdirp = require('mkdirp'),
     IndexSchema = require('../schema/indexSchema'),
     S3 = require('../tools/s3').S3;
 
@@ -16,7 +22,18 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    getStorageDetail: async (req, res, next) => {
+    getStorageDetails: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.storageId }
+            const storage = await IndexSchema.Storage.findOne(findPayload)
+
+            return res.status(200).send(storage)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    getTextStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }
             const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
@@ -35,10 +52,43 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    getStorageDetails: async (req, res, next) => {
+    getFileStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const storage = await IndexSchema.Storage.findOne(findPayload)
+            const storage = await IndexSchema.Storage.findOne(findPayload).lean()
+
+            const storageValue = await S3.getObject({
+                Bucket: "connector-storage",
+                Key: `${findPayload.sub}/storage/${findPayload._id}`,
+            }).promise()
+
+            const directoryPath = `./files/downloads/${storage.filename}`
+            const filePath = path.resolve(`${directoryPath}/${storage.originalname}`)
+
+            await mkdirp(directoryPath)
+
+            await writeFile(filePath, storageValue.Body)
+
+            return res.sendFile(filePath)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    updateTextStorageData: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.query.storageid }
+            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
+
+            if (!storage) throw new Error('Storage not found.')
+
+            const textData = Buffer.from(req.body.storageValue, 'utf8')
+
+            await S3.upload({
+                Bucket: "connector-storage",
+                Key: `${findPayload.sub}/storage/${findPayload._id}`,
+                Body: textData
+            }).promise()
 
             return res.status(200).send(storage)
         } catch (err) {
@@ -46,16 +96,26 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    updateStorageDetail: async (req, res, next) => {
+    updateFileStorageData: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
+            const findPayload = { sub: req.user.sub, _id: req.query.storageid }
+            const storage = await IndexSchema.Storage.findOne(findPayload, '_id')
+
+            if (!storage) throw new Error('Storage not found.')
+
+            const file = await readFile(req.file.path, 'utf8')
 
             await S3.upload({
                 Bucket: "connector-storage",
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
-                Body: req.body.storageValue
+                Body: file
             }).promise()
+
+            _.each(req.file, (value, key) => {
+                storage[key] = value
+            })
+
+            await storage.save()
 
             return res.status(200).send(storage)
         } catch (err) {

@@ -34,7 +34,13 @@ const StorageSchema = new mongoose.Schema({
         required: true,
         ref: 'Project',
     },
-    storageType: { type: String, enum: ['text', 'file'] }
+    storageType: { type: String, enum: ['text', 'file'] },
+    fieldname: { type: String, },
+    originalname: { type: String, },
+    encoding: { type: String, },
+    mimetype: { type: String, },
+    filename: { type: String, },
+    size: { type: Number, },
 }, { timestamps: true })
 
 const ProjectSchema = new mongoose.Schema({

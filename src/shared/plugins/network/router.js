@@ -1,6 +1,7 @@
 const 
     express = require('express'),
     router = express.Router(),
+    upload = require('../../../services/tools/multer').upload,
     indexMiddleware = require('../../../services/middleware/indexMiddleware'),
     Menu = require('../../../services/middleware/Menu'),
     Project = require('../../../services/middleware/Project'),
@@ -46,9 +47,11 @@ module.exports.config = function () {
     router.post('/delete-workflow', Workflow.deleteWorkflow)
 
     router.post('/get-storages', Storage.getStorages)
-    router.post('/get-storage-detail', Storage.getStorageDetail)
     router.post('/get-storage-details', Storage.getStorageDetails)
-    router.post('/update-storage-detail', Storage.updateStorageDetail)
+    router.post('/get-text-storage-data', Storage.getTextStorageData)
+    router.post('/get-file-storage-data', Storage.getFileStorageData)
+    router.post('/update-text-storage-data', Storage.updateTextStorageData)
+    router.post('/update-file-storage-data', upload.single('file'), Storage.updateFileStorageData)
     router.post('/save-storage-changes', Storage.saveStorageChanges)
     router.post('/archive-storage', Storage.archiveStorage)
     router.post('/restore-storage', Storage.restoreStorage)
