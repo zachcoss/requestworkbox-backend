@@ -18,6 +18,15 @@ const KeyValueDefault = () => {
     }
 }
 
+const UsageSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
+    sub: { type: String, required: true },
+    usageType: { type: String, enum: ['storage', 'request' ] },
+    usageDirection: { type: String, enum: ['up', 'down', 'time'] },
+    usageAmount: { type: Number },
+    usageLocation: { type: String, enum: ['api', 'instance'] }
+}, { timestamps: true })
+
 const FeedbackSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     sub: { type: String, required: true },
@@ -137,6 +146,7 @@ const StatSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = {
+    'Usage': new mongoose.model('Usage', UsageSchema),
     'Feedback': new mongoose.model('Feedback', FeedbackSchema),
     'Storage': new mongoose.model('Storage', StorageSchema),
     'Project': new mongoose.model('Project', ProjectSchema),

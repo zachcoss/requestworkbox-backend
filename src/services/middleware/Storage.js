@@ -46,6 +46,15 @@ module.exports = {
             const fullStorageValue = String(storageValue.Body)
             storage.storageValue = fullStorageValue
 
+            const usage = new IndexSchema.Usage({
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'down',
+                usageAmount: Number(storageValue.ContentLength),
+                usageLocation: 'api'
+            })
+            await usage.save()
+
             return res.status(200).send(storage)
         } catch (err) {
             console.log(err)
@@ -55,7 +64,7 @@ module.exports = {
     getFileStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const storage = await IndexSchema.Storage.findOne(findPayload).lean()
+            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
 
             const storageValue = await S3.getObject({
                 Bucket: "connector-storage",
@@ -66,8 +75,16 @@ module.exports = {
             const filePath = path.resolve(`${directoryPath}/${storage.originalname}`)
 
             await mkdirp(directoryPath)
-
             await writeFile(filePath, storageValue.Body)
+
+            const usage = new IndexSchema.Usage({
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'down',
+                usageAmount: Number(storageValue.ContentLength),
+                usageLocation: 'api'
+            })
+            await usage.save()
 
             return res.sendFile(filePath)
         } catch (err) {
@@ -78,7 +95,7 @@ module.exports = {
     updateTextStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.query.storageid }
-            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
+            const storage = await IndexSchema.Storage.findOne(findPayload, '_id')
 
             if (!storage) throw new Error('Storage not found.')
 
@@ -89,6 +106,18 @@ module.exports = {
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
                 Body: textData
             }).promise()
+
+            storage['size'] = Number(textData.byteLength)
+            await storage.save()
+
+            const usage = new IndexSchema.Usage({
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'up',
+                usageAmount: Number(textData.byteLength),
+                usageLocation: 'api'
+            })
+            await usage.save()
 
             return res.status(200).send(storage)
         } catch (err) {
@@ -114,8 +143,16 @@ module.exports = {
             _.each(req.file, (value, key) => {
                 storage[key] = value
             })
-
             await storage.save()
+
+            const usage = new IndexSchema.Usage({
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'up',
+                usageAmount: Number(req.file.size),
+                usageLocation: 'api'
+            })
+            await usage.save()
 
             return res.status(200).send(storage)
         } catch (err) {

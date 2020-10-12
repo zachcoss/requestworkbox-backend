@@ -52,21 +52,21 @@ module.exports = {
                         if (obj.valueType !== 'storage') return;
                         if (state.storages[obj.value]) return;
 
-                        const storage = await indexSchema.Storage.findById(obj.value, '', {lean: true})
+                        const storage = await indexSchema.Storage.findById(obj.value, 'storageType mimetype size', {lean: true})
                         state.storages[obj.value] = storage
                     })
                     await asyncEachOf(request.headers, async function (obj) {
                         if (obj.valueType !== 'storage') return;
                         if (state.storages[obj.value]) return;
 
-                        const storage = await indexSchema.Storage.findById(obj.value, '', {lean: true})
+                        const storage = await indexSchema.Storage.findById(obj.value, 'storageType mimetype size', {lean: true})
                         state.storages[obj.value] = storage
                     })
                     await asyncEachOf(request.body, async function (obj) {
                         if (obj.valueType !== 'storage') return;
                         if (state.storages[obj.value]) return;
                         
-                        const storage = await indexSchema.Storage.findById(obj.value, '', {lean: true})
+                        const storage = await indexSchema.Storage.findById(obj.value, 'storageType mimetype size', {lean: true})
                         state.storages[obj.value] = storage
                     })
                 })
@@ -77,8 +77,26 @@ module.exports = {
                         Bucket: "connector-storage",
                         Key: `${state.instance.sub}/storage/${storage._id}`,
                     }).promise()
-                    const fullStorageValue = String(storageValue.Body)
-                    storage.storageValue = fullStorageValue
+
+                    if (storage.storageType === 'text') {
+                        const fullStorageValue = String(storageValue.Body)
+                        storage.storageValue = fullStorageValue
+                    } else if (storage.storageType === 'file') {
+                        if (storage.mimetype === 'text/plain') {
+                            storage.storageValue = String(storageValue.Body)
+                        } else if (storage.mimetype === 'application/json') {
+                            storage.storageValue = JSON.parse(storageValue.Body)
+                        }
+                    }
+
+                    const usage = new indexSchema.Usage({
+                        sub: state.instance.sub,
+                        usageType: 'storage',
+                        usageDirection: 'down',
+                        usageAmount: Number(storage.size),
+                        usageLocation: 'instance'
+                    })
+                    await usage.save()
                 })
             }
         }
@@ -221,8 +239,38 @@ module.exports = {
                     const requestStart = new Date()
                     const request = await axios(requestConfig)
                     const requestEnd = new Date()
-                    console.log('request end', requestEnd - requestStart)
+                    const requestTime = requestEnd - requestStart
+                    console.log('request end', requestTime)
 
+                    const requestLength = request.config.headers['Content-Length']
+                    const responseLength = request.headers['content-length']
+
+                    const requestUsageUp = new indexSchema.Usage({
+                        sub: state.instance.sub,
+                        usageType: 'request',
+                        usageDirection: 'up',
+                        usageAmount: Number(requestLength),
+                        usageLocation: 'instance'
+                    })
+                    await requestUsageUp.save()
+
+                    const requestUsageDown = new indexSchema.Usage({
+                        sub: state.instance.sub,
+                        usageType: 'request',
+                        usageDirection: 'down',
+                        usageAmount: Number(responseLength),
+                        usageLocation: 'instance'
+                    })
+                    await requestUsageDown.save()
+
+                    const requestUsageTime = new indexSchema.Usage({
+                        sub: state.instance.sub,
+                        usageType: 'request',
+                        usageDirection: 'time',
+                        usageAmount: Number(requestTime),
+                        usageLocation: 'instance'
+                    })
+                    await requestUsageTime.save()
 
                     const requestResults = _.pick(request, ['data', 'status', 'statusText','headers'])
                     
