@@ -9,6 +9,7 @@ const
     Workflow = require('../../../services/middleware/Workflow'),
     Instance = require('../../../services/middleware/Instance'),
     Storage = require('../../../services/middleware/Storage'),
+    Billing = require('../../../services/middleware/Billing'),
     Feedback = require('../../../services/middleware/Feedback'),
     Statistic = require('../../../services/middleware/Statistic');
 
@@ -63,6 +64,9 @@ module.exports.config = function () {
     router.post('/get-instances', Statistic.getInstances)
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
     router.post('/delete-stats', Statistic.deleteStats)
+
+    router.post('/get-account-type', Billing.getAccountType)
+    router.post('/update-account-type', Billing.updateAccountType)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 
