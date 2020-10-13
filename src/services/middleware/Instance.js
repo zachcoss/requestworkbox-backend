@@ -10,18 +10,78 @@ const
 module.exports = {
     returnWorkflow: async (req, res, next) => {
         try {
+            // Find Queue
             const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
+            if (!workflow) return res.status(500)
 
-            const payload = {
+            // Check Account Type
+            const billing = await IndexSchema.Billing.findOne({ sub: req.user.sub })
+            if (!billing || !billing.accountType) return res.status(500)
+            
+            const accountType = billing.accountType
+
+            // Check Last Returned and Count
+            const count = billing.returnWorkflowCount || 0
+            const currentTime = moment(new Date())
+            const lastTime = moment(billing.returnWorkflowLast || new Date())
+            const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
+            console.log('Seconds since last', secondsSinceLast)
+
+            // Rate Limit
+            if (accountType === 'free') {
+                const rateLimitCount = 1
+                const rateLimitSeconds = 5 * 60
+                const rateLimit = secondsSinceLast < rateLimitSeconds
+                const retryAfter = rateLimitSeconds - secondsSinceLast
+
+                if (count >= rateLimitCount && rateLimit) {
+                    const returnHeader = { 'Retry-After': retryAfter }
+                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
+                }
+            } else if (accountType === 'standard') {
+                const rateLimitCount = 5
+                const rateLimitSeconds = 5 * 60
+                const rateLimit = secondsSinceLast < rateLimitSeconds
+                const retryAfter = rateLimitSeconds - secondsSinceLast
+
+                if (count >= rateLimitCount && rateLimit) {
+                    const returnHeader = { 'Retry-After': retryAfter }
+                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
+                }
+            } else if (accountType === 'developer') {
+                const rateLimitCount = 10
+                const rateLimitSeconds = 5 * 60
+                const rateLimit = secondsSinceLast < rateLimitSeconds
+                const retryAfter = rateLimitSeconds - secondsSinceLast
+
+                if (count >= rateLimitCount && rateLimit) {
+                    const returnHeader = { 'Retry-After': retryAfter }
+                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
+                }
+            } else if (accountType === 'professional') {
+                const rateLimitCount = 25
+                const rateLimitSeconds = 5 * 60
+                const rateLimit = secondsSinceLast < rateLimitSeconds
+                const retryAfter = rateLimitSeconds - secondsSinceLast
+
+                if (count >= rateLimitCount && rateLimit) {
+                    const returnHeader = { 'Retry-After': retryAfter }
+                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
+                }
+            } else {
+                return res.status(500)
+            }
+
+            // Create instance
+            const instance = new IndexSchema.Instance({
                 sub: req.user.sub,
                 project: workflow.project,
                 workflow: workflow._id,
                 workflowName: workflow.name,
-            }
-
-            const instance = new IndexSchema.Instance(payload)
+            })
             await instance.save()
 
+            // Emit Socket
             socketService.io.emit(req.user.sub, {
                 eventDetail: 'Received...',
                 instanceId: instance._id,
@@ -33,8 +93,15 @@ module.exports = {
                 message: '',
             });
 
+            // Set Last Return Workflow
+            billing.returnWorkflowLast = new Date()
+            billing.returnWorkflowCount = 1
+            await billing.save()
+
+            // Start Instance
             const workflowResult = await instanceTools.start(instance._id, req.body)
 
+            // Return Workflow
             return res.status(200).send(workflowResult)
         } catch (err) {
             console.log(err)
@@ -43,6 +110,10 @@ module.exports = {
     },
     queueWorklow: async (req, res, next) => {
         try {
+            // check account type
+            // check last queue workflow
+
+            // add to queue
             const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
 
             const payload = {
@@ -82,6 +153,10 @@ module.exports = {
     },
     scheduleWorkflow: async (req, res, next) => {
         try {
+            // check account type
+            // check last schedule workflow
+
+            // add to schedule
             const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
 
             const payload = {

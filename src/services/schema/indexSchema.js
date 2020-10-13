@@ -22,9 +22,15 @@ const BillingSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     sub: { type: String, required: true },
     accountType: { type: String, default: 'free', enum: ['free','standard','developer','professional'] },
-    lastReturnWorkfow: { type: Date },
-    lastQueueWorkflow: { type: Date },
-    lastScheduleWorkflow: { type: Date },
+    // return workflow
+    returnWorkflowLast: { type: Date },
+    returnWorkflowCount: { type: Number },
+    // queue workflow
+    queueWorkflowLast: { type: Date },
+    queueWorkflowCount: { type: Number },
+    // schedule workflow
+    scheduleWorkflowLast: { type: Date },
+    scheduleWorkflowCount: { type: Number },
 }, { timestamps: true })
 
 const UsageSchema = new mongoose.Schema({
