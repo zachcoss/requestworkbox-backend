@@ -18,6 +18,15 @@ const KeyValueDefault = () => {
     }
 }
 
+const BillingSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true },
+    sub: { type: String, required: true },
+    accountType: { type: String, default: 'free', enum: ['free','standard','developer','professional'] },
+    lastReturnWorkfow: { type: Date },
+    lastQueueWorkflow: { type: Date },
+    lastScheduleWorkflow: { type: Date },
+}, { timestamps: true })
+
 const UsageSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     sub: { type: String, required: true },
@@ -147,6 +156,7 @@ const StatSchema = new mongoose.Schema({
 
 module.exports = {
     'Usage': new mongoose.model('Usage', UsageSchema),
+    'Billing': new mongoose.model('Billing', BillingSchema),
     'Feedback': new mongoose.model('Feedback', FeedbackSchema),
     'Storage': new mongoose.model('Storage', StorageSchema),
     'Project': new mongoose.model('Project', ProjectSchema),

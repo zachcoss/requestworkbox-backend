@@ -7,6 +7,7 @@ const
     Project = require('../../../services/middleware/Project'),
     Request = require('../../../services/middleware/Request'),
     Workflow = require('../../../services/middleware/Workflow'),
+    Instance = require('../../../services/middleware/Instance'),
     Storage = require('../../../services/middleware/Storage'),
     Feedback = require('../../../services/middleware/Feedback'),
     Statistic = require('../../../services/middleware/Statistic');
@@ -40,11 +41,13 @@ module.exports.config = function () {
     router.post('/save-workflow-changes', Workflow.saveWorkflowChanges)
     router.post('/add-workflow-task', Workflow.addWorkflowTask)
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
-    router.post('/start-workflow/:workflowId', Workflow.startWorkflow)
-    router.post('/return-workflow/:workflowId', Workflow.returnWorkflow)
     router.post('/archive-workflow', Workflow.archiveWorkflow)
     router.post('/restore-workflow', Workflow.restoreWorkflow)
     router.post('/delete-workflow', Workflow.deleteWorkflow)
+
+    router.post('/return-workflow/:workflowId', Instance.returnWorkflow)
+    router.post('/queue-workflow/:workflowId', Instance.queueWorklow)
+    router.post('/schedule-workflow/:workflowId', Instance.scheduleWorkflow)
 
     router.post('/get-storages', Storage.getStorages)
     router.post('/get-storage-details', Storage.getStorageDetails)
