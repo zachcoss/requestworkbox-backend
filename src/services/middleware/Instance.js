@@ -8,8 +8,24 @@ const
     CronJob = require('cron').CronJob;
 
 module.exports = {
-    returnWorkflow: async (req, res, next) => {
+    startWorkflow: async (req, res, next) => {
         try {
+
+            let workflowType = ''
+
+            if (_.includes(req.path, '/return-workflow/')) {
+                workflowType = 'returnWorkflow'
+            } else if (_.includes(req.path, '/queue-workflow/')) {
+                workflowType = 'queueWorkflow'
+            } else if (_.includes(req.path, '/schedule-workflow/')) {
+                workflowType = 'scheduleWorkflow'
+            } else {
+                return res.status(500).send('Workflow type not found')
+            }
+
+            const workflowTypeCount = `${workflowType}Count`
+            const workflowTypeLast = `${workflowType}Last`
+
             // Find Queue
             const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
             if (!workflow) return res.status(500).send('Workflow not found')
@@ -21,11 +37,10 @@ module.exports = {
             const accountType = billing.accountType
 
             // Check Last Returned and Count
-            const count = billing.returnWorkflowCount || 0
+            const count = billing[workflowTypeCount] || 0
             const currentTime = moment(new Date())
-            const lastTime = moment(billing.returnWorkflowLast || new Date())
+            const lastTime = moment(billing[workflowTypeLast] || new Date())
             const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
-            console.log('Seconds since last', secondsSinceLast)
             
             // Rate limit settings
             const rateLimitSeconds = 5 * 60
@@ -49,13 +64,13 @@ module.exports = {
 
             // Rate limit functionality
             if (rateLimitLeft > 0) {
-                billing.returnWorkflowCount = billing.returnWorkflowCount + 1
-                billing.returnWorkflowLast = new Date()
+                billing[workflowTypeCount] = billing[workflowTypeCount] + 1
+                billing[workflowTypeLast] = new Date()
                 await billing.save()
             } else if (rateLimitLeft === 0) {
                 if (!rateLimit) {
-                    billing.returnWorkflowCount = 1
-                    billing.returnWorkflowLast = new Date()
+                    billing[workflowTypeCount] = 1
+                    billing[workflowTypeLast] = new Date()
                     await billing.save()
                 } else {
                     const returnHeader = { 'Retry-After': retryAfter }
@@ -84,97 +99,35 @@ module.exports = {
                 message: '',
             });
 
-            // Start Instance
-            const workflowResult = await instanceTools.start(instance._id, req.body)
-
-            // Return Workflow
-            return res.status(200).send(workflowResult)
-        } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
-        }
-    },
-    queueWorklow: async (req, res, next) => {
-        try {
-            // check account type
-            // check last queue workflow
-
-            // add to queue
-            const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
-
-            const payload = {
-                sub: req.user.sub,
-                project: workflow.project,
-                workflow: workflow._id,
-                workflowName: workflow.name,
+            if (workflowType === 'returnWorkflow') {
+                // start immediately
+                const workflowResult = await instanceTools.start(instance._id, req.body)
+                // return result
+                return res.status(200).send(workflowResult)
+            } else if (workflowType === 'queueWorkflow') {
+                // queue immediately
+                const instanceJob = new CronJob({
+                    cronTime: moment().add(5, 'seconds'),
+                    onTick: () => {
+                        instanceTools.start(instance._id, req.body)
+                    },
+                    start: true,
+                })
+                // return queue id
+                return res.status(200).send(instance._id)
+            } else if (workflowType === 'scheduleWorkflow') {
+                // schedule immediately
+                const instanceJob = new CronJob({
+                    cronTime: moment().add(15, 'seconds'),
+                    onTick: () => {
+                        instanceTools.start(instance._id, req.body)
+                    },
+                    start: true,
+                })
+                // return schedule id
+                return res.status(200).send(instance._id)
             }
 
-            const instance = new IndexSchema.Instance(payload)
-            await instance.save()
-
-            socketService.io.emit(req.user.sub, {
-                eventDetail: 'Received...',
-                instanceId: instance._id,
-                workflowName: workflow.name,
-                requestName: '',
-                statusCode: '',
-                duration: '',
-                responseSize: '',
-                message: '',
-            });
-
-            const instanceJob = new CronJob({
-                cronTime: moment().add(1, 'seconds'),
-                onTick: () => {
-                    instanceTools.start(instance._id, req.body)
-                },
-                start: true,
-            })
-
-            return res.status(200).send(instance._id)
-        } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
-        }
-    },
-    scheduleWorkflow: async (req, res, next) => {
-        try {
-            // check account type
-            // check last schedule workflow
-
-            // add to schedule
-            const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
-
-            const payload = {
-                sub: req.user.sub,
-                project: workflow.project,
-                workflow: workflow._id,
-                workflowName: workflow.name,
-            }
-
-            const instance = new IndexSchema.Instance(payload)
-            await instance.save()
-
-            socketService.io.emit(req.user.sub, {
-                eventDetail: 'Received...',
-                instanceId: instance._id,
-                workflowName: workflow.name,
-                requestName: '',
-                statusCode: '',
-                duration: '',
-                responseSize: '',
-                message: '',
-            });
-
-            const instanceJob = new CronJob({
-                cronTime: moment().add(1, 'seconds'),
-                onTick: () => {
-                    instanceTools.start(instance._id, req.body)
-                },
-                start: true,
-            })
-
-            return res.status(200).send(instance._id)
         } catch (err) {
             console.log(err)
             return res.status(500).send(err)

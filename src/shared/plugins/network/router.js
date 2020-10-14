@@ -46,9 +46,9 @@ module.exports.config = function () {
     router.post('/restore-workflow', Workflow.restoreWorkflow)
     router.post('/delete-workflow', Workflow.deleteWorkflow)
 
-    router.post('/return-workflow/:workflowId', Instance.returnWorkflow)
-    router.post('/queue-workflow/:workflowId', Instance.queueWorklow)
-    router.post('/schedule-workflow/:workflowId', Instance.scheduleWorkflow)
+    router.post('/return-workflow/:workflowId', Instance.startWorkflow)
+    router.post('/queue-workflow/:workflowId', Instance.startWorkflow)
+    router.post('/schedule-workflow/:workflowId', Instance.startWorkflow)
 
     router.post('/get-storages', Storage.getStorages)
     router.post('/get-storage-details', Storage.getStorageDetails)
