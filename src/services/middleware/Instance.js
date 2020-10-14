@@ -12,11 +12,11 @@ module.exports = {
         try {
             // Find Queue
             const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
-            if (!workflow) return res.status(500)
+            if (!workflow) return res.status(500).send('Workflow not found')
 
             // Check Account Type
             const billing = await IndexSchema.Billing.findOne({ sub: req.user.sub })
-            if (!billing || !billing.accountType) return res.status(500)
+            if (!billing || !billing.accountType) return res.status(500).send('Billing not found')
             
             const accountType = billing.accountType
 
@@ -26,50 +26,41 @@ module.exports = {
             const lastTime = moment(billing.returnWorkflowLast || new Date())
             const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
             console.log('Seconds since last', secondsSinceLast)
+            
+            // Rate limit settings
+            const rateLimitSeconds = 5 * 60
+            let rateLimitCount = 0
 
-            // Rate Limit
             if (accountType === 'free') {
-                const rateLimitCount = 1
-                const rateLimitSeconds = 5 * 60
-                const rateLimit = secondsSinceLast < rateLimitSeconds
-                const retryAfter = rateLimitSeconds - secondsSinceLast
-
-                if (count >= rateLimitCount && rateLimit) {
-                    const returnHeader = { 'Retry-After': retryAfter }
-                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
-                }
+                rateLimitCount = 1
             } else if (accountType === 'standard') {
-                const rateLimitCount = 5
-                const rateLimitSeconds = 5 * 60
-                const rateLimit = secondsSinceLast < rateLimitSeconds
-                const retryAfter = rateLimitSeconds - secondsSinceLast
-
-                if (count >= rateLimitCount && rateLimit) {
-                    const returnHeader = { 'Retry-After': retryAfter }
-                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
-                }
+                rateLimitCount = 5
             } else if (accountType === 'developer') {
-                const rateLimitCount = 10
-                const rateLimitSeconds = 5 * 60
-                const rateLimit = secondsSinceLast < rateLimitSeconds
-                const retryAfter = rateLimitSeconds - secondsSinceLast
-
-                if (count >= rateLimitCount && rateLimit) {
-                    const returnHeader = { 'Retry-After': retryAfter }
-                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
-                }
+                rateLimitCount = 10
             } else if (accountType === 'professional') {
-                const rateLimitCount = 25
-                const rateLimitSeconds = 5 * 60
-                const rateLimit = secondsSinceLast < rateLimitSeconds
-                const retryAfter = rateLimitSeconds - secondsSinceLast
+                rateLimitCount = 25
+            } else {
+                return res.status(500).send('Account type not found')
+            }
 
-                if (count >= rateLimitCount && rateLimit) {
+            const rateLimitLeft = rateLimitCount - count
+            const rateLimit = secondsSinceLast < rateLimitSeconds
+            const retryAfter = rateLimitSeconds - secondsSinceLast
+
+            // Rate limit functionality
+            if (rateLimitLeft > 0) {
+                billing.returnWorkflowCount = billing.returnWorkflowCount + 1
+                billing.returnWorkflowLast = new Date()
+                await billing.save()
+            } else if (rateLimitLeft === 0) {
+                if (!rateLimit) {
+                    billing.returnWorkflowCount = 1
+                    billing.returnWorkflowLast = new Date()
+                    await billing.save()
+                } else {
                     const returnHeader = { 'Retry-After': retryAfter }
                     return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
                 }
-            } else {
-                return res.status(500)
             }
 
             // Create instance
@@ -92,11 +83,6 @@ module.exports = {
                 responseSize: '',
                 message: '',
             });
-
-            // Set Last Return Workflow
-            billing.returnWorkflowLast = new Date()
-            billing.returnWorkflowCount = 1
-            await billing.save()
 
             // Start Instance
             const workflowResult = await instanceTools.start(instance._id, req.body)

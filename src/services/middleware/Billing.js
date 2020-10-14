@@ -39,10 +39,18 @@ module.exports = {
             }
             if (!billing.accountType) {
                 billing.accountType = 'free'
-                await billing.save()
             }
 
             billing.accountType = req.body.accountType || 'free'
+
+            billing.returnWorkflowCount = 0
+            billing.queueWorkflowCount = 0
+            billing.scheduleWorkflowCount = 0
+
+            billing.returnWorkflowLast = moment().subtract(5, 'minutes')
+            billing.queueWorkflowLast = moment().subtract(5, 'minutes')
+            billing.scheduleWorkflowLast = moment().subtract(5, 'minutes')
+
             await billing.save()
 
             return res.status(200).send('OK')
