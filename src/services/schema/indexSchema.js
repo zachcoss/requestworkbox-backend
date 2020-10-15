@@ -18,6 +18,28 @@ const KeyValueDefault = () => {
     }
 }
 
+const ScheduleSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true, required: true  },
+    sub: { type: String, required: true },
+    instance: { type: Schema.Types.ObjectId, required: true  },
+    workflowName: { type: String, required: true  },
+    status: { type: String, required: true },
+    queueType: { type: String, required: true, default: 'schedule' },
+    date: { type: Date, required: true },
+    storage: { type: String },
+}, { timestamps: true })
+
+const QueueSchema = new mongoose.Schema({
+    active: { type: Boolean, default: true, required: true  },
+    sub: { type: String, required: true },
+    instance: { type: Schema.Types.ObjectId, required: true  },
+    workflowName: { type: String, required: true  },
+    status: { type: String, required: true },
+    queueType: { type: String, required: true, default: 'queue' },
+    date: { type: Date, required: true },
+    storage: { type: String  },
+}, { timestamps: true })
+
 const BillingSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     sub: { type: String, required: true },
@@ -36,10 +58,10 @@ const BillingSchema = new mongoose.Schema({
 const UsageSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     sub: { type: String, required: true },
-    usageType: { type: String, enum: ['storage', 'request' ] },
+    usageType: { type: String, enum: ['storage', 'request', ] },
     usageDirection: { type: String, enum: ['up', 'down', 'time'] },
     usageAmount: { type: Number },
-    usageLocation: { type: String, enum: ['api', 'instance'] }
+    usageLocation: { type: String, enum: ['api', 'instance', 'queue'] }
 }, { timestamps: true })
 
 const FeedbackSchema = new mongoose.Schema({
@@ -161,6 +183,8 @@ const StatSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = {
+    'Schedule': new mongoose.model('Schedule', ScheduleSchema),
+    'Queue': new mongoose.model('Queue', QueueSchema),
     'Usage': new mongoose.model('Usage', UsageSchema),
     'Billing': new mongoose.model('Billing', BillingSchema),
     'Feedback': new mongoose.model('Feedback', FeedbackSchema),

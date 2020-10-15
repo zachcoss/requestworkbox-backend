@@ -5,6 +5,7 @@ const
     instanceTools = require('../tools/instance'),
     moment = require('moment'),
     socketService = require('../tools/socket'),
+    S3 = require('../tools/s3').S3,
     CronJob = require('cron').CronJob;
 
 module.exports = {
@@ -41,21 +42,45 @@ module.exports = {
             const currentTime = moment(new Date())
             const lastTime = moment(billing[workflowTypeLast] || new Date())
             const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
+
+            // Storage settings
+            let payload = {}
+            let storageId = ''
+
+            // Queue delay settings
+            let queueDelaySeconds = 0
+            let scheduleDelaySeconds = 0
             
             // Rate limit settings
             const rateLimitSeconds = 5 * 60
             let rateLimitCount = 0
 
             if (accountType === 'free') {
+                queueDelaySeconds = 5 * 60
+                scheduleDelaySeconds = 5 * 60
                 rateLimitCount = 1
             } else if (accountType === 'standard') {
+                queueDelaySeconds = 1 * 60
+                scheduleDelaySeconds = 15 * 60
                 rateLimitCount = 5
             } else if (accountType === 'developer') {
+                queueDelaySeconds = 30
+                scheduleDelaySeconds = 30 * 60
                 rateLimitCount = 10
             } else if (accountType === 'professional') {
+                queueDelaySeconds = 1
+                scheduleDelaySeconds = 60 * 60
                 rateLimitCount = 25
             } else {
                 return res.status(500).send('Account type not found')
+            }
+
+            // Filter date
+            if (workflowType === 'scheduleWorkflow') {
+                if (!req.query.date) return res.status(400).send('Missing date')
+
+                const shouldSchedule = moment(req.query.date).isBetween(moment(), moment().add(scheduleDelaySeconds,'seconds'))
+                if (!shouldSchedule) return res.status(400).send(`Date should be within ${scheduleDelaySeconds} seconds`)
             }
 
             const rateLimitLeft = rateLimitCount - count
@@ -92,40 +117,67 @@ module.exports = {
                 eventDetail: 'Received...',
                 instanceId: instance._id,
                 workflowName: workflow.name,
-                requestName: '',
-                statusCode: '',
-                duration: '',
-                responseSize: '',
-                message: '',
-            });
+            })
+
+            // Filter payload
+            if (_.isPlainObject(req.body) && _.size(req.body) > 0) {
+                // Create payload
+                payload = JSON.parse(JSON.stringify(req.body))
+                // Create storage id
+                storageId = instance._id
+                // Record usage
+                const payloadBuffer = Buffer.from(payload, 'utf8')
+                const usage = new indexSchema.Usage({
+                    sub: state.instance.sub,
+                    usageType: 'storage',
+                    usageDirection: 'up',
+                    usageAmount: Number(payloadBuffer.byteLength),
+                    usageLocation: 'queue',
+                })
+                await usage.save()
+            }
 
             if (workflowType === 'returnWorkflow') {
                 // start immediately
-                const workflowResult = await instanceTools.start(instance._id, req.body)
+                const workflowResult = await instanceTools.start(instance._id, payload)
                 // return result
                 return res.status(200).send(workflowResult)
-            } else if (workflowType === 'queueWorkflow') {
-                // queue immediately
-                const instanceJob = new CronJob({
-                    cronTime: moment().add(5, 'seconds'),
-                    onTick: () => {
-                        instanceTools.start(instance._id, req.body)
-                    },
-                    start: true,
-                })
+            } else if (workflowType === 'queueWorkflow' || workflowType === 'scheduleWorkflow') {
+
+                // Store payload
+                if (_.size(payload > 0)) {
+                    await S3.upload({
+                        Bucket: "connector-storage",
+                        Key: `${req.user.sub}/request-payloads/${instance._id}/`,
+                        Body: JSON.stringify(payload)
+                    }).promise()
+                }
+
+                const queueBody = {
+                    active: true,
+                    sub: req.user.sub,
+                    instance: instance._id,
+                    workflowName: workflow.name,
+                    workflowId: workflow._id,
+                    project: workflow.project,
+                    status: 'received',
+                    storage: storageId,
+                }
+
+                if (workflowType === 'queueWorkflow') {
+                    queueBody['queueType'] = 'queue'
+                    queueBody['date'] = moment().add(queueDelaySeconds, 'seconds')
+                } else if (workflowType === 'scheduleWorkflow') {
+                    queueBody['queueType'] = 'schedule'
+                    queueBody['date'] = moment(req.query.date)
+                }
+
+                // Queue instance
+                const queue = new IndexSchema.Queue(queueBody)
+                await queue.save()
+
                 // return queue id
-                return res.status(200).send(instance._id)
-            } else if (workflowType === 'scheduleWorkflow') {
-                // schedule immediately
-                const instanceJob = new CronJob({
-                    cronTime: moment().add(15, 'seconds'),
-                    onTick: () => {
-                        instanceTools.start(instance._id, req.body)
-                    },
-                    start: true,
-                })
-                // return schedule id
-                return res.status(200).send(instance._id)
+                return res.status(200).send(queue._id)
             }
 
         } catch (err) {
