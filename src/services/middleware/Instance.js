@@ -1,12 +1,9 @@
 const
     _ = require('lodash'),
-    mongoose = require('mongoose'),
     IndexSchema = require('../schema/indexSchema'),
-    instanceTools = require('../tools/instance'),
     moment = require('moment'),
     socketService = require('../tools/socket'),
-    S3 = require('../tools/s3').S3,
-    CronJob = require('cron').CronJob;
+    S3 = require('../tools/s3').S3;
 
 module.exports = {
     startWorkflow: async (req, res, next) => {
@@ -123,7 +120,13 @@ module.exports = {
             if (_.isPlainObject(req.body) && _.size(req.body) > 0) {
                 // Create payload
                 payload = JSON.parse(JSON.stringify(req.body))
-                // Create storage id
+                // Store payload
+                await S3.upload({
+                    Bucket: "connector-storage",
+                    Key: `${req.user.sub}/request-payloads/${instance._id}/`,
+                    Body: JSON.stringify(payload)
+                }).promise()
+                // Update storage id
                 storageId = instance._id
                 // Record usage
                 const payloadBuffer = Buffer.from(payload, 'utf8')
@@ -137,46 +140,36 @@ module.exports = {
                 await usage.save()
             }
 
+            const queueBody = {
+                active: true,
+                sub: req.user.sub,
+                instance: instance._id,
+                workflow: workflow._id,
+                workflowName: workflow.name,
+                project: workflow.project,
+                status: 'received',
+                storage: storageId,
+            }
+
+            // Create queue
             if (workflowType === 'returnWorkflow') {
-                // start immediately
-                const workflowResult = await instanceTools.start(instance._id, payload)
-                // return result
-                return res.status(200).send(workflowResult)
-            } else if (workflowType === 'queueWorkflow' || workflowType === 'scheduleWorkflow') {
+                queueBody['queueType'] = 'return'
+                queueBody['date'] = new Date()
+            } else if (workflowType === 'queueWorkflow') {
+                queueBody['queueType'] = 'queue'
+                queueBody['date'] = moment().add(queueDelaySeconds, 'seconds')
+            } else if (workflowType === 'scheduleWorkflow') {
+                queueBody['queueType'] = 'schedule'
+                queueBody['date'] = moment(req.query.date)
+            }
 
-                // Store payload
-                if (_.size(payload > 0)) {
-                    await S3.upload({
-                        Bucket: "connector-storage",
-                        Key: `${req.user.sub}/request-payloads/${instance._id}/`,
-                        Body: JSON.stringify(payload)
-                    }).promise()
-                }
+            const queue = new IndexSchema.Queue(queueBody)
+            await queue.save()
 
-                const queueBody = {
-                    active: true,
-                    sub: req.user.sub,
-                    instance: instance._id,
-                    workflow: workflow._id,
-                    workflowName: workflow.name,
-                    project: workflow.project,
-                    status: 'received',
-                    storage: storageId,
-                }
-
-                if (workflowType === 'queueWorkflow') {
-                    queueBody['queueType'] = 'queue'
-                    queueBody['date'] = moment().add(queueDelaySeconds, 'seconds')
-                } else if (workflowType === 'scheduleWorkflow') {
-                    queueBody['queueType'] = 'schedule'
-                    queueBody['date'] = moment(req.query.date)
-                }
-
-                // Queue instance
-                const queue = new IndexSchema.Queue(queueBody)
-                await queue.save()
-
-                // return queue id
+            // Send to jobs
+            if (workflowType === 'returnWorkflow') {
+                return res.redirect(`http://localhost:4000/return-workflow?queueid=${queue._id}`)
+            } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow') {
                 return res.status(200).send(queue._id)
             }
 

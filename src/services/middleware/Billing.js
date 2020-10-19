@@ -1,11 +1,7 @@
 const
     _ = require('lodash'),
-    mongoose = require('mongoose'),
     IndexSchema = require('../schema/indexSchema'),
-    instanceTools = require('../tools/instance'),
-    moment = require('moment'),
-    socketService = require('../tools/socket'),
-    CronJob = require('cron').CronJob;
+    moment = require('moment');
 
 module.exports = {
     getAccountType: async (req, res, next) => {
