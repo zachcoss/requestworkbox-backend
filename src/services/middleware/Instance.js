@@ -168,7 +168,7 @@ module.exports = {
 
             // Send to jobs
             if (workflowType === 'returnWorkflow') {
-                return res.redirect(`http://localhost:4000/return-workflow?queueid=${queue._id}`)
+                return res.redirect(`${process.env.JOBS_URL}/return-workflow?queueid=${queue._id}`)
             } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow') {
                 return res.status(200).send(queue._id)
             }
