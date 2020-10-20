@@ -157,7 +157,7 @@ module.exports = {
             return res.status(200).send(storage)
         } catch (err) {
             console.log(err)
-            return res.status(500).send(err)
+            return res.status(500).send('Please confirm file is a JSON or Text file')
         }
     },
     saveStorageChanges: async (req, res, next) => {
