@@ -1,6 +1,7 @@
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
+    validUrl = require('valid-url'),
     IndexSchema = require('../schema/indexSchema');
 
 module.exports = {
@@ -29,6 +30,13 @@ module.exports = {
     saveRequestChanges: async (req, res, next) => {
         try {
             const updates = _.pick(req.body, ['url', 'query', 'headers', 'body'])
+
+            // validate url
+            if (!validUrl.isWebUri(updates.url.url)) {
+                console.log('Not valid URL', updates.url.url)
+                return res.status(500).send('Not valid URL')
+            }
+
             const findPayload = { sub: req.user.sub, _id: req.body._id }
             const request = await IndexSchema.Request.findOne(findPayload)
             _.each(updates, (value, key) => {
