@@ -46,7 +46,7 @@ module.exports = {
 
             // Queue delay settings
             let queueDelaySeconds = 0
-            let scheduleDelaySeconds = 0
+            let scheduleWindowSeconds = 0
             
             // Rate limit settings
             const rateLimitSeconds = 5 * 60
@@ -54,19 +54,19 @@ module.exports = {
 
             if (accountType === 'free') {
                 queueDelaySeconds = 5 * 60
-                scheduleDelaySeconds = 5 * 60
+                scheduleWindowSeconds = 5 * 60
                 rateLimitCount = 1
             } else if (accountType === 'standard') {
                 queueDelaySeconds = 1 * 60
-                scheduleDelaySeconds = 15 * 60
+                scheduleWindowSeconds = 60 * 60
                 rateLimitCount = 5
             } else if (accountType === 'developer') {
                 queueDelaySeconds = 30
-                scheduleDelaySeconds = 30 * 60
+                scheduleWindowSeconds = (60 * 60) * 12
                 rateLimitCount = 10
             } else if (accountType === 'professional') {
                 queueDelaySeconds = 1
-                scheduleDelaySeconds = 60 * 60
+                scheduleWindowSeconds = (60 * 60) * 24
                 rateLimitCount = 25
             } else {
                 return res.status(500).send('Account type not found')
@@ -76,8 +76,8 @@ module.exports = {
             if (workflowType === 'scheduleWorkflow') {
                 if (!req.query.date) return res.status(400).send('Missing date')
 
-                const shouldSchedule = moment(req.query.date).isBetween(moment(), moment().add(scheduleDelaySeconds,'seconds'))
-                if (!shouldSchedule) return res.status(400).send(`Date should be within ${scheduleDelaySeconds} seconds`)
+                const shouldSchedule = moment(req.query.date).isBetween(moment(), moment().add(scheduleWindowSeconds,'seconds'))
+                if (!shouldSchedule) return res.status(400).send(`Date should be within ${scheduleWindowSeconds} seconds`)
             }
 
             const rateLimitLeft = rateLimitCount - count
