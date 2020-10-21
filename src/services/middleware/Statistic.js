@@ -3,7 +3,7 @@ const { startCase } = require('lodash');
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
-    IndexSchema = require('../schema/indexSchema'),
+    IndexSchema = require('@requestworkbox/schema'),
     S3 = require('../tools/s3').S3;
 
 module.exports = {

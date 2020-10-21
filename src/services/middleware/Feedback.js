@@ -1,6 +1,6 @@
 const
     _ = require('lodash'),
-    IndexSchema = require('../schema/indexSchema');
+    IndexSchema = require('@requestworkbox/schema');
 
 module.exports = {
     submitFeedback: async (req, res, next) => {

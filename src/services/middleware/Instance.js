@@ -1,6 +1,6 @@
 const
     _ = require('lodash'),
-    IndexSchema = require('../schema/indexSchema'),
+    IndexSchema = require('@requestworkbox/schema'),
     moment = require('moment'),
     socketService = require('../tools/socket'),
     S3 = require('../tools/s3').S3;

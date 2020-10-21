@@ -1,7 +1,7 @@
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
-    IndexSchema = require('../schema/indexSchema');
+    IndexSchema = require('@requestworkbox/schema');
 
 module.exports = {
     getWorkflows: async (req, res, next) => {

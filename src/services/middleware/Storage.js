@@ -7,7 +7,7 @@ const
     readFile = util.promisify(fs.readFile),
     writeFile = util.promisify(fs.writeFile),
     mkdirp = require('mkdirp'),
-    IndexSchema = require('../schema/indexSchema'),
+    IndexSchema = require('@requestworkbox/schema'),
     S3 = require('../tools/s3').S3;
 
 module.exports = {
