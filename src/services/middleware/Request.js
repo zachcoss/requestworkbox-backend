@@ -2,7 +2,7 @@ const
     _ = require('lodash'),
     mongoose = require('mongoose'),
     validUrl = require('valid-url'),
-    IndexSchema = require('@requestworkbox/schema');
+    IndexSchema = require('@requestworkbox/internal-tools').schema;
 
 module.exports = {
     getRequests: async (req, res, next) => {

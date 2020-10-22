@@ -1,6 +1,6 @@
 const
     _ = require('lodash'),
-    IndexSchema = require('@requestworkbox/schema'),
+    IndexSchema = require('@requestworkbox/internal-tools').schema,
     moment = require('moment');
 
 module.exports = {

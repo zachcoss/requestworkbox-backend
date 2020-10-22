@@ -7,8 +7,8 @@ const
     readFile = util.promisify(fs.readFile),
     writeFile = util.promisify(fs.writeFile),
     mkdirp = require('mkdirp'),
-    IndexSchema = require('@requestworkbox/schema'),
-    S3 = require('../tools/s3').S3;
+    IndexSchema = require('@requestworkbox/internal-tools').schema,
+    S3 = require('@requestworkbox/internal-tools').S3;
 
 module.exports = {
     getStorages: async (req, res, next) => {
