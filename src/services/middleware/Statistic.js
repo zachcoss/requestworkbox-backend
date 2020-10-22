@@ -3,8 +3,8 @@ const { startCase } = require('lodash');
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
-    IndexSchema = require('@requestworkbox/internal-tools').schema,
-    S3 = require('@requestworkbox/internal-tools').S3;
+    IndexSchema = require('../tools/schema').schema,
+    S3 = require('../tools/s3').S3;
 
 module.exports = {
     getInstances: async (req, res, next) => {

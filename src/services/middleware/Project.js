@@ -1,6 +1,6 @@
 const
     _ = require('lodash'),
-    IndexSchema = require('@requestworkbox/internal-tools').schema;
+    IndexSchema = require('../tools/schema').schema;
 
 module.exports = {
     getProjectName: async (req, res, next) => {
@@ -26,7 +26,9 @@ module.exports = {
         try {
             const findPayload = { sub: req.user.sub, active: true }
             const projection = 'name createdAt active'
+            console.log('searching')
             const projects = await IndexSchema.Project.find(findPayload, projection)
+            console.log('done searching')
             return res.status(200).send(projects)
         } catch (err) {
             console.log(err)

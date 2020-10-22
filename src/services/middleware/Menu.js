@@ -1,6 +1,6 @@
 const
     _ = require('lodash'),
-    IndexSchema = require('@requestworkbox/internal-tools').schema;
+    IndexSchema = require('../tools/schema').schema;
 
 module.exports = {
     newRequest: async (req, res, next) => {

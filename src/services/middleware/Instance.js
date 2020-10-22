@@ -1,9 +1,9 @@
 const
     _ = require('lodash'),
     moment = require('moment'),
-    socketService = require('@requestworkbox/internal-tools').socket,
-    IndexSchema = require('@requestworkbox/internal-tools').schema,
-    S3 = require('@requestworkbox/internal-tools').S3;
+    socketService = require('../tools/socket'),
+    IndexSchema = require('../tools/schema').schema,
+    S3 = require('../tools/s3').S3;
 
 module.exports = {
     startWorkflow: async (req, res, next) => {
