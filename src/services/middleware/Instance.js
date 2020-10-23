@@ -165,20 +165,30 @@ module.exports = {
 
             const queue = new IndexSchema.Queue(queueBody)
             await queue.save()
+            
+            let workflowEvent = ''
+
+            // Emit Socket
+            if (workflowType === 'returnWorkflow') {
+                workflowEvent = 'Returning...'
+            } else if (workflowType === 'queueWorkflow') {
+                workflowEvent = 'Queued...'
+            } else if (workflowType === 'scheduleWorkflow') {
+                workflowEvent = 'Scheduled...'   
+            }
+
+            socketService.io.emit(req.user.sub, {
+                eventDetail: workflowEvent,
+                queueId: queue._id,
+                instanceId: instance._id,
+                workflowName: workflow.name,
+                date: queue.date
+            })
 
             // Send to jobs
             if (workflowType === 'returnWorkflow') {
                 return res.redirect(`${process.env.JOBS_URL}/return-workflow?queueid=${queue._id}`)
             } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow') {
-
-                // Emit Socket
-                socketService.io.emit(req.user.sub, {
-                    eventDetail: 'Queued...',
-                    queueId: queue._id,
-                    instanceId: instance._id,
-                    workflowName: workflow.name,
-                })
-
                 return res.status(200).send(queue._id)
             }
 
