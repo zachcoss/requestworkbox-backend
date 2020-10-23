@@ -170,6 +170,15 @@ module.exports = {
             if (workflowType === 'returnWorkflow') {
                 return res.redirect(`${process.env.JOBS_URL}/return-workflow?queueid=${queue._id}`)
             } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow') {
+
+                // Emit Socket
+                socketService.io.emit(req.user.sub, {
+                    eventDetail: 'Queued...',
+                    queueId: queue._id,
+                    instanceId: instance._id,
+                    workflowName: workflow.name,
+                })
+
                 return res.status(200).send(queue._id)
             }
 
