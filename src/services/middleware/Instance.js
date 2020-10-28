@@ -42,7 +42,6 @@ module.exports = {
 
             // Storage settings
             let payload = {}
-            let storageId = ''
 
             // Queue delay settings
             let queueDelaySeconds = 0
@@ -109,11 +108,23 @@ module.exports = {
             })
             await instance.save()
 
+            const queue = new IndexSchema.Queue({
+                active: true,
+                sub: req.user.sub,
+                instance: instance._id,
+                workflow: workflow._id,
+                workflowName: workflow.name,
+                project: workflow.project,
+                status: 'received',
+                storage: '',
+            })
+
             // Emit Socket
             socketService.io.emit(req.user.sub, {
                 eventDetail: 'Received...',
                 instanceId: instance._id,
                 workflowName: workflow.name,
+                queueDoc: JSON.parse(JSON.stringify(queue)),
             })
 
             // Filter payload
@@ -127,7 +138,7 @@ module.exports = {
                     Body: JSON.stringify(payload)
                 }).promise()
                 // Update storage id
-                storageId = instance._id
+                queue.storage = instance._id
                 // Record usage
                 const payloadBuffer = Buffer.from(payload, 'utf8')
                 const usage = new indexSchema.Usage({
@@ -140,30 +151,18 @@ module.exports = {
                 await usage.save()
             }
 
-            const queueBody = {
-                active: true,
-                sub: req.user.sub,
-                instance: instance._id,
-                workflow: workflow._id,
-                workflowName: workflow.name,
-                project: workflow.project,
-                status: 'received',
-                storage: storageId,
-            }
-
-            // Create queue
+            // Update queue and save
             if (workflowType === 'returnWorkflow') {
-                queueBody['queueType'] = 'return'
-                queueBody['date'] = new Date()
+                queue.queueType = 'return'
+                queue.date = new Date()
             } else if (workflowType === 'queueWorkflow') {
-                queueBody['queueType'] = 'queue'
-                queueBody['date'] = moment().add(queueDelaySeconds, 'seconds')
+                queue.queueType = 'queue'
+                queue.date = moment().add(queueDelaySeconds, 'seconds')
             } else if (workflowType === 'scheduleWorkflow') {
-                queueBody['queueType'] = 'schedule'
-                queueBody['date'] = moment(req.query.date)
+                queue.queueType = 'schedule'
+                queue.date = moment(req.query.date)
             }
-
-            const queue = new IndexSchema.Queue(queueBody)
+            
             await queue.save()
             
             let workflowEvent = ''
@@ -182,7 +181,8 @@ module.exports = {
                 queueId: queue._id,
                 instanceId: instance._id,
                 workflowName: workflow.name,
-                date: queue.date
+                date: queue.date,
+                queueDoc: queue,
             })
 
             // Send to jobs
