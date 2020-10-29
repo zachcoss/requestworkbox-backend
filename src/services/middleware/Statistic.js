@@ -12,8 +12,24 @@ module.exports = {
             const findPayload = { sub: req.user.sub, project: req.body.projectId, active: true }
             const projection = '-__v'
             // autopopulates stats
-            const instances = await IndexSchema.Instance.find(findPayload, projection)
+            const instances = await IndexSchema.Instance.find(findPayload, projection).sort({createdAt: -1}).limit(5)
             return res.status(200).send(instances)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    getInstance: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.instanceId, active: true }
+            const projection = '-__v'
+            console.log(findPayload)
+            // autopopulates stats
+            const instance = await IndexSchema.Instance.findOne(findPayload, projection)
+            
+            if (!instance) throw new Error('Could not find instance')
+            
+            return res.status(200).send([instance])
         } catch (err) {
             console.log(err)
             return res.status(500).send(err)

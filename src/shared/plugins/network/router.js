@@ -63,6 +63,7 @@ module.exports.config = function () {
     router.post('/delete-storage', Storage.deleteStorage)
 
     router.post('/get-instances', Statistic.getInstances)
+    router.post('/get-instance', Statistic.getInstance)
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
     router.post('/delete-stats', Statistic.deleteStats)
 
