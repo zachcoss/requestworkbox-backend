@@ -43,6 +43,11 @@ module.exports = {
     },
     deleteEntireProject: async (req, res, next) => {
         try {
+            // To - Do
+            // Clear db and update all schema to include project id
+
+            // Archive Upcoming Schedule
+            
             // Delete Requests
             const requestDeletePayload = ({ sub: req.user.sub, project: req.body.projectId })
             const requestDelete = await IndexSchema.Request.deleteMany(requestDeletePayload)

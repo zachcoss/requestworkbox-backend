@@ -70,6 +70,8 @@ module.exports.config = function () {
     router.post('/update-account-type', Billing.updateAccountType)
 
     router.post('/get-schedule', Queue.getSchedule)
+    router.post('/archive-all-queue', Queue.archiveAllQueue)
+    router.post('/archive-queue', Queue.archiveQueue)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 
