@@ -2,6 +2,7 @@ const
     _ = require('lodash'),
     moment = require('moment'),
     socketService = require('../tools/socket'),
+    Stats = require('../tools/stats'),
     IndexSchema = require('../tools/schema').schema;
 
 module.exports = {
@@ -22,8 +23,6 @@ module.exports = {
 
             const schedule = await IndexSchema.Queue.find(findPayload)
 
-            console.log('found schedule')
-            console.log(schedule)
             return res.status(200).send(schedule)
         } catch (err) {
             console.log(err)
@@ -54,24 +53,11 @@ module.exports = {
         }
 
         // Update queue docs
-        const queueDocs = await IndexSchema.Queue.find(findPayload).lean()
-        const queueFindPayload = {
-            _id: {
-                $in: _.map(queueDocs, '_id')
-            }
-        }
-        const queueUpdate = await IndexSchema.Queue.updateMany(queueFindPayload, { status: 'archived' })
+        const queueDocs = await IndexSchema.Queue.find(findPayload)
 
-        // Emit Socket
-        _.each(queueDocs, (queue) => {
-            queue.status = 'archived'
-            socketService.io.emit(req.user.sub, {
-                eventDetail: 'Archived...',
-                instanceId: queue.instance,
-                workflowName: queue.workflowName,
-                queueDoc: queue,
-            })
-        })
+        for (queue of queueDocs) {
+            await Stats.updateQueueStats({ queue, status: 'archived' })
+        }
 
         return res.status(200).send('OK')
     },
@@ -88,16 +74,7 @@ module.exports = {
 
         if (!queue) throw new Error('Queue Not Found')
 
-        queue.status = 'archived'
-        await queue.save()
-
-        // Emit Socket
-        socketService.io.emit(req.user.sub, {
-            eventDetail: 'Archived...',
-            instanceId: queue.instance,
-            workflowName: queue.workflowName,
-            queueDoc: JSON.parse(JSON.stringify(queue)),
-        })
+        await Stats.updateQueueStats({ queue, status: 'archived' })
 
         return res.status(200).send('OK')
     },

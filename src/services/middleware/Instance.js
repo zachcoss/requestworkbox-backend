@@ -3,6 +3,7 @@ const
     moment = require('moment'),
     socketService = require('../tools/socket'),
     IndexSchema = require('../tools/schema').schema,
+    Stats = require('../tools/stats'),
     S3 = require('../tools/s3').S3;
 
 module.exports = {
@@ -108,6 +109,7 @@ module.exports = {
             })
             await instance.save()
 
+            // Create Queue
             const queue = new IndexSchema.Queue({
                 active: true,
                 sub: req.user.sub,
@@ -115,20 +117,19 @@ module.exports = {
                 workflow: workflow._id,
                 workflowName: workflow.name,
                 project: workflow.project,
-                status: 'received',
                 storage: '',
+                stats: [],
             })
+            await queue.save()
 
-            // Emit Socket
-            socketService.io.emit(req.user.sub, {
-                eventDetail: 'Received...',
-                instanceId: instance._id,
-                workflowName: workflow.name,
-                queueDoc: JSON.parse(JSON.stringify(queue)),
-            })
+            // Create Queue Stat
+            await Stats.updateQueueStats({ queue, status: 'received', })
 
             // Filter payload
             if (_.isPlainObject(req.body) && _.size(req.body) > 0) {
+                // Create Queue Uploading Stat
+                await Stats.updateQueueStats({ queue, status: 'uploading', })
+
                 // Create payload
                 payload = JSON.parse(JSON.stringify(req.body))
                 // Store payload
@@ -162,28 +163,9 @@ module.exports = {
                 queue.queueType = 'schedule'
                 queue.date = moment(req.query.date)
             }
-            
-            await queue.save()
-            
-            let workflowEvent = ''
 
-            // Emit Socket
-            if (workflowType === 'returnWorkflow') {
-                workflowEvent = 'Returning...'
-            } else if (workflowType === 'queueWorkflow') {
-                workflowEvent = 'Queued...'
-            } else if (workflowType === 'scheduleWorkflow') {
-                workflowEvent = 'Scheduled...'   
-            }
-
-            socketService.io.emit(req.user.sub, {
-                eventDetail: workflowEvent,
-                queueId: queue._id,
-                instanceId: instance._id,
-                workflowName: workflow.name,
-                date: queue.date,
-                queueDoc: queue,
-            })
+            // Create Queue Pending Stat
+            await Stats.updateQueueStats({ queue, status: 'pending', })
 
             // Send to jobs
             if (workflowType === 'returnWorkflow') {
