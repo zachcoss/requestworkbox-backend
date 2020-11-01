@@ -11,6 +11,7 @@ const
                 active: true,
                 sub: queue.sub,
                 instance: queue.instance,
+                queue: queue._id,
                 status: status,
                 statusText: statusText || '',
                 error: error || false,
