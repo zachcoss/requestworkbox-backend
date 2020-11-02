@@ -23,7 +23,7 @@ module.exports = {
         try {
             const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.instanceId, active: true }
             const projection = '-__v'
-            console.log(findPayload)
+            
             // autopopulates stats
             const instance = await IndexSchema.Instance.findOne(findPayload, projection)
             
