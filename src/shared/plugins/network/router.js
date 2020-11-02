@@ -30,6 +30,7 @@ module.exports.config = function () {
     router.post('/delete-entire-project', Menu.deleteEntireProject)
 
     router.post('/get-requests', Request.getRequests)
+    router.post('/get-request', Request.getRequest)
     router.post('/get-request-details', Request.getRequestDetails)
     router.post('/save-request-changes', Request.saveRequestChanges)
     router.post('/add-request-detail-item', Request.addRequestDetailItem)
@@ -39,6 +40,7 @@ module.exports.config = function () {
     router.post('/delete-request', Request.deleteRequest)
 
     router.post('/get-workflows', Workflow.getWorkflows)
+    router.post('/get-workflow', Workflow.getWorkflow)
     router.post('/get-workflow-details', Workflow.getWorkflowDetails)
     router.post('/save-workflow-changes', Workflow.saveWorkflowChanges)
     router.post('/add-workflow-task', Workflow.addWorkflowTask)
@@ -52,6 +54,7 @@ module.exports.config = function () {
     router.post('/schedule-workflow/:workflowId', Instance.startWorkflow)
 
     router.post('/get-storages', Storage.getStorages)
+    router.post('/get-storage', Storage.getStorage)
     router.post('/get-storage-details', Storage.getStorageDetails)
     router.post('/get-text-storage-data', Storage.getTextStorageData)
     router.post('/get-file-storage-data', Storage.getFileStorageData)

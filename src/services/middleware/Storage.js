@@ -22,6 +22,21 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    getStorage: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.storageId, active: true }
+            const projection = '-__v'
+            
+            const storage = await IndexSchema.Storage.findOne(findPayload, projection)
+            
+            if (!storage) throw new Error('Could not find storage')
+            
+            return res.status(200).send([storage])
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
     getStorageDetails: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }

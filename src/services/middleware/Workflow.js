@@ -1,6 +1,7 @@
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
+    validUrl = require('valid-url'),
     IndexSchema = require('../tools/schema').schema;
 
 module.exports = {
@@ -10,6 +11,21 @@ module.exports = {
             const projection = '-__v'
             const requests = await IndexSchema.Workflow.find(findPayload, projection)
             return res.status(200).send(requests)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    getWorkflow: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.workflowId, active: true }
+            const projection = '-__v'
+            
+            const workflow = await IndexSchema.Workflow.findOne(findPayload, projection)
+            
+            if (!workflow) throw new Error('Could not find workflow')
+            
+            return res.status(200).send([workflow])
         } catch (err) {
             console.log(err)
             return res.status(500).send(err)
@@ -28,12 +44,19 @@ module.exports = {
     },
     saveWorkflowChanges: async (req, res, next) => {
         try {
-            const updates = _.pick(req.body, ['name','tasks'])
+            const updates = _.pick(req.body, ['name','tasks','webhookRequestId'])
+
             const findPayload = { sub: req.user.sub, _id: req.body._id }
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
+
             _.each(updates, (value, key) => {
                 workflow[key] = value
             })
+
+            if (!updates.webhookRequestId || updates.webhookRequestId === '') {
+                workflow.webhookRequestId = undefined
+            }
+            
             await workflow.save()
             return res.status(200).send()
         } catch (err) {

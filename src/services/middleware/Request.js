@@ -16,6 +16,21 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
+    getRequest: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.requestId, active: true }
+            const projection = '-__v'
+            
+            const request = await IndexSchema.Request.findOne(findPayload, projection)
+            
+            if (!request) throw new Error('Could not find request')
+            
+            return res.status(200).send([request])
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
     getRequestDetails: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.requestId }
