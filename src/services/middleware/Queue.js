@@ -2,7 +2,7 @@ const
     _ = require('lodash'),
     moment = require('moment'),
     socketService = require('../tools/socket'),
-    Stats = require('../tools/stats'),
+    Stats = require('../tools/stats').stats,
     IndexSchema = require('../tools/schema').schema;
 
 module.exports = {
@@ -56,7 +56,7 @@ module.exports = {
         const queueDocs = await IndexSchema.Queue.find(findPayload)
 
         for (queue of queueDocs) {
-            await Stats.updateQueueStats({ queue, status: 'archived' })
+            await Stats.updateQueueStats({ queue, status: 'archived' }, IndexSchema, socketService)
         }
 
         return res.status(200).send('OK')
@@ -74,7 +74,7 @@ module.exports = {
 
         if (!queue) throw new Error('Queue Not Found')
 
-        await Stats.updateQueueStats({ queue, status: 'archived' })
+        await Stats.updateQueueStats({ queue, status: 'archived' }, IndexSchema, socketService)
 
         return res.status(200).send('OK')
     },

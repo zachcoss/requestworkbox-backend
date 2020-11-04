@@ -3,7 +3,7 @@ const
     moment = require('moment'),
     socketService = require('../tools/socket'),
     IndexSchema = require('../tools/schema').schema,
-    Stats = require('../tools/stats'),
+    Stats = require('../tools/stats').stats,
     S3 = require('../tools/s3').S3;
 
 module.exports = {
@@ -123,12 +123,12 @@ module.exports = {
             await queue.save()
 
             // Create Queue Stat
-            await Stats.updateQueueStats({ queue, status: 'received', })
+            await Stats.updateQueueStats({ queue, status: 'received', }, IndexSchema, socketService)
 
             // Filter payload
             if (_.isPlainObject(req.body) && _.size(req.body) > 0) {
                 // Create Queue Uploading Stat
-                await Stats.updateQueueStats({ queue, status: 'uploading', })
+                await Stats.updateQueueStats({ queue, status: 'uploading', }, IndexSchema, socketService)
 
                 // Create payload
                 payload = JSON.parse(JSON.stringify(req.body))
@@ -165,7 +165,7 @@ module.exports = {
             }
 
             // Create Queue Pending Stat
-            await Stats.updateQueueStats({ queue, status: 'pending', })
+            await Stats.updateQueueStats({ queue, status: 'pending', }, IndexSchema, socketService)
 
             // Send to jobs
             if (workflowType === 'returnWorkflow') {
