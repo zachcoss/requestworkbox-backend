@@ -8,6 +8,7 @@ const
     writeFile = util.promisify(fs.writeFile),
     mkdirp = require('mkdirp'),
     IndexSchema = require('../tools/schema').schema,
+    Stats = require('../tools/stats').stats,
     S3 = require('../tools/s3').S3;
 
 module.exports = {
@@ -51,24 +52,36 @@ module.exports = {
     getTextStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
+            const storage = await IndexSchema.Storage.findOne(findPayload)
 
+            const storageValueStart = new Date()
             const storageValue = await S3.getObject({
                 Bucket: "connector-storage",
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
             }).promise()
 
-            const fullStorageValue = String(storageValue.Body)
-            storage.storageValue = fullStorageValue
-
-            const usage = new IndexSchema.Usage({
+            const usages = [{
                 sub: req.user.sub,
                 usageType: 'storage',
                 usageDirection: 'down',
                 usageAmount: Number(storageValue.ContentLength),
-                usageLocation: 'api'
-            })
-            await usage.save()
+                usageMeasurement: 'kb',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }, {
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'time',
+                usageAmount: Number(new Date() - storageValueStart),
+                usageMeasurement: 'ms',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }]
+
+            await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
+
+            const fullStorageValue = String(storageValue.Body)
+            storage.storageValue = fullStorageValue
 
             return res.status(200).send(storage)
         } catch (err) {
@@ -79,27 +92,39 @@ module.exports = {
     getFileStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const storage = await IndexSchema.Storage.findOne(findPayload, '_id').lean()
+            const storage = await IndexSchema.Storage.findOne(findPayload)
 
+            const storageValueStart = new Date()
             const storageValue = await S3.getObject({
                 Bucket: "connector-storage",
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
             }).promise()
+
+            const usages = [{
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'down',
+                usageAmount: Number(storageValue.ContentLength),
+                usageMeasurement: 'kb',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }, {
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'time',
+                usageAmount: Number(new Date() - storageValueStart),
+                usageMeasurement: 'ms',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }]
+
+            await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
             const directoryPath = `./files/downloads/${storage.filename}`
             const filePath = path.resolve(`${directoryPath}/${storage.originalname}`)
 
             await mkdirp(directoryPath)
             await writeFile(filePath, storageValue.Body)
-
-            const usage = new IndexSchema.Usage({
-                sub: req.user.sub,
-                usageType: 'storage',
-                usageDirection: 'down',
-                usageAmount: Number(storageValue.ContentLength),
-                usageLocation: 'api'
-            })
-            await usage.save()
 
             return res.sendFile(filePath)
         } catch (err) {
@@ -114,6 +139,7 @@ module.exports = {
 
             if (!storage) throw new Error('Storage not found.')
 
+            const textDataStart = new Date()
             const textData = Buffer.from(req.body.storageValue, 'utf8')
 
             await S3.upload({
@@ -122,17 +148,28 @@ module.exports = {
                 Body: textData
             }).promise()
 
-            storage['size'] = Number(textData.byteLength)
-            await storage.save()
+            const textDataSize = Number(textData.byteLength)
+            storage['size'] = textDataSize
 
-            const usage = new IndexSchema.Usage({
+            const usages = [{
                 sub: req.user.sub,
                 usageType: 'storage',
                 usageDirection: 'up',
-                usageAmount: Number(textData.byteLength),
-                usageLocation: 'api'
-            })
-            await usage.save()
+                usageAmount: textDataSize,
+                usageMeasurement: 'kb',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }, {
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'time',
+                usageAmount: Number(new Date() - textDataStart),
+                usageMeasurement: 'ms',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }]
+
+            await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
             return res.status(200).send(storage)
         } catch (err) {
@@ -147,6 +184,7 @@ module.exports = {
 
             if (!storage) throw new Error('Storage not found.')
 
+            const fileDataStart = new Date()
             const file = await readFile(req.file.path, 'utf8')
 
             await S3.upload({
@@ -158,16 +196,28 @@ module.exports = {
             _.each(req.file, (value, key) => {
                 storage[key] = value
             })
-            await storage.save()
+            const fileDataSize = Number(req.file.size)
+            storage['size'] = fileDataSize
 
-            const usage = new IndexSchema.Usage({
+            const usages = [{
                 sub: req.user.sub,
                 usageType: 'storage',
                 usageDirection: 'up',
-                usageAmount: Number(req.file.size),
-                usageLocation: 'api'
-            })
-            await usage.save()
+                usageAmount: fileDataSize,
+                usageMeasurement: 'kb',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }, {
+                sub: req.user.sub,
+                usageType: 'storage',
+                usageDirection: 'time',
+                usageAmount: Number(new Date() - fileDataStart),
+                usageMeasurement: 'ms',
+                usageLocation: 'api',
+                usageId: storage._id,
+            }]
+
+            await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
             return res.status(200).send(storage)
         } catch (err) {

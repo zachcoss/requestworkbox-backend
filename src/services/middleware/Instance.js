@@ -130,26 +130,41 @@ module.exports = {
                 // Create Queue Uploading Stat
                 await Stats.updateQueueStats({ queue, status: 'uploading', }, IndexSchema, socketService)
 
+                const payloadStart = new Date()
                 // Create payload
-                payload = JSON.parse(JSON.stringify(req.body))
+                payload = JSON.stringify(req.body)
+                const payloadBuffer = Buffer.from(payload, 'utf8')
                 // Store payload
                 await S3.upload({
                     Bucket: "connector-storage",
-                    Key: `${req.user.sub}/request-payloads/${instance._id}/`,
-                    Body: JSON.stringify(payload)
+                    Key: `${req.user.sub}/request-payloads/${instance._id}`,
+                    Body: payloadBuffer
                 }).promise()
-                // Update storage id
-                queue.storage = instance._id
-                // Record usage
-                const payloadBuffer = Buffer.from(payload, 'utf8')
-                const usage = new indexSchema.Usage({
-                    sub: state.instance.sub,
+
+                const payloadSize = Number(payloadBuffer.byteLength)
+                
+                const usages = [{
+                    sub: req.user.sub,
                     usageType: 'storage',
                     usageDirection: 'up',
-                    usageAmount: Number(payloadBuffer.byteLength),
+                    usageAmount: payloadSize,
+                    usageMeasurement: 'kb',
                     usageLocation: 'queue',
-                })
-                await usage.save()
+                    usageId: instance._id,
+                }, {
+                    sub: req.user.sub,
+                    usageType: 'storage',
+                    usageDirection: 'time',
+                    usageAmount: Number(new Date() - payloadStart),
+                    usageMeasurement: 'ms',
+                    usageLocation: 'queue',
+                    usageId: instance._id,
+                }]
+    
+                await Stats.updateInstanceUsage({ instance, usages, }, IndexSchema)
+
+                // Update storage id
+                queue.storage = instance._id
             }
 
             // Update queue and save
