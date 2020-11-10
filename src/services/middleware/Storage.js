@@ -15,7 +15,7 @@ module.exports = {
     getStorages: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, project: req.body.projectId }
-            const projection = '-__v'
+            const projection = '-__v -usage'
             const storages = await IndexSchema.Storage.find(findPayload, projection)
             return res.status(200).send(storages)
         } catch (err) {
@@ -26,7 +26,7 @@ module.exports = {
     getStorage: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.storageId, active: true }
-            const projection = '-__v'
+            const projection = '-__v -usage'
             
             const storage = await IndexSchema.Storage.findOne(findPayload, projection)
             
@@ -41,7 +41,8 @@ module.exports = {
     getStorageDetails: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const storage = await IndexSchema.Storage.findOne(findPayload)
+            const projection = '-__v -usage'
+            const storage = await IndexSchema.Storage.findOne(findPayload, projection)
 
             return res.status(200).send(storage)
         } catch (err) {
@@ -82,6 +83,8 @@ module.exports = {
 
             const fullStorageValue = String(storageValue.Body)
             storage.storageValue = fullStorageValue
+
+            delete storage.usage
 
             return res.status(200).send(storage)
         } catch (err) {
@@ -135,7 +138,7 @@ module.exports = {
     updateTextStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.query.storageid }
-            const storage = await IndexSchema.Storage.findOne(findPayload, '_id')
+            const storage = await IndexSchema.Storage.findOne(findPayload)
 
             if (!storage) throw new Error('Storage not found.')
 
@@ -171,7 +174,7 @@ module.exports = {
 
             await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
-            return res.status(200).send(storage)
+            return res.status(200).send()
         } catch (err) {
             console.log(err)
             return res.status(500).send(err)
@@ -180,7 +183,7 @@ module.exports = {
     updateFileStorageData: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.query.storageid }
-            const storage = await IndexSchema.Storage.findOne(findPayload, '_id')
+            const storage = await IndexSchema.Storage.findOne(findPayload)
 
             if (!storage) throw new Error('Storage not found.')
 
@@ -219,7 +222,7 @@ module.exports = {
 
             await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
-            return res.status(200).send(storage)
+            return res.status(200).send()
         } catch (err) {
             console.log(err)
             return res.status(500).send('Please confirm file is a JSON or Text file')
@@ -271,6 +274,17 @@ module.exports = {
             await storage.remove()
             return res.status(200).send()
         } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    getStorageUsage: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.storageId }
+            const storage = await IndexSchema.Storage.findOne(findPayload, 'usage')
+
+            return res.status(200).send(storage)
+        } catch (err) {
             console.log(err)
             return res.status(500).send(err)
         }
