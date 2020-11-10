@@ -68,6 +68,7 @@ module.exports.config = function () {
     router.post('/get-instances', Statistic.getInstances)
     router.post('/get-instance', Statistic.getInstance)
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
+    router.post('/get-instance-usage', Statistic.getInstanceUsage)
     router.post('/delete-stats', Statistic.deleteStats)
 
     router.post('/get-account-type', Billing.getAccountType)

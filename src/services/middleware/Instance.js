@@ -148,9 +148,10 @@ module.exports = {
                     usageType: 'storage',
                     usageDirection: 'up',
                     usageAmount: payloadSize,
-                    usageMeasurement: 'kb',
+                    usageMeasurement: 'byte',
                     usageLocation: 'queue',
                     usageId: instance._id,
+                    usageDetail: `Body payload upload`,
                 }, {
                     sub: req.user.sub,
                     usageType: 'storage',
@@ -159,6 +160,7 @@ module.exports = {
                     usageMeasurement: 'ms',
                     usageLocation: 'queue',
                     usageId: instance._id,
+                    usageDetail: `Body payload upload`,
                 }]
     
                 await Stats.updateInstanceUsage({ instance, usages, }, IndexSchema)

@@ -65,7 +65,7 @@ module.exports = {
                 usageType: 'storage',
                 usageDirection: 'down',
                 usageAmount: Number(storageValue.ContentLength),
-                usageMeasurement: 'kb',
+                usageMeasurement: 'byte',
                 usageLocation: 'api',
                 usageId: storage._id,
             }, {
@@ -105,7 +105,7 @@ module.exports = {
                 usageType: 'storage',
                 usageDirection: 'down',
                 usageAmount: Number(storageValue.ContentLength),
-                usageMeasurement: 'kb',
+                usageMeasurement: 'byte',
                 usageLocation: 'api',
                 usageId: storage._id,
             }, {
@@ -156,7 +156,7 @@ module.exports = {
                 usageType: 'storage',
                 usageDirection: 'up',
                 usageAmount: textDataSize,
-                usageMeasurement: 'kb',
+                usageMeasurement: 'byte',
                 usageLocation: 'api',
                 usageId: storage._id,
             }, {
@@ -204,7 +204,7 @@ module.exports = {
                 usageType: 'storage',
                 usageDirection: 'up',
                 usageAmount: fileDataSize,
-                usageMeasurement: 'kb',
+                usageMeasurement: 'byte',
                 usageLocation: 'api',
                 usageId: storage._id,
             }, {
