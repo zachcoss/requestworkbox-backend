@@ -9,7 +9,6 @@ const
     Workflow = require('../../../services/middleware/Workflow'),
     Instance = require('../../../services/middleware/Instance'),
     Storage = require('../../../services/middleware/Storage'),
-    Billing = require('../../../services/middleware/Billing'),
     Queue = require('../../../services/middleware/Queue'),
     Feedback = require('../../../services/middleware/Feedback'),
     Statistic = require('../../../services/middleware/Statistic');
@@ -71,9 +70,6 @@ module.exports.config = function () {
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
     router.post('/get-instance-usage', Statistic.getInstanceUsage)
     router.post('/delete-stats', Statistic.deleteStats)
-
-    router.post('/get-account-type', Billing.getAccountType)
-    router.post('/update-account-type', Billing.updateAccountType)
 
     router.post('/get-schedule', Queue.getSchedule)
     router.post('/archive-all-queue', Queue.archiveAllQueue)
