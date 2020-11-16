@@ -4,7 +4,14 @@ const
     _ = require('lodash'),
     mongoose = require('mongoose'),
     IndexSchema = require('../tools/schema').schema,
-    S3 = require('../tools/s3').S3;
+    Stats = require('../tools/stats').stats,
+    S3 = require('../tools/s3').S3,
+    util = require('util'),
+    path = require('path'),
+    fs = require('fs'),
+    readFile = util.promisify(fs.readFile),
+    writeFile = util.promisify(fs.writeFile),
+    mkdirp = require('mkdirp');
 
 module.exports = {
     getInstances: async (req, res, next) => {
@@ -51,8 +58,27 @@ module.exports = {
                 const fullStat = JSON.parse(fullStatBuffer.Body)
 
                 stats[stat] = {}
-                stats[stat].requestPayload = fullStat.requestPayload
-                stats[stat].responsePayload = fullStat.responsePayload
+
+                // Add request payload
+                if (!fullStat.requestSize) {
+                    stats[stat].requestPayload = fullStat.requestPayload
+                } else {
+                    if (fullStat.requestSize < 1000) {
+                        stats[stat].requestPayload = fullStat.requestPayload
+                    } else {
+                        stats[stat].requestPayload = 'Request payload is too large to display. Please download.'
+                        stats[stat].downloadPayload = true
+                    }
+                }
+
+                // Add response payload
+                if (fullStat.responseSize < 1000) {
+                    stats[stat].responsePayload = fullStat.responsePayload
+                } else {
+                    stats[stat].responsePayload = 'Response payload is too large to display. Please download.'
+                    stats[stat].downloadPayload = true
+                }
+
             }
 
             return res.status(200).send(stats)
@@ -81,5 +107,65 @@ module.exports = {
             console.log(err)
             return res.status(500).send(err)
         }
-    }
+    },
+    downloadInstanceStat: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.instanceId }
+            const instance = await IndexSchema.Instance.findOne(findPayload, '_id stats')
+
+            let statId = req.body.statId
+            let statExists = false
+
+            let requestName = ''
+
+            for (const stat of instance.stats) {
+                if (String(stat._id) === statId) {
+                    statExists = true
+                    requestName = stat.requestName
+                }
+            }
+
+            if (!statExists) throw new Error('Could not find stat')
+
+            const fullStatBufferStart = new Date()
+            const fullStatBuffer = await S3.getObject({
+                Bucket: "connector-storage",
+                Key: `${findPayload.sub}/instance-statistics/${findPayload._id}/${statId}`,
+            }).promise()
+
+            const usages = [{
+                sub: req.user.sub,
+                usageType: 'stat',
+                usageDirection: 'down',
+                usageAmount: Number(fullStatBuffer.ContentLength),
+                usageMeasurement: 'byte',
+                usageLocation: 'api',
+                usageId: statId,
+                usageDetail: '',
+                usageDetail: `Stat Download: ${requestName}`,
+            }, {
+                sub: req.user.sub,
+                usageType: 'stat',
+                usageDirection: 'time',
+                usageAmount: Number(new Date() - fullStatBufferStart),
+                usageMeasurement: 'ms',
+                usageLocation: 'api',
+                usageId: statId,
+                usageDetail: `Stat Download: ${requestName}`,
+            }]
+
+            await Stats.updateInstanceUsage({ instance, usages, }, IndexSchema)
+
+            const directoryPath = `./files/downloads/${statId}`
+            const filePath = path.resolve(`${directoryPath}/${statId}`)
+
+            await mkdirp(directoryPath)
+            await writeFile(filePath, fullStatBuffer.Body)
+
+            return res.sendFile(filePath)
+        } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
 }

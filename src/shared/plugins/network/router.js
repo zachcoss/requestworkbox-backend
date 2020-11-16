@@ -70,6 +70,7 @@ module.exports.config = function () {
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
     router.post('/get-instance-usage', Statistic.getInstanceUsage)
     router.post('/delete-stats', Statistic.deleteStats)
+    router.post('/download-instance-stat', Statistic.downloadInstanceStat)
 
     router.post('/get-schedule', Queue.getSchedule)
     router.post('/archive-all-queue', Queue.archiveAllQueue)
