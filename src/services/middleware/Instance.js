@@ -26,7 +26,7 @@ module.exports = {
             const workflowTypeLast = `${workflowType}Last`
 
             // Find Queue
-            const workflow = await IndexSchema.Workflow.findById(req.params.workflowId)
+            const workflow = await IndexSchema.Workflow.findOne({ _id: req.params.workflowId, sub: req.user.sub })
             if (!workflow) return res.status(500).send('Workflow not found')
 
             // Check Account Type

@@ -18,7 +18,7 @@ module.exports = {
     },
     getWorkflow: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.workflowId, active: true }
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.workflowId }
             const projection = '-__v'
             
             const workflow = await IndexSchema.Workflow.findOne(findPayload, projection)
