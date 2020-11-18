@@ -24,13 +24,35 @@ module.exports = {
     },
     getProjects: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, active: true }
+            const findPayload = { sub: req.user.sub }
             const projection = 'name createdAt active'
-            console.log('searching')
             const projects = await IndexSchema.Project.find(findPayload, projection)
-            console.log('done searching')
             return res.status(200).send(projects)
         } catch (err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    archiveProject: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.projectId }
+            const project = await IndexSchema.Project.findOne(findPayload)
+            project.active = false
+            await project.save()
+            return res.status(200).send()
+        } catch(err) {
+            console.log(err)
+            return res.status(500).send(err)
+        }
+    },
+    restoreProject: async (req, res, next) => {
+        try {
+            const findPayload = { sub: req.user.sub, _id: req.body.projectId }
+            const project = await IndexSchema.Project.findOne(findPayload)
+            project.active = true
+            await project.save()
+            return res.status(200).send()
+        } catch(err) {
             console.log(err)
             return res.status(500).send(err)
         }

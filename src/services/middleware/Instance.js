@@ -29,6 +29,11 @@ module.exports = {
             const workflow = await IndexSchema.Workflow.findOne({ _id: req.params.workflowId, sub: req.user.sub })
             if (!workflow) return res.status(500).send('Workflow not found')
 
+            // Find Project
+            const project = await IndexSchema.Project.findOne({ _id: workflow.project, sub: req.user.sub })
+            if (!project) return res.status(500).send('Project not found')
+            if (!project.active) return res.status(500).send('Project is archived. Please restore and try again.')
+
             // Check Account Type
             const billing = await IndexSchema.Billing.findOne({ sub: req.user.sub })
             if (!billing || !billing.accountType) return res.status(500).send('Billing not found')

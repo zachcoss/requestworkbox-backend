@@ -21,6 +21,8 @@ module.exports.config = function () {
     router.post('/get-project-name', Project.getProjectName)
     router.post('/update-project-name', Project.updateProjectName)
     router.post('/get-projects', Project.getProjects)
+    router.post('/archive-project', Project.archiveProject)
+    router.post('/restore-project', Project.restoreProject)
 
     router.post('/new-request', Menu.newRequest)
     router.post('/new-workflow', Menu.newWorkflow)
