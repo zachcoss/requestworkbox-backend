@@ -146,7 +146,7 @@ module.exports = {
                 const payloadBuffer = Buffer.from(payload, 'utf8')
                 // Store payload
                 await S3.upload({
-                    Bucket: "connector-storage",
+                    Bucket: process.env.STORAGE_BUCKET,
                     Key: `${req.user.sub}/request-payloads/${instance._id}`,
                     Body: payloadBuffer
                 }).promise()

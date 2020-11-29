@@ -57,7 +57,7 @@ module.exports = {
 
             const storageValueStart = new Date()
             const storageValue = await S3.getObject({
-                Bucket: "connector-storage",
+                Bucket: process.env.STORAGE_BUCKET,
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
             }).promise()
 
@@ -99,7 +99,7 @@ module.exports = {
 
             const storageValueStart = new Date()
             const storageValue = await S3.getObject({
-                Bucket: "connector-storage",
+                Bucket: process.env.STORAGE_BUCKET,
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
             }).promise()
 
@@ -146,7 +146,7 @@ module.exports = {
             const textData = Buffer.from(req.body.storageValue, 'utf8')
 
             await S3.upload({
-                Bucket: "connector-storage",
+                Bucket: process.env.STORAGE_BUCKET,
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
                 Body: textData
             }).promise()
@@ -191,7 +191,7 @@ module.exports = {
             const file = await readFile(req.file.path, 'utf8')
 
             await S3.upload({
-                Bucket: "connector-storage",
+                Bucket: process.env.STORAGE_BUCKET,
                 Key: `${findPayload.sub}/storage/${findPayload._id}`,
                 Body: file
             }).promise()

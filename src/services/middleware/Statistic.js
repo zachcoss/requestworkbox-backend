@@ -52,7 +52,7 @@ module.exports = {
             for (const stat of instance.stats) {
 
                 const fullStatBuffer = await S3.getObject({
-                    Bucket: "connector-storage",
+                    Bucket: process.env.STORAGE_BUCKET,
                     Key: `${findPayload.sub}/instance-statistics/${findPayload._id}/${stat}`,
                 }).promise()
                 const fullStat = JSON.parse(fullStatBuffer.Body)
@@ -129,7 +129,7 @@ module.exports = {
 
             const fullStatBufferStart = new Date()
             const fullStatBuffer = await S3.getObject({
-                Bucket: "connector-storage",
+                Bucket: process.env.STORAGE_BUCKET,
                 Key: `${findPayload.sub}/instance-statistics/${findPayload._id}/${statId}`,
             }).promise()
 
