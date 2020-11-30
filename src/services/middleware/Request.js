@@ -52,6 +52,12 @@ module.exports = {
                 return res.status(500).send('Not valid URL')
             }
 
+            if (_.includes(updates.url.url, '/return-workflow') || 
+                _.includes(updates.url.url, '/queue-workflow') || 
+                _.includes(updates.url.url, '/schedule-workflow')) {
+                    return res.status(500).send('Recursive URLs are not allowed')
+            }
+
             const findPayload = { sub: req.user.sub, _id: req.body._id }
             const request = await IndexSchema.Request.findOne(findPayload)
             _.each(updates, (value, key) => {
