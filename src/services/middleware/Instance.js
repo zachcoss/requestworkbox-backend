@@ -59,27 +59,39 @@ module.exports = {
             let scheduleWindowSeconds = 0
             
             // Rate limit settings
-            const rateLimitSeconds = 5 * 60
+            const rateLimitSeconds = 60
             let rateLimitCount = 0
+            let taskLimitCount = 0
 
             if (accountType === 'free') {
-                queueDelaySeconds = 5 * 60
-                scheduleWindowSeconds = 5 * 60
-                rateLimitCount = 1
-            } else if (accountType === 'standard') {
-                queueDelaySeconds = 1 * 60
-                scheduleWindowSeconds = 60 * 60
-                rateLimitCount = 5
-            } else if (accountType === 'developer') {
                 queueDelaySeconds = 30
+                scheduleWindowSeconds = 5 * 60
+                rateLimitCount = 5
+                taskLimitCount = 2
+            } else if (accountType === 'standard') {
+                queueDelaySeconds = 15
+                scheduleWindowSeconds = 60 * 60
+                rateLimitCount = 25
+                taskLimitCount = 3
+            } else if (accountType === 'developer') {
+                queueDelaySeconds = 5
                 scheduleWindowSeconds = (60 * 60) * 12
-                rateLimitCount = 10
+                rateLimitCount = 60
+                taskLimitCount = 5
             } else if (accountType === 'professional') {
                 queueDelaySeconds = 1
                 scheduleWindowSeconds = (60 * 60) * 24
-                rateLimitCount = 25
+                rateLimitCount = 250
+                taskLimitCount = 15
             } else {
                 return res.status(500).send('Account type not found')
+            }
+
+            // Confirm task size
+            const taskCount = _.size(workflow.tasks)
+            if (taskCount > taskLimitCount) {
+                const message = `${_.upperFirst(accountType)} accounts are limited to ${taskLimitCount} tasks. Please update your workflow and try again.`
+                return res.status(400).send(message)
             }
 
             // Filter date
