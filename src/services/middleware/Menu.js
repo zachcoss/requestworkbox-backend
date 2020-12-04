@@ -17,6 +17,10 @@ module.exports = {
         try {
             const workflow = new IndexSchema.Workflow({ sub: req.user.sub, project: req.body.projectId })
             await workflow.save()
+
+            const statuscheck = new IndexSchema.Statuscheck({ sub: req.user.sub, projectId: req.body.projectId, workflowId: workflow._id })
+            await statuscheck.save()
+
             return res.status(200).send({ _id: workflow._id })
         } catch (err) {
             return res.status(500).send(err)

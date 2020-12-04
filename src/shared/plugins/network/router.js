@@ -10,6 +10,7 @@ const
     Instance = require('../../../services/middleware/Instance'),
     Storage = require('../../../services/middleware/Storage'),
     Queue = require('../../../services/middleware/Queue'),
+    Statuscheck = require('../../../services/middleware/Statuscheck'),
     Feedback = require('../../../services/middleware/Feedback'),
     Statistic = require('../../../services/middleware/Statistic');
 
@@ -77,6 +78,8 @@ module.exports.config = function () {
     router.post('/get-schedule', Queue.getSchedule)
     router.post('/archive-all-queue', Queue.archiveAllQueue)
     router.post('/archive-queue', Queue.archiveQueue)
+
+    router.post('/get-statuschecks', Statuscheck.getStatuschecks)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 

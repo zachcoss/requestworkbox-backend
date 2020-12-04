@@ -97,6 +97,12 @@ module.exports = {
             const workflow = await IndexSchema.Workflow.findOne(findPayload)
             workflow.active = false
             await workflow.save()
+
+            const findPayloadStatuscheck = { sub: req.user.sub, workflowId: req.body.workflowId }
+            const statuscheck = await IndexSchema.Statuscheck.findOne(findPayloadStatuscheck)
+            statuscheck.status = 'stopped'
+            await statuscheck.save()
+
             return res.status(200).send()
         } catch(err) {
             console.log(err)
