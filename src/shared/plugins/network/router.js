@@ -80,6 +80,10 @@ module.exports.config = function () {
     router.post('/archive-queue', Queue.archiveQueue)
 
     router.post('/get-statuschecks', Statuscheck.getStatuschecks)
+    router.post('/get-statuscheck', Statuscheck.getStatuscheck)
+    router.post('/save-statuscheck-changes', Statuscheck.saveStatuscheckChanges)
+    router.post('/start-statuscheck', Statuscheck.startStatuscheck)
+    router.post('/stop-statuscheck', Statuscheck.stopStatuscheck)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 
