@@ -11,6 +11,7 @@ const
     Storage = require('../../../services/middleware/Storage'),
     Queue = require('../../../services/middleware/Queue'),
     Statuscheck = require('../../../services/middleware/Statuscheck'),
+    Webhook = require('../../../services/middleware/Webhook'),
     Feedback = require('../../../services/middleware/Feedback'),
     Statistic = require('../../../services/middleware/Statistic');
 
@@ -84,6 +85,14 @@ module.exports.config = function () {
     router.post('/save-statuscheck-changes', Statuscheck.saveStatuscheckChanges)
     router.post('/start-statuscheck', Statuscheck.startStatuscheck)
     router.post('/stop-statuscheck', Statuscheck.stopStatuscheck)
+
+    router.post('/new-webhook', Webhook.newWebhook)
+    router.post('/get-webhooks', Webhook.getWebhooks)
+    router.post('/get-webhook', Webhook.getWebhook)
+    router.post('/save-webhook-changes', Webhook.saveWebhookChanges)
+    router.post('/get-webhook-details', Webhook.getWebhookDetails)
+    router.post('/webhooks/:webhookId', Webhook.acceptWebhook)
+    router.post('/download-webhook-detail', Webhook.downloadWebhookDetail)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 
