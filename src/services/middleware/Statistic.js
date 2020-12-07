@@ -16,7 +16,7 @@ const
 module.exports = {
     getInstances: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId, active: true }
+            const findPayload = { sub: req.user.sub, project: req.body.projectId, active: true, queueType: { $nin: ['statuscheck'] } }
             const projection = '-__v -usage'
             // autopopulates stats
             const instances = await IndexSchema.Instance.find(findPayload, projection).sort({createdAt: -1}).limit(5)

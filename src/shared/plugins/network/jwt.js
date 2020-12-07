@@ -39,7 +39,6 @@ module.exports.config = () => {
                 if (req.headers['x-api-key']) return true
                 else return false
             } else if (_.includes(req.path, '/statuscheck-workflow')) {
-                console.log('statuscheck from: ', req.hostname)
                 return true
             } else if (_.includes(req.path, '/webhooks/')) {
                 return true

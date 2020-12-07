@@ -18,7 +18,8 @@ module.exports = {
                 date: {
                     $gt: startDate,
                     $lt: endDate,
-                }
+                },
+                queueType: { $nin: ['statuscheck'] },
             }
 
             const schedule = await IndexSchema.Queue.find(findPayload)

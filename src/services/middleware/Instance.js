@@ -63,7 +63,6 @@ module.exports = {
 
             // Check Last Returned and Count
             const count = billing[workflowTypeCount] || 0
-            console.log('current count', count)
             const currentTime = moment(new Date())
             const lastTime = moment(billing[workflowTypeLast] || new Date())
             const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
@@ -125,9 +124,6 @@ module.exports = {
 
             // Rate limit functionality
             if (rateLimitLeft > 0) {
-                console.log(1)
-                console.log('rate limit left', rateLimitLeft)
-                console.log('current workflow type count', billing[workflowTypeCount])
                 billing[workflowTypeCount] = (billing[workflowTypeCount] || 0) + 1
                 billing[workflowTypeLast] = new Date()
                 await billing.save()
@@ -233,6 +229,11 @@ module.exports = {
                 statuscheck.nextQueueDate = queue.date
                 await statuscheck.save()
             }
+
+            // Update instance and save
+            instance.queueId = queue._id
+            instance.queueType = queue.queueType
+            await instance.save()
 
             // Create Queue Pending Stat
             await Stats.updateQueueStats({ queue, status: 'pending', }, IndexSchema, socketService)
