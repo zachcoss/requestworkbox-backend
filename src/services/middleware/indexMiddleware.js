@@ -14,6 +14,7 @@ module.exports = {
     interceptor: async function (req, res, next) {
         try {
             if (_.includes(req.path, '/webhooks/')) return next()
+            if (_.includes(req.path, '/statuscheck-workflow/')) return next()
             
             if ((!req.user || !req.user.sub) && !req.headers['x-api-key']) {
                 return res.status(401).send('user not found')

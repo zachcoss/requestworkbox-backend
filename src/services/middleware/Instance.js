@@ -18,12 +18,28 @@ module.exports = {
                 workflowType = 'queueWorkflow'
             } else if (_.includes(req.path, '/schedule-workflow/')) {
                 workflowType = 'scheduleWorkflow'
+            } else if (_.includes(req.path, '/statuscheck-workflow/')) {
+                workflowType = 'statuscheckWorkflow'
             } else {
                 return res.status(500).send('Workflow type not found')
             }
 
             const workflowTypeCount = `${workflowType}Count`
             const workflowTypeLast = `${workflowType}Last`
+
+            // Check Statuscheck
+            let statuscheck;
+            let statuscheckInterval = 60
+            if (workflowType === 'statuscheckWorkflow') {
+                statuscheck = await IndexSchema.Statuscheck.findOne({ workflowId: req.params.workflowId })
+                if (!statuscheck) return res.status(500).send('Statuscheck not found')
+                if (!statuscheck.active) return res.status(500).send('Statuscheck is archived. Please restore and try again.')
+                if (statuscheck.status === 'stopped') return res.status(500).send('Statuscheck is stopped. Please change status to running.')
+
+                statuscheckInterval = statuscheck.interval || 60
+
+                req.user = { sub: statuscheck.sub }
+            }
 
             // Find Queue
             const workflow = await IndexSchema.Workflow.findOne({ _id: req.params.workflowId, sub: req.user.sub })
@@ -47,6 +63,7 @@ module.exports = {
 
             // Check Last Returned and Count
             const count = billing[workflowTypeCount] || 0
+            console.log('current count', count)
             const currentTime = moment(new Date())
             const lastTime = moment(billing[workflowTypeLast] || new Date())
             const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
@@ -108,15 +125,21 @@ module.exports = {
 
             // Rate limit functionality
             if (rateLimitLeft > 0) {
-                billing[workflowTypeCount] = billing[workflowTypeCount] + 1
+                console.log(1)
+                console.log('rate limit left', rateLimitLeft)
+                console.log('current workflow type count', billing[workflowTypeCount])
+                billing[workflowTypeCount] = (billing[workflowTypeCount] || 0) + 1
                 billing[workflowTypeLast] = new Date()
                 await billing.save()
             } else if (rateLimitLeft === 0) {
+                console.log(2)
                 if (!rateLimit) {
+                    console.log(3)
                     billing[workflowTypeCount] = 1
                     billing[workflowTypeLast] = new Date()
                     await billing.save()
                 } else {
+                    console.log(4)
                     const returnHeader = { 'Retry-After': retryAfter }
                     return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
                 }
@@ -201,6 +224,14 @@ module.exports = {
             } else if (workflowType === 'scheduleWorkflow') {
                 queue.queueType = 'schedule'
                 queue.date = moment(req.query.date)
+            } else if (workflowType === 'statuscheckWorkflow') {
+                queue.queueType = 'statuscheck'
+                queue.date = moment().add(statuscheckInterval, 'seconds')
+                queue.statuscheckId = statuscheck._id
+
+                statuscheck.nextQueueId = queue._id
+                statuscheck.nextQueueDate = queue.date
+                await statuscheck.save()
             }
 
             // Create Queue Pending Stat
@@ -209,7 +240,7 @@ module.exports = {
             // Send to jobs
             if (workflowType === 'returnWorkflow') {
                 return res.redirect(`${process.env.JOBS_URL}/return-workflow?queueid=${queue._id}`)
-            } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow') {
+            } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow' || 'statuscheckWorkflow') {
                 return res.status(200).send(queue._id)
             }
 

@@ -54,7 +54,8 @@ module.exports = {
 
             if (_.includes(updates.url.url, '/return-workflow') || 
                 _.includes(updates.url.url, '/queue-workflow') || 
-                _.includes(updates.url.url, '/schedule-workflow')) {
+                _.includes(updates.url.url, '/schedule-workflow') || 
+                _.includes(updates.url.url, '/statuscheck-workflow')) {
                     return res.status(500).send('Recursive URLs are not allowed')
             }
 

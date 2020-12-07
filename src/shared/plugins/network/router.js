@@ -55,6 +55,7 @@ module.exports.config = function () {
     router.post('/return-workflow/:workflowId', Instance.startWorkflow)
     router.post('/queue-workflow/:workflowId', Instance.startWorkflow)
     router.post('/schedule-workflow/:workflowId', Instance.startWorkflow)
+    router.post('/statuscheck-workflow/:workflowId', Instance.startWorkflow)
 
     router.post('/get-storages', Storage.getStorages)
     router.post('/get-storage', Storage.getStorage)
