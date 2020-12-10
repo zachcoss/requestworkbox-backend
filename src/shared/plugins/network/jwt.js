@@ -27,23 +27,13 @@ module.exports.config = () => {
     })
     .unless({
         custom: function(req) {
-            if (req.path === '/') {
-                return true
-            } else if (_.includes(req.path, '/return-workflow')) {
-                if (req.headers['x-api-key']) return true
-                else return false
-            } else if (_.includes(req.path, '/queue-workflow')) {
-                if (req.headers['x-api-key']) return true
-                else return false
-            } else if (_.includes(req.path, '/schedule-workflow')) {
-                if (req.headers['x-api-key']) return true
-                else return false
-            } else if (_.includes(req.path, '/statuscheck-workflow')) {
-                return true
-            } else if (_.includes(req.path, '/webhooks/')) {
+            if (req.headers['x-api-key']) {
                 return true
             } else {
-                return false
+                if (req.path === '/') return true
+                else if (_.includes(req.path, '/statuscheck-workflow/')) return true
+                else if (_.includes(req.path, '/webhooks/')) return true
+                else return false
             }
         },
     })
@@ -55,6 +45,6 @@ module.exports.config = () => {
 */
 module.exports.handler = (err, req, res, next) => {
     if (err.name === 'UnauthorizedError') {
-        return res.status(401).send('Invalid or missing token')
+        return res.status(401).send('Invalid or missing token.')
     }
 }

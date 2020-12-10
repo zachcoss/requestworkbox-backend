@@ -36,9 +36,16 @@ module.exports = {
     archiveProject: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.projectId }
+
+            // Archive projects
             const project = await IndexSchema.Project.findOne(findPayload)
             project.active = false
             await project.save()
+
+            // Stop statuschecks
+            const statuschecks = await IndexSchema.Statuscheck.updateMany({ sub: project.sub, projectId: project._id }, { status: 'stopped' })
+            console.log('Stopped', statuschecks)
+            
             return res.status(200).send()
         } catch(err) {
             console.log(err)

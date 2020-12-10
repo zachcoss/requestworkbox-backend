@@ -2,33 +2,41 @@ const
     _ = require('lodash'),
     mongoose = require('mongoose'),
     validUrl = require('valid-url'),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    ValidateRequest = require('../validate/Request');
 
 module.exports = {
+    createRequest: async (req, res, next) => {
+        try {
+
+            const payload = ValidateRequest.createRequest.validate(req)
+            const request = await ValidateRequest.createRequest.request(payload)
+
+            return ValidateRequest.createRequest.response(request, res)
+        } catch (err) {
+            return ValidateRequest.createRequest.error(err, res)
+        }
+    },
     getRequests: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId }
-            const projection = '-__v'
-            const requests = await IndexSchema.Request.find(findPayload, projection)
-            return res.status(200).send(requests)
+
+            const payload = ValidateRequest.getRequests.validate(req)
+            const request = await ValidateRequest.getRequests.request(payload)
+
+            return ValidateRequest.getRequests.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateRequest.getRequests.error(err, res)
         }
     },
     getRequest: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.requestId, active: true }
-            const projection = '-__v'
             
-            const request = await IndexSchema.Request.findOne(findPayload, projection)
-            
-            if (!request) throw new Error('Could not find request')
-            
-            return res.status(200).send([request])
+            const payload = ValidateRequest.getRequest.validate(req)
+            const request = await ValidateRequest.getRequest.request(payload)
+
+            return ValidateRequest.getRequest.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateRequest.getRequest.error(err, res)
         }
     },
     getRequestDetails: async (req, res, next) => {

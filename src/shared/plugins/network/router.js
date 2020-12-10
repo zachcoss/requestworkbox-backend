@@ -26,12 +26,11 @@ module.exports.config = function () {
     router.post('/archive-project', Project.archiveProject)
     router.post('/restore-project', Project.restoreProject)
 
-    router.post('/new-request', Menu.newRequest)
     router.post('/new-workflow', Menu.newWorkflow)
     router.post('/new-project', Menu.newProject)
     router.post('/new-storage', Menu.newStorage)
-    router.post('/delete-entire-project', Menu.deleteEntireProject)
 
+    router.post('/create-request', Request.createRequest)
     router.post('/get-requests', Request.getRequests)
     router.post('/get-request', Request.getRequest)
     router.post('/get-request-details', Request.getRequestDetails)
