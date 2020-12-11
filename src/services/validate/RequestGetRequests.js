@@ -34,15 +34,14 @@ module.exports = {
             throw new Error(err)
         }
     },
-    response: function(newRequest, res) {
-        const response = _.map(newRequest, (request) => {
+    response: function(request, res) {
+        const response = _.map(request, (request) => {
             const responseData = _.pickBy(request, function(value, key) {
                 const keys = ['_id','url','active','project','query','headers','body','createdAt','updatedAt']
                 return _.includes(keys, key)
             })
             return responseData
         })
-
         return res.status(200).send(response)
     },
     error: function(err, res) {

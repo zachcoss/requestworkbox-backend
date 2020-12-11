@@ -98,16 +98,6 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    deleteStats: async (req, res, next) => {
-        try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId, active: true }
-            const statDelete = await IndexSchema.Instance.updateMany(findPayload, { active: false })
-            return res.status(200).send('OK')
-        } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
-        }
-    },
     downloadInstanceStat: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.instanceId }

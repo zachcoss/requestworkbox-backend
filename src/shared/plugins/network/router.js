@@ -33,13 +33,11 @@ module.exports.config = function () {
     router.post('/create-request', Request.createRequest)
     router.post('/get-requests', Request.getRequests)
     router.post('/get-request', Request.getRequest)
-    router.post('/get-request-details', Request.getRequestDetails)
     router.post('/save-request-changes', Request.saveRequestChanges)
     router.post('/add-request-detail-item', Request.addRequestDetailItem)
     router.post('/delete-request-detail-item', Request.deleteRequestDetailItem)
     router.post('/archive-request', Request.archiveRequest)
     router.post('/restore-request', Request.restoreRequest)
-    router.post('/delete-request', Request.deleteRequest)
 
     router.post('/get-workflows', Workflow.getWorkflows)
     router.post('/get-workflow', Workflow.getWorkflow)
@@ -49,7 +47,6 @@ module.exports.config = function () {
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
     router.post('/archive-workflow', Workflow.archiveWorkflow)
     router.post('/restore-workflow', Workflow.restoreWorkflow)
-    router.post('/delete-workflow', Workflow.deleteWorkflow)
 
     router.post('/return-workflow/:workflowId', Instance.startWorkflow)
     router.post('/queue-workflow/:workflowId', Instance.startWorkflow)
@@ -66,14 +63,12 @@ module.exports.config = function () {
     router.post('/save-storage-changes', Storage.saveStorageChanges)
     router.post('/archive-storage', Storage.archiveStorage)
     router.post('/restore-storage', Storage.restoreStorage)
-    router.post('/delete-storage', Storage.deleteStorage)
     router.post('/get-storage-usage', Storage.getStorageUsage)
 
     router.post('/get-instances', Statistic.getInstances)
     router.post('/get-instance', Statistic.getInstance)
     router.post('/get-instance-detail', Statistic.getInstanceDetail)
     router.post('/get-instance-usage', Statistic.getInstanceUsage)
-    router.post('/delete-stats', Statistic.deleteStats)
     router.post('/download-instance-stat', Statistic.downloadInstanceStat)
 
     router.post('/get-schedule', Queue.getSchedule)

@@ -39,12 +39,11 @@ module.exports = {
             throw new Error(err)
         }
     },
-    response: function(newRequest, res) {
-        const response = _.pickBy(newRequest, function(value, key) {
+    response: function(request, res) {
+        const response = _.pickBy(request, function(value, key) {
             const keys = ['_id','url','active','project','query','headers','body','createdAt','updatedAt']
             return _.includes(keys, key)
         })
-
         return res.status(200).send(response)
     },
     error: function(err, res) {

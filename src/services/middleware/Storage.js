@@ -267,17 +267,6 @@ module.exports = {
             return res.status(500).send(err)
         }
     },
-    deleteStorage: async (req, res, next) => {
-        try {
-            const findPayload = { sub: req.user.sub, _id: req.body.storageId }
-            const storage = await IndexSchema.Storage.findOne(findPayload)
-            await storage.remove()
-            return res.status(200).send()
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
-        }
-    },
     getStorageUsage: async (req, res, next) => {
         try {
             const findPayload = { sub: req.user.sub, _id: req.body.storageId }

@@ -8,10 +8,8 @@ const
 module.exports = {
     createRequest: async (req, res, next) => {
         try {
-
             const payload = ValidateRequest.createRequest.validate(req)
             const request = await ValidateRequest.createRequest.request(payload)
-
             return ValidateRequest.createRequest.response(request, res)
         } catch (err) {
             return ValidateRequest.createRequest.error(err, res)
@@ -19,10 +17,8 @@ module.exports = {
     },
     getRequests: async (req, res, next) => {
         try {
-
             const payload = ValidateRequest.getRequests.validate(req)
             const request = await ValidateRequest.getRequests.request(payload)
-
             return ValidateRequest.getRequests.response(request, res)
         } catch (err) {
             return ValidateRequest.getRequests.error(err, res)
@@ -30,57 +26,20 @@ module.exports = {
     },
     getRequest: async (req, res, next) => {
         try {
-            
             const payload = ValidateRequest.getRequest.validate(req)
             const request = await ValidateRequest.getRequest.request(payload)
-
             return ValidateRequest.getRequest.response(request, res)
         } catch (err) {
             return ValidateRequest.getRequest.error(err, res)
         }
     },
-    getRequestDetails: async (req, res, next) => {
-        try {
-            const findPayload = { sub: req.user.sub, _id: req.body.requestId }
-            const projection = '-__v'
-            const request = await IndexSchema.Request.findOne(findPayload, projection)
-            return res.status(200).send(request)
-        } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
-        }
-    },
     saveRequestChanges: async (req, res, next) => {
         try {
-            const updates = _.pick(req.body, ['url', 'query', 'headers', 'body'])
-
-            // validate url
-            if (!validUrl.isWebUri(updates.url.url)) {
-                console.log('Not valid URL', updates.url.url)
-                return res.status(500).send('Not valid URL')
-            }
-
-            if (_.includes(updates.url.url, '/return-workflow') || 
-                _.includes(updates.url.url, '/queue-workflow') || 
-                _.includes(updates.url.url, '/schedule-workflow') || 
-                _.includes(updates.url.url, '/statuscheck-workflow')) {
-                    return res.status(500).send('Recursive URLs are not allowed')
-            }
-
-            const findPayload = { sub: req.user.sub, _id: req.body._id }
-            const request = await IndexSchema.Request.findOne(findPayload)
-            _.each(updates, (value, key) => {
-                request[key] = value
-            })
-            // fix headers
-            _.each(request.headers, (headerObj) => {
-                headerObj.key = headerObj.key.replace(/ /g,'-')
-            })
-            await request.save()
-            return res.status(200).send()
+            const payload = ValidateRequest.saveRequestChanges.validate(req)
+            const request = await ValidateRequest.saveRequestChanges.request(payload)
+            return ValidateRequest.saveRequestChanges.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateRequest.saveRequestChanges.error(err, res)
         }
     },
     addRequestDetailItem: async (req, res, next) => {
@@ -134,17 +93,6 @@ module.exports = {
             const request = await IndexSchema.Request.findOne(findPayload)
             request.active = true
             await request.save()
-            return res.status(200).send()
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
-        }
-    },
-    deleteRequest: async (req, res, next) => {
-        try {
-            const findPayload = { sub: req.user.sub, _id: req.body.requestId }
-            const request = await IndexSchema.Request.findOne(findPayload)
-            await request.remove()
             return res.status(200).send()
         } catch(err) {
             console.log(err)
