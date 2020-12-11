@@ -44,59 +44,38 @@ module.exports = {
     },
     addRequestDetailItem: async (req, res, next) => {
         try {
-
-            const requestDetailOption = req.body.requestDetailOption
-            const findPayload = { sub: req.user.sub, _id: req.body._id }
-            const request = await IndexSchema.Request.findOne(findPayload)
-            const newItem = {
-                _id: mongoose.Types.ObjectId(),
-                key: '',
-                value: '',
-                valueType: 'textInput',
-            }
-            request[requestDetailOption].push(newItem)
-            await request.save()
-            return res.status(200).send(newItem)
+            const payload = ValidateRequest.addRequestDetailItem.validate(req)
+            const request = await ValidateRequest.addRequestDetailItem.request(payload)
+            return ValidateRequest.addRequestDetailItem.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateRequest.addRequestDetailItem.error(err, res)
         }
     },
     deleteRequestDetailItem: async (req, res, next) => {
         try {
-            const requestDetailOption = req.body.requestDetailOption
-            const findPayload = { sub: req.user.sub, _id: req.body._id }
-            const request = await IndexSchema.Request.findOne(findPayload)
-            request[requestDetailOption].id(req.body.requestDetailItemId).remove()
-            await request.save()
-            return res.status(200).send()
+            const payload = ValidateRequest.deleteRequestDetailItem.validate(req)
+            const request = await ValidateRequest.deleteRequestDetailItem.request(payload)
+            return ValidateRequest.deleteRequestDetailItem.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateRequest.deleteRequestDetailItem.error(err, res)
         }
     },
     archiveRequest: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, _id: req.body.requestId }
-            const request = await IndexSchema.Request.findOne(findPayload)
-            request.active = false
-            await request.save()
-            return res.status(200).send()
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
+            const payload = ValidateRequest.archiveRequest.validate(req)
+            const request = await ValidateRequest.archiveRequest.request(payload)
+            return ValidateRequest.archiveRequest.response(request, res)
+        } catch (err) {
+            return ValidateRequest.archiveRequest.error(err, res)
         }
     },
     restoreRequest: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, _id: req.body.requestId }
-            const request = await IndexSchema.Request.findOne(findPayload)
-            request.active = true
-            await request.save()
-            return res.status(200).send()
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
+            const payload = ValidateRequest.restoreRequest.validate(req)
+            const request = await ValidateRequest.restoreRequest.request(payload)
+            return ValidateRequest.restoreRequest.response(request, res)
+        } catch (err) {
+            return ValidateRequest.restoreRequest.error(err, res)
         }
     },
 }
