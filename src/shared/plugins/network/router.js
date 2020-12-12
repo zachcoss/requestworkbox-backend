@@ -3,7 +3,6 @@ const
     router = express.Router(),
     upload = require('../../../services/tools/multer').upload,
     indexMiddleware = require('../../../services/middleware/indexMiddleware'),
-    Menu = require('../../../services/middleware/Menu'),
     Project = require('../../../services/middleware/Project'),
     Request = require('../../../services/middleware/Request'),
     Workflow = require('../../../services/middleware/Workflow'),
@@ -19,8 +18,6 @@ module.exports.config = function () {
 
     router.get('/', indexMiddleware.healthcheck)
     router.all('*', indexMiddleware.interceptor)
-
-    router.post('/new-storage', Menu.newStorage)
 
     router.post('/create-project', Project.createProject)
     router.post('/list-projects', Project.listProjects)
@@ -52,9 +49,9 @@ module.exports.config = function () {
     router.post('/schedule-workflow/:workflowId', Instance.startWorkflow)
     router.post('/statuscheck-workflow/:workflowId', Instance.startWorkflow)
 
-    router.post('/get-storages', Storage.getStorages)
+    router.post('/create-storage', Storage.createStorage)
+    router.post('/list-storages', Storage.listStorages)
     router.post('/get-storage', Storage.getStorage)
-    router.post('/get-storage-details', Storage.getStorageDetails)
     router.post('/get-text-storage-data', Storage.getTextStorageData)
     router.post('/get-file-storage-data', Storage.getFileStorageData)
     router.post('/update-text-storage-data', Storage.updateTextStorageData)
