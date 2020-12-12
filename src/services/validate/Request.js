@@ -1,6 +1,6 @@
 const 
     createRequest = require('./RequestCreateRequest'),
-    getRequests = require('./RequestGetRequests'),
+    listRequests = require('./RequestListRequests'),
     getRequest = require('./RequestGetRequest'),
     saveRequestChanges = require('./RequestSaveRequestChanges'),
     addRequestDetailItem = require('./RequestAddRequestDetailItem'),
@@ -10,7 +10,7 @@ const
 
 module.exports = {
     createRequest: createRequest,
-    getRequests: getRequests,
+    listRequests: listRequests,
     getRequest: getRequest,
     saveRequestChanges: saveRequestChanges,
     addRequestDetailItem: addRequestDetailItem,

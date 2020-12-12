@@ -20,18 +20,17 @@ module.exports.config = function () {
     router.get('/', indexMiddleware.healthcheck)
     router.all('*', indexMiddleware.interceptor)
 
-    router.post('/new-workflow', Menu.newWorkflow)
     router.post('/new-storage', Menu.newStorage)
 
     router.post('/create-project', Project.createProject)
-    router.post('/get-projects', Project.getProjects)
+    router.post('/list-projects', Project.listProjects)
     router.post('/get-project', Project.getProject)
     router.post('/update-project', Project.updateProject)
     router.post('/archive-project', Project.archiveProject)
     router.post('/restore-project', Project.restoreProject)
 
     router.post('/create-request', Request.createRequest)
-    router.post('/get-requests', Request.getRequests)
+    router.post('/list-requests', Request.listRequests)
     router.post('/get-request', Request.getRequest)
     router.post('/save-request-changes', Request.saveRequestChanges)
     router.post('/add-request-detail-item', Request.addRequestDetailItem)
@@ -39,9 +38,9 @@ module.exports.config = function () {
     router.post('/archive-request', Request.archiveRequest)
     router.post('/restore-request', Request.restoreRequest)
 
-    router.post('/get-workflows', Workflow.getWorkflows)
+    router.post('/create-workflow', Workflow.createWorkflow)
+    router.post('/list-workflows', Workflow.listWorkflows)
     router.post('/get-workflow', Workflow.getWorkflow)
-    router.post('/get-workflow-details', Workflow.getWorkflowDetails)
     router.post('/save-workflow-changes', Workflow.saveWorkflowChanges)
     router.post('/add-workflow-task', Workflow.addWorkflowTask)
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)

@@ -1,6 +1,6 @@
 const 
     createProject = require('./ProjectCreateProject'),
-    getProjects = require('./ProjectGetProjects'),
+    listProjects = require('./ProjectListProjects'),
     getProject = require('./ProjectGetProject'),
     updateProject = require('./ProjectUpdateProject'),
     archiveProject = require('./ProjectArchiveProject'),
@@ -8,7 +8,7 @@ const
 
 module.exports = {
     createProject: createProject,
-    getProjects: getProjects,
+    listProjects: listProjects,
     getProject: getProject,
     updateProject: updateProject,
     archiveProject: archiveProject,

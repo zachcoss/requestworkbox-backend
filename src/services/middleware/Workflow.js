@@ -1,124 +1,82 @@
 const
     _ = require('lodash'),
     mongoose = require('mongoose'),
-    validUrl = require('valid-url'),
     IndexSchema = require('../tools/schema').schema;
 
+const
+    ValidateWorkflow = require('../validate/Workflow');
+
 module.exports = {
-    getWorkflows: async (req, res, next) => {
+    createWorkflow: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId }
-            const projection = '-__v'
-            const requests = await IndexSchema.Workflow.find(findPayload, projection)
-            return res.status(200).send(requests)
+            const payload = ValidateWorkflow.createWorkflow.validate(req)
+            const request = await ValidateWorkflow.createWorkflow.request(payload)
+            return ValidateWorkflow.createWorkflow.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateWorkflow.createWorkflow.error(err, res)
+        }
+    },
+    listWorkflows: async (req, res, next) => {
+        try {
+            const payload = ValidateWorkflow.listWorkflows.validate(req)
+            const request = await ValidateWorkflow.listWorkflows.request(payload)
+            return ValidateWorkflow.listWorkflows.response(request, res)
+        } catch (err) {
+            return ValidateWorkflow.listWorkflows.error(err, res)
         }
     },
     getWorkflow: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, project: req.body.projectId, _id: req.body.workflowId }
-            const projection = '-__v'
-            
-            const workflow = await IndexSchema.Workflow.findOne(findPayload, projection)
-            
-            if (!workflow) throw new Error('Could not find workflow')
-            
-            return res.status(200).send([workflow])
+            const payload = ValidateWorkflow.getWorkflow.validate(req)
+            const request = await ValidateWorkflow.getWorkflow.request(payload)
+            return ValidateWorkflow.getWorkflow.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
-        }
-    },
-    getWorkflowDetails: async (req, res, next) => {
-        try {
-            const findPayload = { sub: req.user.sub, _id: req.body.workflowId }
-            const projection = '-__v'
-            const workflow = await IndexSchema.Workflow.findOne(findPayload, projection)
-            return res.status(200).send(workflow)
-        } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateWorkflow.getWorkflow.error(err, res)
         }
     },
     saveWorkflowChanges: async (req, res, next) => {
         try {
-            const updates = _.pick(req.body, ['name','tasks','webhookRequestId'])
-
-            const findPayload = { sub: req.user.sub, _id: req.body._id }
-            const workflow = await IndexSchema.Workflow.findOne(findPayload)
-
-            _.each(updates, (value, key) => {
-                workflow[key] = value
-            })
-
-            if (!updates.webhookRequestId || updates.webhookRequestId === '') {
-                workflow.webhookRequestId = undefined
-            }
-            
-            await workflow.save()
-            return res.status(200).send()
+            const payload = ValidateWorkflow.saveWorkflowChanges.validate(req)
+            const request = await ValidateWorkflow.saveWorkflowChanges.request(payload)
+            return ValidateWorkflow.saveWorkflowChanges.response(request, res)
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            return ValidateWorkflow.saveWorkflowChanges.error(err, res)
         }
     },
     addWorkflowTask: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, _id: req.body._id }
-            const workflow = await IndexSchema.Workflow.findOne(findPayload)
-            const newItem = {
-                _id: mongoose.Types.ObjectId(),
-            }
-            workflow.tasks.push(newItem)
-            await workflow.save()
-            return res.status(200).send(newItem)
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
+            const payload = ValidateWorkflow.addWorkflowTask.validate(req)
+            const request = await ValidateWorkflow.addWorkflowTask.request(payload)
+            return ValidateWorkflow.addWorkflowTask.response(request, res)
+        } catch (err) {
+            return ValidateWorkflow.addWorkflowTask.error(err, res)
         }
     },
     deleteWorkflowTask: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, _id: req.body._id }
-            const workflow = await IndexSchema.Workflow.findOne(findPayload)
-            workflow.tasks.id(req.body.taskId).remove()
-            await workflow.save()
-            return res.status(200).send()
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
+            const payload = ValidateWorkflow.deleteWorkflowTask.validate(req)
+            const request = await ValidateWorkflow.deleteWorkflowTask.request(payload)
+            return ValidateWorkflow.deleteWorkflowTask.response(request, res)
+        } catch (err) {
+            return ValidateWorkflow.deleteWorkflowTask.error(err, res)
         }
     },
     archiveWorkflow: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, _id: req.body.workflowId }
-            const workflow = await IndexSchema.Workflow.findOne(findPayload)
-            workflow.active = false
-            await workflow.save()
-
-            const findPayloadStatuscheck = { sub: req.user.sub, workflowId: req.body.workflowId }
-            const statuscheck = await IndexSchema.Statuscheck.findOne(findPayloadStatuscheck)
-            statuscheck.status = 'stopped'
-            await statuscheck.save()
-
-            return res.status(200).send()
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
+            const payload = ValidateWorkflow.archiveWorkflow.validate(req)
+            const request = await ValidateWorkflow.archiveWorkflow.request(payload)
+            return ValidateWorkflow.archiveWorkflow.response(request, res)
+        } catch (err) {
+            return ValidateWorkflow.archiveWorkflow.error(err, res)
         }
     },
     restoreWorkflow: async (req, res, next) => {
         try {
-            const findPayload = { sub: req.user.sub, _id: req.body.workflowId }
-            const workflow = await IndexSchema.Workflow.findOne(findPayload)
-            workflow.active = true
-            await workflow.save()
-            return res.status(200).send()
-        } catch(err) {
-            console.log(err)
-            return res.status(500).send(err)
+            const payload = ValidateWorkflow.restoreWorkflow.validate(req)
+            const request = await ValidateWorkflow.restoreWorkflow.request(payload)
+            return ValidateWorkflow.restoreWorkflow.response(request, res)
+        } catch (err) {
+            return ValidateWorkflow.restoreWorkflow.error(err, res)
         }
     },
 }

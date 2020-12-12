@@ -1,8 +1,4 @@
 const
-    _ = require('lodash'),
-    IndexSchema = require('../tools/schema').schema;
-
-const
     ValidateProject = require('../validate/Project');
 
 module.exports = {
@@ -15,13 +11,13 @@ module.exports = {
             return ValidateProject.createProject.error(err, res)
         }
     },
-    getProjects: async (req, res, next) => {
+    listProjects: async (req, res, next) => {
         try {
-            const payload = ValidateProject.getProjects.validate(req)
-            const request = await ValidateProject.getProjects.request(payload)
-            return ValidateProject.getProjects.response(request, res)
+            const payload = ValidateProject.listProjects.validate(req)
+            const request = await ValidateProject.listProjects.request(payload)
+            return ValidateProject.listProjects.response(request, res)
         } catch (err) {
-            return ValidateProject.getProjects.error(err, res)
+            return ValidateProject.listProjects.error(err, res)
         }
     },
     getProject: async (req, res, next) => {

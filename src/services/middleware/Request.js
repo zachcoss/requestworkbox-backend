@@ -11,13 +11,13 @@ module.exports = {
             return ValidateRequest.createRequest.error(err, res)
         }
     },
-    getRequests: async (req, res, next) => {
+    listRequests: async (req, res, next) => {
         try {
-            const payload = ValidateRequest.getRequests.validate(req)
-            const request = await ValidateRequest.getRequests.request(payload)
-            return ValidateRequest.getRequests.response(request, res)
+            const payload = ValidateRequest.listRequests.validate(req)
+            const request = await ValidateRequest.listRequests.request(payload)
+            return ValidateRequest.listRequests.response(request, res)
         } catch (err) {
-            return ValidateRequest.getRequests.error(err, res)
+            return ValidateRequest.listRequests.error(err, res)
         }
     },
     getRequest: async (req, res, next) => {
