@@ -11,8 +11,7 @@ const
     Queue = require('../../../services/middleware/Queue'),
     Statuscheck = require('../../../services/middleware/Statuscheck'),
     Webhook = require('../../../services/middleware/Webhook'),
-    Feedback = require('../../../services/middleware/Feedback'),
-    Statistic = require('../../../services/middleware/Statistic');
+    Feedback = require('../../../services/middleware/Feedback');
 
 module.exports.config = function () {
 
@@ -43,11 +42,10 @@ module.exports.config = function () {
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
     router.post('/archive-workflow', Workflow.archiveWorkflow)
     router.post('/restore-workflow', Workflow.restoreWorkflow)
-
-    router.post('/return-workflow/:workflowId', Instance.startWorkflow)
-    router.post('/queue-workflow/:workflowId', Instance.startWorkflow)
-    router.post('/schedule-workflow/:workflowId', Instance.startWorkflow)
-    router.post('/statuscheck-workflow/:workflowId', Instance.startWorkflow)
+    router.post('/return-workflow/:workflowId', Workflow.startWorkflow)
+    router.post('/queue-workflow/:workflowId', Workflow.startWorkflow)
+    router.post('/schedule-workflow/:workflowId', Workflow.startWorkflow)
+    router.post('/statuscheck-workflow/:workflowId', Workflow.startWorkflow)
 
     router.post('/create-storage', Storage.createStorage)
     router.post('/list-storages', Storage.listStorages)
@@ -61,11 +59,11 @@ module.exports.config = function () {
     router.post('/restore-storage', Storage.restoreStorage)
     router.post('/get-storage-usage', Storage.getStorageUsage)
 
-    router.post('/get-instances', Statistic.getInstances)
-    router.post('/get-instance', Statistic.getInstance)
-    router.post('/get-instance-detail', Statistic.getInstanceDetail)
-    router.post('/get-instance-usage', Statistic.getInstanceUsage)
-    router.post('/download-instance-stat', Statistic.downloadInstanceStat)
+    router.post('/list-instances', Instance.listInstances)
+    router.post('/get-instance', Instance.getInstance)
+    router.post('/get-instance-detail', Instance.getInstanceDetail)
+    router.post('/get-instance-usage', Instance.getInstanceUsage)
+    router.post('/download-instance-stat', Instance.downloadInstanceStat)
 
     router.post('/get-schedule', Queue.getSchedule)
     router.post('/archive-all-queue', Queue.archiveAllQueue)
