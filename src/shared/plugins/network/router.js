@@ -20,15 +20,15 @@ module.exports.config = function () {
     router.get('/', indexMiddleware.healthcheck)
     router.all('*', indexMiddleware.interceptor)
 
-    router.post('/get-project-name', Project.getProjectName)
-    router.post('/update-project-name', Project.updateProjectName)
+    router.post('/new-workflow', Menu.newWorkflow)
+    router.post('/new-storage', Menu.newStorage)
+
+    router.post('/create-project', Project.createProject)
     router.post('/get-projects', Project.getProjects)
+    router.post('/get-project', Project.getProject)
+    router.post('/update-project', Project.updateProject)
     router.post('/archive-project', Project.archiveProject)
     router.post('/restore-project', Project.restoreProject)
-
-    router.post('/new-workflow', Menu.newWorkflow)
-    router.post('/new-project', Menu.newProject)
-    router.post('/new-storage', Menu.newStorage)
 
     router.post('/create-request', Request.createRequest)
     router.post('/get-requests', Request.getRequests)

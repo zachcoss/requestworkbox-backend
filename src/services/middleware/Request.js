@@ -1,8 +1,4 @@
 const
-    _ = require('lodash'),
-    mongoose = require('mongoose'),
-    validUrl = require('valid-url'),
-    IndexSchema = require('../tools/schema').schema,
     ValidateRequest = require('../validate/Request');
 
 module.exports = {

@@ -3,15 +3,6 @@ const
     IndexSchema = require('../tools/schema').schema;
 
 module.exports = {
-    newProject: async (req, res, next) => {
-        try {
-            const project = new IndexSchema.Project({ sub: req.user.sub })
-            await project.save()
-            return res.status(200).send({ _id: project._id })
-        } catch (err) {
-            return res.status(500).send(err)
-        }
-    },
     newWorkflow: async (req, res, next) => {
         try {
             if (!req.body.projectId || req.body.projectId === '') throw new Error('Project id required.')

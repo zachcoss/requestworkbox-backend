@@ -6,30 +6,22 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema;
-    
 
 module.exports = {
     validate: function(req, res) {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
 
-        let payload = { sub: req.user.sub, }
-
-        if (req.body.projectId) {
-            if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.project = req.body.projectId
+        const payload = {
+            sub: req.user.sub,
         }
 
         return payload
     },
     request: async function(payload) {
         try {
-
-            const requests = await IndexSchema.Request.find(payload)
-            .sort({createdAt: -1})
-            .limit(20)
-
-            return requests
+            const projects = await IndexSchema.Project.find(payload)
+            return projects
         } catch(err) {
             throw new Error(err)
         }
@@ -37,7 +29,7 @@ module.exports = {
     response: function(request, res) {
         const response = _.map(request, (request) => {
             const responseData = _.pickBy(request, function(value, key) {
-                const keys = ['_id','url','active','project','query','headers','body','createdAt','updatedAt']
+                const keys = ['_id','active','name','createdAt','updatedAt']
                 return _.includes(keys, key)
             })
             return responseData
@@ -46,9 +38,8 @@ module.exports = {
     },
     error: function(err, res) {
         if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
         else {
-            console.log('Get requests error', err)
+            console.log('Get projects error', err)
             return res.status(500).send('Request error')
         }
     },
