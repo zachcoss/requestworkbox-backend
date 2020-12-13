@@ -65,8 +65,8 @@ module.exports.config = function () {
     router.post('/get-instance-usage', Instance.getInstanceUsage)
     router.post('/download-instance-stat', Instance.downloadInstanceStat)
 
-    router.post('/get-schedule', Queue.getSchedule)
-    router.post('/archive-all-queue', Queue.archiveAllQueue)
+    router.post('/list-queues', Queue.listQueues)
+    router.post('/archive-all-queues', Queue.archiveAllQueues)
     router.post('/archive-queue', Queue.archiveQueue)
 
     router.post('/get-statuschecks', Statuscheck.getStatuschecks)
