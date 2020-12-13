@@ -1,8 +1,3 @@
-const
-    _ = require('lodash'),
-    moment = require('moment'),
-    IndexSchema = require('../tools/schema').schema;
-
 const ValidateStatuscheck = require('../validate/Statuscheck');
 
 module.exports = {

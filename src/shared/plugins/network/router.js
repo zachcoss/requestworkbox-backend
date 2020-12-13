@@ -75,8 +75,8 @@ module.exports.config = function () {
     router.post('/start-statuscheck', Statuscheck.startStatuscheck)
     router.post('/stop-statuscheck', Statuscheck.stopStatuscheck)
 
-    router.post('/new-webhook', Webhook.newWebhook)
-    router.post('/get-webhooks', Webhook.getWebhooks)
+    router.post('/create-webhook', Webhook.createWebhook)
+    router.post('/list-webhooks', Webhook.listWebhooks)
     router.post('/get-webhook', Webhook.getWebhook)
     router.post('/save-webhook-changes', Webhook.saveWebhookChanges)
     router.post('/get-webhook-details', Webhook.getWebhookDetails)
