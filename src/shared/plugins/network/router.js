@@ -69,7 +69,7 @@ module.exports.config = function () {
     router.post('/archive-all-queues', Queue.archiveAllQueues)
     router.post('/archive-queue', Queue.archiveQueue)
 
-    router.post('/get-statuschecks', Statuscheck.getStatuschecks)
+    router.post('/list-statuschecks', Statuscheck.listStatuschecks)
     router.post('/get-statuscheck', Statuscheck.getStatuscheck)
     router.post('/save-statuscheck-changes', Statuscheck.saveStatuscheckChanges)
     router.post('/start-statuscheck', Statuscheck.startStatuscheck)
