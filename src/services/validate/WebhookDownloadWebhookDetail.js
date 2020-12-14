@@ -12,7 +12,8 @@ const
     path = require('path'),
     fs = require('fs'),
     writeFile = util.promisify(fs.writeFile),
-    mkdirp = require('mkdirp');
+    mkdirp = require('mkdirp'),
+    usageKeys = ['_id','active','usageType','usageDirection','usageAmount','usageMeasurement','usageLocation','usageId','usageDetail','createdAt','updatedAt'];
 
 module.exports = {
     validate: function(req, res) {

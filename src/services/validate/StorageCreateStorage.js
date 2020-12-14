@@ -5,15 +5,8 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    util = require('util'),
-    path = require('path'),
-    fs = require('fs'),
-    readFile = util.promisify(fs.readFile),
-    writeFile = util.promisify(fs.writeFile),
-    mkdirp = require('mkdirp'),
     IndexSchema = require('../tools/schema').schema,
-    Stats = require('../tools/stats').stats,
-    S3 = require('../tools/s3').S3;
+    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'];
 
 module.exports = {
     validate: function(req, res) {
@@ -45,7 +38,7 @@ module.exports = {
 
             const storage = new IndexSchema.Storage({
                 sub: project.sub,
-                project: project._id,
+                projectId: project._id,
                 storageType: payload.storageType,
             })
             await storage.save()
@@ -57,7 +50,6 @@ module.exports = {
     },
     response: function(request, res) {
         const response = _.pickBy(request, function(value, key) {
-            const keys = ['_id','active','name','project','storageType','storageValue','mimetype','originalname','size','createdAt','updatedAt']
             return _.includes(keys, key)
         })
         return res.status(200).send(response)

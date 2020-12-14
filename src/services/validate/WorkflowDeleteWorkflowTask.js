@@ -6,7 +6,8 @@ const
         }
     }),
     mongoose = require('mongoose'),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    keys = ['_id','active','name','projectId','tasks','webhookRequestId','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -45,7 +46,6 @@ module.exports = {
     },
     response: function(request, res) {
         const response = _.pickBy(request, function(value, key) {
-            const keys = ['_id','active','name','project','tasks','webhookRequestId','createdAt','updatedAt']
             return _.includes(keys, key)
         })
         return res.status(200).send(response)

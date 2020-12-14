@@ -5,7 +5,8 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    keys = ['_id','active','name','projectId','tasks','webhookRequestId','createdAt','updatedAt'];
 
 module.exports = {
     validate: function(req, res) {
@@ -16,7 +17,7 @@ module.exports = {
 
         if (req.body.projectId) {
             if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.project = req.body.projectId
+            payload.projectId = req.body.projectId
         }
 
         return payload
@@ -36,7 +37,6 @@ module.exports = {
     response: function(request, res) {
         const response = _.map(request, (request) => {
             const responseData = _.pickBy(request, function(value, key) {
-                const keys = ['_id','active','name','project','tasks','webhookRequestId','createdAt','updatedAt']
                 return _.includes(keys, key)
             })
             return responseData

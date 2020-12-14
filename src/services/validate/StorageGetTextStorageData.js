@@ -7,7 +7,8 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     Stats = require('../tools/stats').stats,
-    S3 = require('../tools/s3').S3;
+    S3 = require('../tools/s3').S3,
+    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -28,7 +29,7 @@ module.exports = {
 
         if (req.body.projectId) {
             if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.project = req.body.projectId
+            payload.projectId = req.body.projectId
         }
 
         return payload
@@ -75,7 +76,6 @@ module.exports = {
     },
     response: function(request, res) {
         const response = _.pickBy(request, function(value, key) {
-            const keys = ['_id','active','name','project','storageType','storageValue','mimetype','originalname','size','createdAt','updatedAt']
             return _.includes(keys, key)
         })
         return res.status(200).send(response)

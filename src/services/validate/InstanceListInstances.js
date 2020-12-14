@@ -5,7 +5,9 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    keys = ['_id','active','projectId','workflowId','workflowName','queueType','queueId','stats','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','createdAt','updatedAt'];
 
 module.exports = {
     validate: function(req, res) {
@@ -16,7 +18,7 @@ module.exports = {
 
         let payload = {
             sub: req.user.sub,
-            project: req.body.projectId,
+            projectId: req.body.projectId,
         }
 
         return payload
@@ -26,7 +28,7 @@ module.exports = {
 
             const instances = await IndexSchema.Instance.find({
                 sub: payload.sub,
-                project: payload.project,
+                projectId: payload.projectId,
                 queueType: { $nin: ['statuscheck'] },
             })
             .sort({createdAt: -1})
@@ -39,10 +41,17 @@ module.exports = {
     },
     response: function(request, res) {
         const response = _.map(request, (request) => {
-            const responseData = _.pickBy(request, function(value, key) {
-                const keys = ['_id','active','project','workflow','workflowName','queueType','queueId','stats','createdAt','updatedAt']
+            let responseData = _.pickBy(request, function(value, key) {
                 return _.includes(keys, key)
             })
+
+            responseData.stats = _.map(responseData.stats, (stat) => {
+                const responseData = _.pickBy(stat, function(value, key) {
+                    return _.includes(statKeys, key)
+                })
+                return responseData
+            })
+
             return responseData
         })
         return res.status(200).send(response)

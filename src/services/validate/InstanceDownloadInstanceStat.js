@@ -12,7 +12,8 @@ const
     path = require('path'),
     fs = require('fs'),
     writeFile = util.promisify(fs.writeFile),
-    mkdirp = require('mkdirp');
+    mkdirp = require('mkdirp'),
+    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -32,7 +33,7 @@ module.exports = {
 
         if (req.body.projectId) {
             if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.project = req.body.projectId
+            payload.projectId = req.body.projectId
         }
 
         return payload
@@ -42,11 +43,11 @@ module.exports = {
 
             let instance;
 
-            if (payload.project) {
+            if (payload.projectId) {
                 instance = await IndexSchema.Instance.findOne({
                     sub: payload.sub,
                     _id: payload._id,
-                    project: payload.project,
+                    projectId: payload.projectId,
                 }, '_id stats')
             } else {
                 instance = await IndexSchema.Instance.findOne({
@@ -77,6 +78,13 @@ module.exports = {
                 Key: `${payload.sub}/instance-statistics/${instance._id}/${statId}`,
             }).promise()
 
+            let bufferBodyJSON = fullStatBuffer.Body.toJSON()
+            bufferBodyJSON = _.pickBy(bufferBodyJSON, function(value, key) {
+                return _.includes(statKeys, key)
+            })
+
+            const finalBufferBody = Buffer.from(JSON.stringify(bufferBodyJSON))
+
             const usages = [{
                 sub: payload.sub,
                 usageType: 'stat',
@@ -104,7 +112,7 @@ module.exports = {
             const filePath = path.resolve(`${directoryPath}/${statId}`)
 
             await mkdirp(directoryPath)
-            await writeFile(filePath, fullStatBuffer.Body)
+            await writeFile(filePath, finalBufferBody)
 
             return filePath
         } catch(err) {

@@ -33,7 +33,7 @@ module.exports = {
 
         if (req.body.projectId) {
             if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.project = req.body.projectId
+            payload.projectId = req.body.projectId
         }
 
         return payload

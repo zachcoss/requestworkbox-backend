@@ -5,7 +5,8 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    keys = ['_id','url','name','method','active','projectId','query','headers','body','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -38,7 +39,6 @@ module.exports = {
         }
     },
     response: function(request, res) {
-        const keys = ['_id','url','name','method','active','project','query','headers','body','createdAt','updatedAt']
         const response = _.pickBy(request, function(value, key) {
             return _.includes(keys, key)
         })

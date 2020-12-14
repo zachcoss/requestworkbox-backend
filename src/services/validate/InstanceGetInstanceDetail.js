@@ -6,7 +6,8 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    S3 = require('../tools/s3').S3;
+    S3 = require('../tools/s3').S3,
+    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -27,7 +28,7 @@ module.exports = {
 
         if (req.body.projectId) {
             if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.project = req.body.projectId
+            payload.projectId = req.body.projectId
         }
 
         return payload
@@ -69,6 +70,13 @@ module.exports = {
                     stats[stat].responsePayload = 'Response payload is too large to display. Please download.'
                     stats[stat].downloadPayload = true
                 }
+
+                stats[stat].stats = _.map(stats[stat].stats, (stat) => {
+                    const responseData = _.pickBy(stat, function(value, key) {
+                        return _.includes(statKeys, key)
+                    })
+                    return responseData
+                })
 
             }
 

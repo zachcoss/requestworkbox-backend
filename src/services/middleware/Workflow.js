@@ -127,7 +127,7 @@ module.exports = {
             if (setting.globalWorkflowStatus !== 'running') return res.status(500).send('Global Workflow Status is stopped.')
 
             // Find Project
-            const project = await IndexSchema.Project.findOne({ _id: workflow.project, sub: req.user.sub })
+            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId, sub: req.user.sub })
             if (!project) return res.status(500).send('Project not found')
             if (!project.active) return res.status(500).send('Project is archived. Please restore and try again.')
 
@@ -220,8 +220,8 @@ module.exports = {
             // Create instance
             const instance = new IndexSchema.Instance({
                 sub: req.user.sub,
-                project: workflow.project,
-                workflow: workflow._id,
+                projectId: workflow.projectId,
+                workflowId: workflow._id,
                 workflowName: workflow.name,
             })
             await instance.save()
@@ -230,11 +230,11 @@ module.exports = {
             const queue = new IndexSchema.Queue({
                 active: true,
                 sub: req.user.sub,
-                instance: instance._id,
-                workflow: workflow._id,
+                instanceId: instance._id,
+                workflowId: workflow._id,
                 workflowName: workflow.name,
-                project: workflow.project,
-                storage: '',
+                projectId: workflow.projectId,
+                storageInstanceId: '',
                 stats: [],
             })
             await queue.save()
@@ -282,8 +282,8 @@ module.exports = {
     
                 await Stats.updateInstanceUsage({ instance, usages, }, IndexSchema)
 
-                // Update storage id
-                queue.storage = instance._id
+                // Update storageInstanceId id
+                queue.storageInstanceId = instance._id
             }
 
             // Update queue and save

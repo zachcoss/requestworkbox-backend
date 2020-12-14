@@ -5,7 +5,9 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    keys = ['_id','active','projectId','workflowId','workflowName','queueType','queueId','stats','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -26,7 +28,7 @@ module.exports = {
 
         if (req.body.projectId) {
             if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.project = req.body.projectId
+            payload.projectId = req.body.projectId
         }
 
         return payload
@@ -43,9 +45,15 @@ module.exports = {
         }
     },
     response: function(request, res) {
-        const response = _.pickBy(request, function(value, key) {
-            const keys = ['_id','active','project','workflow','workflowName','queueType','queueId','stats','createdAt','updatedAt']
+        let response = _.pickBy(request, function(value, key) {
             return _.includes(keys, key)
+        })
+
+        response.stats = _.map(response.stats, (stat) => {
+            const responseData = _.pickBy(stat, function(value, key) {
+                return _.includes(statKeys, key)
+            })
+            return responseData
         })
         return res.status(200).send(response)
     },

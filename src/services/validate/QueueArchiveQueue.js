@@ -7,7 +7,9 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     socketService = require('../tools/socket'),
-    Stats = require('../tools/stats').stats;
+    Stats = require('../tools/stats').stats,
+    keys = ['_id','active','status','stats','instanceId','workflowId','workflowName','storageInstanceId','queueType','statuscheckId','date','createdAt','updatedAt'],
+    queueStatKeys = ['_id','active','status','statusText','error','instanceId','queueId','createdAt','updatedAt'];
 
 module.exports = {
     validate: function(req, res) {
@@ -37,9 +39,15 @@ module.exports = {
         }
     },
     response: function(request, res) {
-        const response = _.pickBy(request, function(value, key) {
-            const keys = ['_id','active','status','stats','instance','workflow','workflowName','storage','queueType','statuscheckId','date','createdAt','updatedAt']
+        let response = _.pickBy(request, function(value, key) {
             return _.includes(keys, key)
+        })
+
+        response.stats = _.map(response.stats, (stat) => {
+            const responseData = _.pickBy(stat, function(value, key) {
+                return _.includes(queueStatKeys, key)
+            })
+            return responseData
         })
         return res.status(200).send(response)
     },
