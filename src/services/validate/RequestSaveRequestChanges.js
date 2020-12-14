@@ -16,20 +16,20 @@ module.exports = {
         if (!req.body._id) throw new Error('Missing request id.')
         if (!_.isHex(req.body._id)) throw new Error('Incorrect request id type.')
 
-        let updates = _.pick(req.body, ['_id', 'url', 'query', 'headers', 'body'])
+        if (!_.includes(['GET','POST','get','post'], req.body.method)) throw new Error('Incorrect method type.')
 
-        if (!updates && !updates.url) throw new Error('Missing URL.')
-
-        // validate url
-        if (!validUrl.isWebUri(updates.url.url)) throw new Error('Not valid URL.')
-
-        if (_.includes(updates.url.url, '/return-workflow') || 
-            _.includes(updates.url.url, '/queue-workflow') || 
-            _.includes(updates.url.url, '/schedule-workflow') || 
-            _.includes(updates.url.url, '/statuscheck-workflow')) {
+        if (!_.isString(req.body.name)) throw new Error('Incorrect name type.')
+        
+        if (!req.body.url) throw new Error('Missing URL.')
+        if (!validUrl.isWebUri(req.body.url)) throw new Error('Not valid URL.')
+        if (_.includes(req.body.url, '/return-workflow') || 
+            _.includes(req.body.url, '/queue-workflow') || 
+            _.includes(req.body.url, '/schedule-workflow') || 
+            _.includes(req.body.url, '/statuscheck-workflow')) {
                 throw new Error('Recursive URLs not allowed.')
         }
 
+        let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'query', 'headers', 'body'])
         updates.sub = req.user.sub
         return updates
     },
@@ -62,8 +62,8 @@ module.exports = {
         }
     },
     response: function(request, res) {
+        const keys = ['_id','url','name','method','active','project','query','headers','body','createdAt','updatedAt']
         const response = _.pickBy(request, function(value, key) {
-            const keys = ['_id','url','active','project','query','headers','body','createdAt','updatedAt']
             return _.includes(keys, key)
         })
         return res.status(200).send(response)
@@ -72,6 +72,8 @@ module.exports = {
         if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
         else if (err.message === 'Missing request id.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
+        else if (err.message === 'Incorrect method type.') return res.status(400).send(err.message)
+        else if (err.message === 'Incorrect name type.') return res.status(400).send(err.message)
         else if (err.message === 'Missing URL.') return res.status(400).send(err.message)
         else if (err.message === 'Not valid URL.') return res.status(400).send(err.message)
         else if (err.message === 'Recursive URLs not allowed.') return res.status(400).send(err.message)

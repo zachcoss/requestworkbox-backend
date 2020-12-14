@@ -35,9 +35,9 @@ module.exports = {
         }
     },
     response: function(request, res) {
+        const keys = ['_id','url','name','method','active','project','query','headers','body','createdAt','updatedAt']
         const response = _.map(request, (request) => {
             const responseData = _.pickBy(request, function(value, key) {
-                const keys = ['_id','url','active','project','query','headers','body','createdAt','updatedAt']
                 return _.includes(keys, key)
             })
             return responseData
