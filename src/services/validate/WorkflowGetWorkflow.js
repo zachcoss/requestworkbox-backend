@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','webhookRequestId','createdAt','updatedAt'];
+    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -35,7 +35,7 @@ module.exports = {
     request: async function(payload) {
         try {
 
-            const workflow = await IndexSchema.Workflow.findOne(payload)
+            const workflow = await IndexSchema.Workflow.findOne(payload).lean()
 
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 

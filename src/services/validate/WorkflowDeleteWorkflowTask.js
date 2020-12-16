@@ -7,7 +7,7 @@ const
     }),
     mongoose = require('mongoose'),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','webhookRequestId','createdAt','updatedAt'];
+    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -39,7 +39,7 @@ module.exports = {
             workflow.tasks.id(payload.taskId).remove()
             await workflow.save()
 
-            return workflow
+            return workflow.toJSON()
         } catch(err) {
             throw new Error(err)
         }

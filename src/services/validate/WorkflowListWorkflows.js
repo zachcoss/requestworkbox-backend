@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','webhookRequestId','createdAt','updatedAt'];
+    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'];
 
 module.exports = {
     validate: function(req, res) {
@@ -28,6 +28,7 @@ module.exports = {
             const workflows = await IndexSchema.Workflow.find(payload)
             .sort({createdAt: -1})
             .limit(20)
+            .lean()
 
             return workflows
         } catch(err) {

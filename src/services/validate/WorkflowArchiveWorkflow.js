@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','webhookRequestId','createdAt','updatedAt'];
+    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -38,7 +38,7 @@ module.exports = {
             statuscheck.status = 'stopped'
             await statuscheck.save()
 
-            return workflow
+            return workflow.toJSON()
         } catch(err) {
             throw new Error(err)
         }

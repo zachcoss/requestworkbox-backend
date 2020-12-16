@@ -6,7 +6,8 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','webhookRequestId','createdAt','updatedAt'];
+    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
+    taskKeys = ['_id','requestId'];
     
 
 module.exports = {
@@ -16,9 +17,51 @@ module.exports = {
         if (!req.body._id) throw new Error('Missing workflow id.')
         if (!_.isHex(req.body._id)) throw new Error('Incorrect workflow id type.')
 
-        let updates = _.pick(req.body, ['_id','name','tasks','webhookRequestId'])
+        let updates = {
+            sub: req.user.sub,
+            _id: req.body._id,
+        }
 
-        updates.sub = req.user.sub
+        if (req.body.name && !_.isString(req.body.name)) throw new Error('Incorrect name type.')
+        if (req.body.tasks && !_.isArray(req.body.tasks)) throw new Error('Incorrect tasks type.')
+        if (req.body.webhooks && !_.isArray(req.body.webhooks)) throw new Error('Incorrect webhooks type.')
+
+        if (req.body.name) {
+            updates.name = req.body.name
+        }
+
+        if (req.body.tasks && _.size(req.body.tasks) > 0 && _.size(req.body.tasks) <= 10) {
+            let error = false
+            _.each(req.body.tasks, (task) => {
+                if (!_.isPlainObject(task)) return error = true
+                if (!task._id || !_.isString(task._id) || !_.isHex(task._id)) return error = true
+                if (task.requestId && !_.isHex(task.requestId)) return error = true
+            })
+            if (error) throw new Error('Incorrect task object type.')
+
+            updates.tasks = _.map(req.body.tasks, (task) => {
+                return _.pickBy(task, function(value, key) {
+                    return _.includes(taskKeys, key)
+                })
+
+            })
+        }
+
+        if (req.body.webhooks && _.size(req.body.webhooks) === 1) {
+            let error = false
+            _.each(req.body.webhooks, (webhook) => {
+                if (!_.isPlainObject(webhook)) return error = true
+                if (!webhook._id || !_.isString(webhook._id) || !_.isHex(webhook._id)) return error = true
+                if (webhook.requestId && !_.isHex(webhook.requestId)) return error = true
+            })
+            if (error) throw new Error('Incorrect webhook object type.')
+            updates.webhooks = _.map(req.body.webhooks, (webhook) => {
+                return _.pickBy(webhook, function(value, key) {
+                    return _.includes(taskKeys, key)
+                })
+            })
+        }
+
         return updates
     },
     request: async function(payload) {
@@ -33,16 +76,44 @@ module.exports = {
 
             const updates = _.omit(payload, ['_id', 'sub'])
 
-            _.each(updates, (value, key) => {
-                workflow[key] = value
-            })
+            if (workflow.tasks && updates.tasks) {
+                // if the same size
+                // confirm all ids and update objects/order
+                if (_.size(workflow.tasks) === _.size(updates.tasks)) {
+                    let taskIds = _.map(workflow.tasks, (obj) => String(obj._id))
+                    const updateIds = _.map(updates.tasks, '_id')
 
-            if (!updates.webhookRequestId || updates.webhookRequestId === '') {
-                workflow.webhookRequestId = undefined
+                    _.each(updateIds, (updateId) => {
+                        _.pull(taskIds, updateId)
+                    })
+
+                    if (_.size(taskIds)) throw new Error('Incorrect tasks array.')
+
+                    workflow.tasks = updates.tasks
+
+                // if not the same size
+                // update matching objects only
+                } else {
+                    workflow.tasks = _.map(workflow.tasks, (task) => {
+                        const matchingTask = _.filter(updates.tasks, (update) => {
+                            if (update._id === task._id) return true
+                            else return false
+                        })
+                        if (!_.size(matchingTask)) return task
+                        else {
+                            task.requestId = matchingTask[0].requestId
+                            return task
+                        }
+                    })
+                }
+            }
+
+            if (workflow.webhooks && updates.webhooks) {
+                workflow.webhooks = updates.webhooks
             }
 
             await workflow.save()
-            return workflow
+            return workflow.toJSON()
         } catch(err) {
             throw new Error(err)
         }
@@ -57,7 +128,13 @@ module.exports = {
         if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
         else if (err.message === 'Missing workflow id.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect workflow id type.') return res.status(400).send(err.message)
+        else if (err.message === 'Incorrect name type.') return res.status(400).send(err.message)
+        else if (err.message === 'Incorrect tasks type.') return res.status(400).send(err.message)
+        else if (err.message === 'Incorrect webhooks type.') return res.status(400).send(err.message)
+        else if (err.message === 'Incorrect task object type.') return res.status(400).send(err.message)
+        else if (err.message === 'Incorrect webhook object type.') return res.status(400).send(err.message)
         else if (err.message === 'Error: Workflow not found.') return res.status(400).send('Workflow not found.')
+        else if (err.message === 'Error: Incorrect tasks array.') return res.status(400).send('Incorrect tasks array.')
         else {
             console.log('Save workflow changes error', err)
             return res.status(500).send('Request error')

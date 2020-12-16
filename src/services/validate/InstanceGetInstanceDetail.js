@@ -39,7 +39,11 @@ module.exports = {
             const instance = await IndexSchema.Instance.findOne(payload, '_id stats').lean()
             if (!instance || !instance._id) throw new Error('Instance not found.')
 
-            const stats = {}
+            const snapshot = {
+                payloads: {},
+                tasks: {},
+                webhooks: {},
+            }
 
             for (const stat of instance.stats) {
 
@@ -49,36 +53,36 @@ module.exports = {
                 }).promise()
                 const fullStat = JSON.parse(fullStatBuffer.Body)
 
-                stats[stat] = {}
+                snapshot[fullStat.taskField][fullStat.taskId] = {}
+                const snapshotItem = snapshot[fullStat.taskField][fullStat.taskId]
 
                 // Add request payload
                 if (!fullStat.requestSize) {
-                    stats[stat].requestPayload = fullStat.requestPayload
+                    snapshotItem.requestPayload = fullStat.requestPayload
                 } else {
                     if (fullStat.requestSize < 1000) {
-                        stats[stat].requestPayload = fullStat.requestPayload
+                        snapshotItem.requestPayload = fullStat.requestPayload
                     } else {
-                        stats[stat].requestPayload = 'Request payload is too large to display. Please download.'
-                        stats[stat].downloadPayload = true
+                        snapshotItem.requestPayload = 'Request payload is too large to display. Please download.'
+                        snapshotItem.downloadPayload = true
                     }
                 }
 
                 // Add response payload
                 if (fullStat.responseSize < 1000) {
-                    stats[stat].responsePayload = fullStat.responsePayload
+                    snapshotItem.responsePayload = fullStat.responsePayload
                 } else {
-                    stats[stat].responsePayload = 'Response payload is too large to display. Please download.'
-                    stats[stat].downloadPayload = true
+                    snapshotItem.responsePayload = 'Response payload is too large to display. Please download.'
+                    snapshotItem.downloadPayload = true
                 }
 
-                stats[stat].stats = _.map(stats[stat].stats, (stat) => {
-                    const responseData = _.pickBy(stat, function(value, key) {
-                        return _.includes(statKeys, key)
-                    })
-                    return responseData
-                })
+                console.log('item', snapshotItem)
+
+                return snapshot
 
             }
+
+            console.log('snapshot', snapshot)
 
             return stats
         } catch(err) {
