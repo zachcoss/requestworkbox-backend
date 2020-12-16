@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
-    taskKeys = ['_id','requestId'];
+    taskKeys = ['_id','requestId','runtimeResultName'];
     
 
 module.exports = {
@@ -31,13 +31,29 @@ module.exports = {
         }
 
         if (req.body.tasks && _.size(req.body.tasks) > 0 && _.size(req.body.tasks) <= 10) {
-            let error = false
+            let 
+                error = false,
+                dupError = false;
+            
+            let runtimeResultNames = {}
             _.each(req.body.tasks, (task) => {
                 if (!_.isPlainObject(task)) return error = true
                 if (!task._id || !_.isString(task._id) || !_.isHex(task._id)) return error = true
                 if (task.requestId && !_.isHex(task.requestId)) return error = true
+                if (task.runtimeResultName && !_.isString(task.runtimeResultName))  return error = true
+                if (_.size(task.runtimeResultName) > 100) return error = true
+
+                if (task.runtimeResultName === '') return
+                
+                if (!runtimeResultNames[task.runtimeResultName]) {
+                    runtimeResultNames[task.runtimeResultName] = true
+                } else {
+                    return dupError = true
+                }
+
             })
             if (error) throw new Error('Incorrect task object type.')
+            if (dupError) throw new Error('Duplicate runtime result names not allowed.')
 
             updates.tasks = _.map(req.body.tasks, (task) => {
                 return _.pickBy(task, function(value, key) {
@@ -133,6 +149,7 @@ module.exports = {
         else if (err.message === 'Incorrect webhooks type.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect task object type.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect webhook object type.') return res.status(400).send(err.message)
+        else if (err.message === 'Duplicate runtime result names not allowed.') return res.status(400).send(err.message)
         else if (err.message === 'Error: Workflow not found.') return res.status(400).send('Workflow not found.')
         else if (err.message === 'Error: Incorrect tasks array.') return res.status(400).send('Incorrect tasks array.')
         else {

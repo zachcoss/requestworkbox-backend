@@ -13,7 +13,7 @@ const
     fs = require('fs'),
     writeFile = util.promisify(fs.writeFile),
     mkdirp = require('mkdirp'),
-    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','createdAt','updatedAt'];
+    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','taskId','taskField','createdAt','updatedAt'];
     
 
 module.exports = {

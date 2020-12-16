@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     S3 = require('../tools/s3').S3,
-    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','createdAt','updatedAt'];
+    fullStatKeys = ['payloads','tasks','webhooks'];
     
 
 module.exports = {
@@ -36,25 +36,33 @@ module.exports = {
     request: async function(payload) {
         try {
 
-            const instance = await IndexSchema.Instance.findOne(payload, '_id stats').lean()
+            const instance = await IndexSchema.Instance.findOne(payload, '_id stats')
             if (!instance || !instance._id) throw new Error('Instance not found.')
 
             const snapshot = {
-                payloads: {},
-                tasks: {},
-                webhooks: {},
+                payloads: [],
+                tasks: [],
+                webhooks: [],
             }
 
-            for (const stat of instance.stats) {
+            for (let stat of instance.stats) {
+
+                stat = stat.toJSON()
 
                 const fullStatBuffer = await S3.getObject({
                     Bucket: process.env.STORAGE_BUCKET,
-                    Key: `${payload.sub}/instance-statistics/${instance._id}/${stat}`,
+                    Key: `${payload.sub}/instance-statistics/${instance._id}/${stat._id}`,
                 }).promise()
-                const fullStat = JSON.parse(fullStatBuffer.Body)
 
-                snapshot[fullStat.taskField][fullStat.taskId] = {}
-                const snapshotItem = snapshot[fullStat.taskField][fullStat.taskId]
+                let fullStat = JSON.parse(fullStatBuffer.Body)
+
+                const 
+                    taskField = fullStat.taskField || stat.taskField,
+                    taskId = fullStat.taskId || stat.taskId;
+                
+                let snapshotItem = {
+                    _id: taskId
+                }
 
                 // Add request payload
                 if (!fullStat.requestSize) {
@@ -76,21 +84,20 @@ module.exports = {
                     snapshotItem.downloadPayload = true
                 }
 
-                console.log('item', snapshotItem)
-
-                return snapshot
+                snapshot[taskField].push(snapshotItem)
 
             }
 
-            console.log('snapshot', snapshot)
-
-            return stats
+            return snapshot
         } catch(err) {
             throw new Error(err)
         }
     },
     response: function(request, res) {
-        return res.status(200).send(request)
+        const response = _.pickBy(request, function(value, key) {
+            return _.includes(fullStatKeys, key)
+        })
+        return res.status(200).send(response)
     },
     error: function(err, res) {
         if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
