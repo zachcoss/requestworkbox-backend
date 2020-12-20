@@ -6,7 +6,8 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'];
+    keys = ['_id','active','name','permissions','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
+    permissionKeys = ['lockedResource'];
 
 module.exports = {
     validate: function(req, res) {
@@ -37,8 +38,8 @@ module.exports = {
     },
     response: function(request, res) {
         const response = _.map(request, (request) => {
-            const responseData = _.pickBy(request, function(value, key) {
-                return _.includes(keys, key)
+            let responseData = _.pickBy(request, function(value, key) {
+                return _.includes(keys.concat(permissionKeys), key)
             })
             return responseData
         })

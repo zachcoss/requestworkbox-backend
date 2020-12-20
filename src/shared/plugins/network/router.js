@@ -11,7 +11,8 @@ const
     Queue = require('../../../services/middleware/Queue'),
     Statuscheck = require('../../../services/middleware/Statuscheck'),
     Webhook = require('../../../services/middleware/Webhook'),
-    Feedback = require('../../../services/middleware/Feedback');
+    Feedback = require('../../../services/middleware/Feedback'),
+    Team = require('../../../services/middleware/Team');
 
 module.exports.config = function () {
 
@@ -84,6 +85,10 @@ module.exports.config = function () {
     router.post('/download-webhook-detail', Webhook.downloadWebhookDetail)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
+
+    router.post('/create-invite', Team.createInvite)
+    router.post('/accept-invite', Team.acceptInvite)
+    router.post('/remove-from-team', Team.removeFromTeam)
 
     return router;
 }

@@ -6,8 +6,9 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
-    taskKeys = ['_id','requestId','runtimeResultName'];
+    keys = ['_id','active','name','permissions','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
+    taskKeys = ['_id','requestId','runtimeResultName'],
+    permissionKeys = ['lockedResource'];
     
 
 module.exports = {
@@ -135,8 +136,8 @@ module.exports = {
         }
     },
     response: function(request, res) {
-        const response = _.pickBy(request, function(value, key) {
-            return _.includes(keys, key)
+        let response = _.pickBy(request, function(value, key) {
+            return _.includes(keys.concat(permissionKeys), key)
         })
         return res.status(200).send(response)
     },

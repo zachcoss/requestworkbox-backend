@@ -7,8 +7,9 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     // includes usage
-    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','usage','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
-    usageKeys = ['_id','active','usageType','usageDirection','usageAmount','usageMeasurement','usageLocation','usageId','usageDetail','createdAt','updatedAt'];
+    keys = ['_id','active','name','permissions','projectId','storageType','storageValue','mimetype','originalname','size','usage','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    usageKeys = ['_id','active','usageType','usageDirection','usageAmount','usageMeasurement','usageLocation','usageId','usageDetail','createdAt','updatedAt'],
+    permissionKeys = ['lockedResource','sensitiveData'];
     
 
 module.exports = {
@@ -48,7 +49,7 @@ module.exports = {
     },
     response: function(request, res) {
         let response = _.pickBy(request, function(value, key) {
-            return _.includes(keys, key)
+            return _.includes(keys.concat(permissionKeys), key)
         })
 
         response.usage = _.map(response.usage, (usage) => {

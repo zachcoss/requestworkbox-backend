@@ -6,7 +6,8 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','url','name','method','active','projectId','query','headers','body','createdAt','updatedAt'];
+    keys = ['_id','url','name','method','active','projectId','query','headers','body','permissions','createdAt','updatedAt'],
+    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse','healthcheckEndpoint'];
     
 
 module.exports = {
@@ -37,8 +38,8 @@ module.exports = {
     },
     response: function(request, res) {
         const response = _.map(request, (request) => {
-            const responseData = _.pickBy(request, function(value, key) {
-                return _.includes(keys, key)
+            let responseData = _.pickBy(request, function(value, key) {
+                return _.includes(keys.concat(permissionKeys), key)
             })
             return responseData
         })
