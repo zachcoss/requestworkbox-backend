@@ -23,20 +23,41 @@ module.exports = {
 
         return payload
     },
+    authorize: async function(payload) {
+        try {
+            const 
+                requesterSub = payload.sub,
+                projectId = payload._id;
+
+            const project = await IndexSchema.Project.findOne({ _id: projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return payload
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
     request: async function(payload) {
         try {
 
-            const project = await IndexSchema.Project.findOne(payload)
-
-            if (!project || !project._id) throw new Error('Project not found.')
-
             const newRequest = new IndexSchema.Request({
-                sub: project.sub,
-                projectId: project._id,
+                sub: payload.sub,
+                projectId: payload._id,
+                authorizationType: 'noAuth',
+                authorization: {},
             })
             await newRequest.save()
 
-            return newRequest
+            return newRequest.toJSON()
         } catch(err) {
             throw new Error(err)
         }

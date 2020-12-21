@@ -33,13 +33,35 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const request = await IndexSchema.Request.findOne(payload)
-
+            const 
+                requesterSub = payload.sub,
+                requestId = payload._id;
+            
+            const request = await IndexSchema.Request.findOne({ _id: requestId }).lean()
             if (!request || !request._id) throw new Error('Request not found.')
 
+            if (payload.projectId && request.projectId.toString() !== payload.projectId) throw new Error('Project not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: request.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
+            return request
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(request) {
+        try {
             return request
         } catch(err) {
             throw new Error(err)

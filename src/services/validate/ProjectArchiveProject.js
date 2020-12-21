@@ -35,7 +35,7 @@ module.exports = {
             const member = await IndexSchema.Member.findOne({
                 sub: requesterSub,
                 projectId: project._id,
-            })
+            }).lean()
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.owner) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
@@ -54,7 +54,7 @@ module.exports = {
 
             const statuschecks = await IndexSchema.Statuscheck.updateMany({ projectId: project._id, status: 'running', }, { status: 'stopped' })
 
-            return project
+            return project.toJSON()
         } catch(err) {
             throw new Error(err)
         }

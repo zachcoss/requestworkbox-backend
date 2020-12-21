@@ -54,7 +54,7 @@ module.exports = {
             const member = await IndexSchema.Member.findOne({
                 sub: requesterSub,
                 projectId: project._id,
-            })
+            }).lean()
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
@@ -76,7 +76,7 @@ module.exports = {
             
             await project.save()
 
-            return project
+            return project.toJSON()
         } catch(err) {
             throw new Error(err)
         }

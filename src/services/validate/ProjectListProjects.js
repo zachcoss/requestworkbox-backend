@@ -35,7 +35,7 @@ module.exports = {
             if (!_.size(members)) return []
 
             const projectIds = _.map(members, 'projectId')
-            const projects = await IndexSchema.Project.find({ _id: { $in: projectIds }})
+            const projects = await IndexSchema.Project.find({ _id: { $in: projectIds }}).lean()
             return projects
         } catch(err) {
             throw new Error(err)

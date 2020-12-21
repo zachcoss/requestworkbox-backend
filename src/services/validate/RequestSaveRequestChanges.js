@@ -35,19 +35,38 @@ module.exports = {
         updates.sub = req.user.sub
         return updates
     },
-    request: async function(payload) {
+    authorize: async function(updates) {
         try {
-
-            const request = await IndexSchema.Request.findOne({
-                sub: payload.sub,
-                _id: payload._id,
-            })
-
+            const 
+                requesterSub = updates.sub,
+                requestId = updates._id;
+            
+            const request = await IndexSchema.Request.findOne({ _id: requestId })
             if (!request || !request._id) throw new Error('Request not found.')
 
-            const updates = _.omit(payload, ['_id', 'sub'])
+            const project = await IndexSchema.Project.findOne({ _id: request.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
 
-            _.each(updates, (value, key) => {
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return {request, updates}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({request, updates}) {
+        try {
+
+            const updateInfo = _.omit(updates, ['_id', 'sub'])
+
+            _.each(updateInfo, (value, key) => {
                 request[key] = value
             })
 
@@ -58,7 +77,7 @@ module.exports = {
 
             await request.save()
 
-            return request
+            return request.toJSON()
         } catch(err) {
             throw new Error(err)
         }

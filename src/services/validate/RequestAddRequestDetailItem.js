@@ -31,15 +31,34 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const request = await IndexSchema.Request.findOne({
-                sub: payload.sub,
-                _id: payload._id,
-            })
-
+            const 
+                requesterSub = payload.sub,
+                requestId = payload._id;
+            
+            const request = await IndexSchema.Request.findOne({ _id: requestId })
             if (!request || !request._id) throw new Error('Request not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: request.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return { payload, request }
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({ payload, request }) {
+        try {
 
             request[payload.requestDetailOption].push({
                 _id: mongoose.Types.ObjectId(),
@@ -49,7 +68,7 @@ module.exports = {
             })
             await request.save()
 
-            return request
+            return request.toJSON()
         } catch(err) {
             throw new Error(err)
         }
@@ -67,6 +86,7 @@ module.exports = {
         else if (err.message === 'Incorrect request id type.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect request detail option type.') return res.status(400).send(err.message)
         else if (err.message === 'Error: Request not found.') return res.status(400).send('Request not found.')
+        else if (err.message === 'Error: Project not found.') return res.status(400).send('Project not found.')
         else {
             console.log('Add request detail item error', err)
             return res.status(500).send('Request error')

@@ -51,7 +51,7 @@ module.exports = {
             await project.save()
             await member.save()
             
-            return project
+            return project.toJSON()
         } catch(err) {
             throw new Error(err)
         }

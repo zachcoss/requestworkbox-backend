@@ -51,7 +51,7 @@ module.exports = {
             project.active = true
             await project.save()
 
-            return project
+            return project.toJSON()
         } catch(err) {
             throw new Error(err)
         }
