@@ -23,14 +23,34 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
+            const 
+                requesterSub = payload.sub,
+                projectId = payload._id;
 
-            const project = await IndexSchema.Project.findOne(payload)
+            const project = await IndexSchema.Project.findOne({ _id: projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
 
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return {project, requesterSub}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({project, requesterSub}) {
+        try {
+
             const workflow = new IndexSchema.Workflow({
-                sub: project.sub,
+                sub: requesterSub,
                 projectId: project._id,
             })
             await workflow.save()

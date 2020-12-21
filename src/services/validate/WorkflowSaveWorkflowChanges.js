@@ -81,24 +81,45 @@ module.exports = {
 
         return updates
     },
-    request: async function(payload) {
+    authorize: async function(updates) {
         try {
-
-            const workflow = await IndexSchema.Workflow.findOne({
-                sub: payload.sub,
-                _id: payload._id,
-            })
-
+            const 
+                requesterSub = updates.sub,
+                workflowId = updates._id;
+            
+            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
-            const updates = _.omit(payload, ['_id', 'sub'])
+            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
 
-            if (workflow.tasks && updates.tasks) {
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return {workflow, updates}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({workflow, updates}) {
+        try {
+
+            const updateData = _.omit(updates, ['_id', 'sub'])
+
+            if (updates.name) workflow.name = updates.name
+
+            if (workflow.tasks && updateData.tasks) {
                 // if the same size
                 // confirm all ids and update objects/order
-                if (_.size(workflow.tasks) === _.size(updates.tasks)) {
+                if (_.size(workflow.tasks) === _.size(updateData.tasks)) {
                     let taskIds = _.map(workflow.tasks, (obj) => String(obj._id))
-                    const updateIds = _.map(updates.tasks, '_id')
+                    const updateIds = _.map(updateData.tasks, '_id')
 
                     _.each(updateIds, (updateId) => {
                         _.pull(taskIds, updateId)
@@ -106,13 +127,13 @@ module.exports = {
 
                     if (_.size(taskIds)) throw new Error('Incorrect tasks array.')
 
-                    workflow.tasks = updates.tasks
+                    workflow.tasks = updateData.tasks
 
                 // if not the same size
                 // update matching objects only
                 } else {
                     workflow.tasks = _.map(workflow.tasks, (task) => {
-                        const matchingTask = _.filter(updates.tasks, (update) => {
+                        const matchingTask = _.filter(updateData.tasks, (update) => {
                             if (update._id === task._id) return true
                             else return false
                         })
@@ -125,8 +146,8 @@ module.exports = {
                 }
             }
 
-            if (workflow.webhooks && updates.webhooks) {
-                workflow.webhooks = updates.webhooks
+            if (workflow.webhooks && updateData.webhooks) {
+                workflow.webhooks = updateData.webhooks
             }
 
             await workflow.save()

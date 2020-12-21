@@ -1,7 +1,6 @@
 const
     _ = require('lodash'),
     moment = require('moment'),
-    mongoose = require('mongoose'),
     socketService = require('../tools/socket'),
     IndexSchema = require('../tools/schema').schema,
     Stats = require('../tools/stats').stats,
@@ -14,7 +13,8 @@ module.exports = {
     createWorkflow: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.createWorkflow.validate(req)
-            const request = await ValidateWorkflow.createWorkflow.request(payload)
+            const authorize = await ValidateWorkflow.createWorkflow.authorize(payload)
+            const request = await ValidateWorkflow.createWorkflow.request(authorize)
             return ValidateWorkflow.createWorkflow.response(request, res)
         } catch (err) {
             return ValidateWorkflow.createWorkflow.error(err, res)
@@ -23,7 +23,8 @@ module.exports = {
     listWorkflows: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.listWorkflows.validate(req)
-            const request = await ValidateWorkflow.listWorkflows.request(payload)
+            const authorize = await ValidateWorkflow.listWorkflows.authorize(payload)
+            const request = await ValidateWorkflow.listWorkflows.request(authorize)
             return ValidateWorkflow.listWorkflows.response(request, res)
         } catch (err) {
             return ValidateWorkflow.listWorkflows.error(err, res)
@@ -32,7 +33,8 @@ module.exports = {
     getWorkflow: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.getWorkflow.validate(req)
-            const request = await ValidateWorkflow.getWorkflow.request(payload)
+            const authorize = await ValidateWorkflow.getWorkflow.authorize(payload)
+            const request = await ValidateWorkflow.getWorkflow.request(authorize)
             return ValidateWorkflow.getWorkflow.response(request, res)
         } catch (err) {
             return ValidateWorkflow.getWorkflow.error(err, res)
@@ -41,7 +43,8 @@ module.exports = {
     saveWorkflowChanges: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.saveWorkflowChanges.validate(req)
-            const request = await ValidateWorkflow.saveWorkflowChanges.request(payload)
+            const authorize = await ValidateWorkflow.saveWorkflowChanges.authorize(payload)
+            const request = await ValidateWorkflow.saveWorkflowChanges.request(authorize)
             return ValidateWorkflow.saveWorkflowChanges.response(request, res)
         } catch (err) {
             return ValidateWorkflow.saveWorkflowChanges.error(err, res)
@@ -50,7 +53,8 @@ module.exports = {
     addWorkflowTask: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.addWorkflowTask.validate(req)
-            const request = await ValidateWorkflow.addWorkflowTask.request(payload)
+            const authorize = await ValidateWorkflow.addWorkflowTask.authorize(payload)
+            const request = await ValidateWorkflow.addWorkflowTask.request(authorize)
             return ValidateWorkflow.addWorkflowTask.response(request, res)
         } catch (err) {
             return ValidateWorkflow.addWorkflowTask.error(err, res)
@@ -59,7 +63,8 @@ module.exports = {
     deleteWorkflowTask: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.deleteWorkflowTask.validate(req)
-            const request = await ValidateWorkflow.deleteWorkflowTask.request(payload)
+            const authorize = await ValidateWorkflow.deleteWorkflowTask.authorize(payload)
+            const request = await ValidateWorkflow.deleteWorkflowTask.request(authorize)
             return ValidateWorkflow.deleteWorkflowTask.response(request, res)
         } catch (err) {
             return ValidateWorkflow.deleteWorkflowTask.error(err, res)
@@ -68,7 +73,8 @@ module.exports = {
     archiveWorkflow: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.archiveWorkflow.validate(req)
-            const request = await ValidateWorkflow.archiveWorkflow.request(payload)
+            const authorize = await ValidateWorkflow.archiveWorkflow.authorize(payload)
+            const request = await ValidateWorkflow.archiveWorkflow.request(authorize)
             return ValidateWorkflow.archiveWorkflow.response(request, res)
         } catch (err) {
             return ValidateWorkflow.archiveWorkflow.error(err, res)
@@ -77,7 +83,8 @@ module.exports = {
     restoreWorkflow: async (req, res, next) => {
         try {
             const payload = ValidateWorkflow.restoreWorkflow.validate(req)
-            const request = await ValidateWorkflow.restoreWorkflow.request(payload)
+            const authorize = await ValidateWorkflow.restoreWorkflow.authorize(payload)
+            const request = await ValidateWorkflow.restoreWorkflow.request(authorize)
             return ValidateWorkflow.restoreWorkflow.response(request, res)
         } catch (err) {
             return ValidateWorkflow.restoreWorkflow.error(err, res)

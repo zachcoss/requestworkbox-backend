@@ -28,14 +28,34 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const workflow = await IndexSchema.Workflow.findOne({
-                sub: payload.sub,
-                _id: payload._id,
-            })
+            const 
+                requesterSub = payload.sub,
+                workflowId = payload._id;
+            
+            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return {workflow, payload}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({workflow, payload}) {
+        try {
 
             workflow.tasks.id(payload.taskId).remove()
             await workflow.save()
