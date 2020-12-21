@@ -32,12 +32,42 @@ module.exports = {
 
         return payload
     },
+    authorize: async function(payload) {
+        try {
+            const 
+                requesterSub = payload.sub,
+                webhookId = payload.webhookId;
+
+            const webhook = await IndexSchema.Webhook.findOne({ _id: webhookId })
+            if (!webhook || !webhook._id) throw new Error('Webhook not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: webhook.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
+            return payload
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
     request: async function(payload) {
         try {
 
-            const webhookDetails = await IndexSchema.WebhookDetail.find(payload)
+            const webhookDetails = await IndexSchema.WebhookDetail.find({
+                sub: payload.sub,
+                webhookId: payload.webhookId,
+                createdAt: payload.createdAt,
+            })
             .sort({createdAt: -1})
             .limit(10)
+            .lean()
 
             return webhookDetails
         } catch(err) {

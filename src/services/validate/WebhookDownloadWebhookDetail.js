@@ -34,11 +34,36 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
+            const 
+                requesterSub = payload.sub,
+                webhookDetailId = payload._id;
 
-            const webhookDetail = await IndexSchema.WebhookDetail.findOne(payload)
+            const webhookDetail = await IndexSchema.WebhookDetail.findOne({ _id: webhookDetailId })
             if (!webhookDetail || !webhookDetail._id) throw new Error('Webhook detail not found.')
+
+            if (payload.projectId && payload.projectId !== webhookDetail._id.toString()) throw new Error('Project not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: webhookDetail.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.status !== 'write') throw new Error('Permission error.')
+            
+            return webhookDetail
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(webhookDetail) {
+        try {
 
             const webhookDetailBufferStart = new Date()
             const webhookDetailBuffer = await S3.getObject({

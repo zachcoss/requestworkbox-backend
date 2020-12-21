@@ -21,11 +21,31 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
+            const 
+                requesterSub = payload.sub,
+                projectId = payload._id;
 
-            const project = await IndexSchema.Project.findOne(payload)
+            const project = await IndexSchema.Project.findOne({ _id: projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.status !== 'write') throw new Error('Permission error.')
+            
+            return project
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(project) {
+        try {
 
             const webhook = new IndexSchema.Webhook({
                 sub: project.sub,
@@ -33,7 +53,7 @@ module.exports = {
             })
             await webhook.save()
             
-            return webhook
+            return webhook.toJSON()
         } catch(err) {
             throw new Error(err)
         }

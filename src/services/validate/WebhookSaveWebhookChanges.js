@@ -26,14 +26,34 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const webhook = await IndexSchema.Webhook.findOne({
-                sub: payload.sub,
-                _id: payload._id,
-            })
+            const 
+                requesterSub = payload.sub,
+                webhookId = payload._id;
+            
+            const webhook = await IndexSchema.Webhook.findOne({ _id: webhookId })
             if (!webhook || !webhook._id) throw new Error('Webhook not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: webhook.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.status !== 'write') throw new Error('Permission error.')
+            
+            return { webhook, payload }
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({ webhook, payload }) {
+        try {
             
             const updates = _.omit(payload, ['_id','sub'])
 
@@ -43,7 +63,7 @@ module.exports = {
 
             await webhook.save()
 
-            return webhook
+            return webhook.toJSON()
         } catch(err) {
             throw new Error(err)
         }

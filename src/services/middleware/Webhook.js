@@ -17,7 +17,8 @@ module.exports = {
     createWebhook: async (req, res, next) => {
         try {
             const payload = ValidateWebhook.createWebhook.validate(req)
-            const request = await ValidateWebhook.createWebhook.request(payload)
+            const authorize = await ValidateWebhook.createWebhook.authorize(payload)
+            const request = await ValidateWebhook.createWebhook.request(authorize)
             return ValidateWebhook.createWebhook.response(request, res)
         } catch (err) {
             return ValidateWebhook.createWebhook.error(err, res)
@@ -26,7 +27,8 @@ module.exports = {
     listWebhooks: async (req, res, next) => {
         try {
             const payload = ValidateWebhook.listWebhooks.validate(req)
-            const request = await ValidateWebhook.listWebhooks.request(payload)
+            const authorize = await ValidateWebhook.listWebhooks.authorize(payload)
+            const request = await ValidateWebhook.listWebhooks.request(authorize)
             return ValidateWebhook.listWebhooks.response(request, res)
         } catch (err) {
             return ValidateWebhook.listWebhooks.error(err, res)
@@ -35,7 +37,8 @@ module.exports = {
     getWebhook: async (req, res, next) => {
         try {
             const payload = ValidateWebhook.getWebhook.validate(req)
-            const request = await ValidateWebhook.getWebhook.request(payload)
+            const authorize = await ValidateWebhook.getWebhook.authorize(payload)
+            const request = await ValidateWebhook.getWebhook.request(authorize)
             return ValidateWebhook.getWebhook.response(request, res)
         } catch (err) {
             return ValidateWebhook.getWebhook.error(err, res)
@@ -44,7 +47,8 @@ module.exports = {
     saveWebhookChanges: async (req, res, next) => {
         try {
             const payload = ValidateWebhook.saveWebhookChanges.validate(req)
-            const request = await ValidateWebhook.saveWebhookChanges.request(payload)
+            const authorize = await ValidateWebhook.saveWebhookChanges.authorize(payload)
+            const request = await ValidateWebhook.saveWebhookChanges.request(authorize)
             return ValidateWebhook.saveWebhookChanges.response(request, res)
         } catch (err) {
             return ValidateWebhook.saveWebhookChanges.error(err, res)
@@ -53,7 +57,8 @@ module.exports = {
     getWebhookDetails: async (req, res, next) => {
         try {
             const payload = ValidateWebhook.getWebhookDetails.validate(req)
-            const request = await ValidateWebhook.getWebhookDetails.request(payload)
+            const authorize = await ValidateWebhook.getWebhookDetails.authorize(payload)
+            const request = await ValidateWebhook.getWebhookDetails.request(authorize)
             return ValidateWebhook.getWebhookDetails.response(request, res)
         } catch (err) {
             return ValidateWebhook.getWebhookDetails.error(err, res)
@@ -62,6 +67,7 @@ module.exports = {
     acceptWebhook: async (req, res, next) => {
         try {
             const payload = ValidateWebhook.acceptWebhook.validate(req)
+            // const authorize = await ValidateWebhook.acceptWebhook.authorize(payload)
             const request = await ValidateWebhook.acceptWebhook.request(payload)
             return ValidateWebhook.acceptWebhook.response(request, res)
         } catch (err) {
@@ -71,7 +77,8 @@ module.exports = {
     downloadWebhookDetail: async (req, res, next) => {
         try {
             const payload = ValidateWebhook.downloadWebhookDetail.validate(req)
-            const request = await ValidateWebhook.downloadWebhookDetail.request(payload)
+            const authorize = await ValidateWebhook.downloadWebhookDetail.authorize(payload)
+            const request = await ValidateWebhook.downloadWebhookDetail.request(authorize)
             return ValidateWebhook.downloadWebhookDetail.response(request, res)
         } catch (err) {
             return ValidateWebhook.downloadWebhookDetail.error(err, res)
