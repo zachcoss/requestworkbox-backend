@@ -34,14 +34,34 @@ module.exports = {
 
         return updates
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const statuscheck = await IndexSchema.Statuscheck.findOne({
-                sub: payload.sub,
-                _id: payload._id,
-            })
+            const 
+                requesterSub = payload.sub,
+                statuscheckId = payload._id;
+            
+            const statuscheck = await IndexSchema.Statuscheck.findOne({_id: statuscheckId }).lean()
             if (!statuscheck || !statuscheck._id) throw new Error('Statuscheck not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: statuscheck.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.status !== 'write') throw new Error('Permission error.')
+            
+            return {statuscheck, payload}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({statuscheck, payload}) {
+        try {
 
             const updates = _.omit(payload, ['_id', 'sub'])
 
@@ -51,7 +71,7 @@ module.exports = {
 
             await statuscheck.save()
 
-            return statuscheck
+            return statuscheck.toJSON()
         } catch(err) {
             throw new Error(err)
         }
