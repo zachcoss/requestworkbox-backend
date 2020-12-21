@@ -27,10 +27,13 @@ module.exports.config = () => {
     })
     .unless({
         custom: function(req) {
-            if (req.headers['x-api-key']) {
-                return true
-            } else {
-                if (req.path === '/') return true
+            if (req.path === '/') return true
+            else if (req.headers['x-api-key']) return true
+            else if (req.headers['authorization']) return false
+            else {
+                if (_.includes(req.path, '/return-workflow/')) return true
+                else if (_.includes(req.path, '/queue-workflow/')) return true
+                else if (_.includes(req.path, '/schedule-workflow/')) return true
                 else if (_.includes(req.path, '/statuscheck-workflow/')) return true
                 else if (_.includes(req.path, '/webhooks/')) return true
                 else return false
