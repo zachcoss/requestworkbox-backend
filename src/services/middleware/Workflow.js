@@ -251,6 +251,10 @@ module.exports = {
 
             // Filter payload
             if (_.isPlainObject(req.body) && _.size(req.body) > 0) {
+
+                // check payload value size
+                if (Buffer.byteLength(JSON.stringify(req.body)) > 1000000) throw new Error('1MB max allowed.')
+
                 // Create Queue Uploading Stat
                 await Stats.updateQueueStats({ queue, status: 'uploading', }, IndexSchema, socketService)
 

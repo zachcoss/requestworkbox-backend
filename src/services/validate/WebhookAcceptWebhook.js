@@ -26,6 +26,8 @@ module.exports = {
         }
 
         if (req.body) {
+            // check storage value size
+            if (Buffer.byteLength(JSON.stringify(req.body)) > 1000000) throw new Error('1MB max allowed.')
             payload.body = req.body
         }
 

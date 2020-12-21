@@ -21,6 +21,9 @@ module.exports = {
         if (!_.isString(req.body.storageValue)) throw new Error('Incorrect storage value type.')
         if (!_.isHex(req.query.storageId)) throw new Error('Incorrect storage id type.')
 
+        // check storage value size
+        if (Buffer.byteLength(req.body.storageValue) > 1000000) throw new Error('1MB max allowed.')
+
         let payload = {
             sub: req.user.sub,
             _id: req.query.storageId,
