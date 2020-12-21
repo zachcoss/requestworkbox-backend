@@ -19,12 +19,8 @@ module.exports = {
     validate: function(req, res) {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
-
-        if (!req.body.storageId) {
-            throw new Error('Missing storage id.')
-        } else {
-            if (!_.isHex(req.body.storageId)) throw new Error('Incorrect storage id type.')
-        }
+        if (!req.body.storageId) throw new Error('Missing storage id.')
+        if (!_.isHex(req.body.storageId)) throw new Error('Incorrect storage id type.')
 
         let payload = {
             sub: req.user.sub,
@@ -38,11 +34,35 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const storage = await IndexSchema.Storage.findOne(payload)
+            const 
+                requesterSub = payload.sub,
+                storageId = payload._id;
+            
+            const storage = await IndexSchema.Storage.findOne({ _id: storageId })
             if (!storage || !storage._id) throw new Error('Storage not found.')
+
+            if (payload.projectId && payload.projectId !== storage.projectId.toString()) throw new Error('Project not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: storage.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
+            return storage
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(storage) {
+        try {
 
             const storageValueStart = new Date()
             const storageValue = await S3.getObject({

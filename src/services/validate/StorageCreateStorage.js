@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','permissions','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','sensitiveData'];
 
 module.exports = {
@@ -28,23 +28,40 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
+            const 
+                requesterSub = payload.sub,
+                projectId = payload._id;
 
-            const project = await IndexSchema.Project.findOne({
-                sub: payload.sub,
-                _id: payload._id,
-            })
+            const project = await IndexSchema.Project.findOne({ _id: projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
 
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return {payload, project, requesterSub}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({payload, project, requesterSub}) {
+        try {
+
             const storage = new IndexSchema.Storage({
-                sub: project.sub,
+                sub: requesterSub,
                 projectId: project._id,
                 storageType: payload.storageType,
             })
             await storage.save()
             
-            return storage
+            return storage.toJSON()
         } catch(err) {
             throw new Error(err)
         }

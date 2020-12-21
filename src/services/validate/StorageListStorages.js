@@ -6,29 +6,51 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','permissions','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','sensitiveData'];
 
 module.exports = {
     validate: function(req, res) {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
+        if (!req.body.projectId) throw new Error('Missing project id.')
+        if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
 
-        let payload = { sub: req.user.sub, }
-
-        if (req.body.projectId) {
-            if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.projectId = req.body.projectId
+        let payload = {
+            sub: req.user.sub,
+            projectId: req.body.projectId,
         }
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
+        try {
+            const 
+                requesterSub = payload.sub;
+
+            const project = await IndexSchema.Project.findOne({ _id: payload.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
+            return project
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(project) {
         try {
 
-            const storages = await IndexSchema.Storage.find(payload)
+            const storages = await IndexSchema.Storage.find({ projectId: project._id })
             .sort({createdAt: -1})
             .limit(20)
+            .lean()
 
             return storages
         } catch(err) {

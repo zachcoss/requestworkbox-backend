@@ -8,7 +8,7 @@ const
     IndexSchema = require('../tools/schema').schema,
     Stats = require('../tools/stats').stats,
     S3 = require('../tools/s3').S3,
-    keys = ['_id','active','name','permissions','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','sensitiveData'];
     
 
@@ -34,25 +34,36 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
+            const 
+                requesterSub = payload.sub,
+                storageId = payload._id;
+            
+            const storage = await IndexSchema.Storage.findOne({ _id: storageId })
+            if (!storage || !storage._id) throw new Error('Storage not found.')
 
-            let storage;
+            if (payload.projectId && payload.projectId !== storage.projectId.toString()) throw new Error('Project not found.')
 
-            if (payload.projectId) {
-                storage = await IndexSchema.Storage.findOne({
-                    sub: payload.sub,
-                    _id: payload._id,
-                    projectId: payload.projectId,
-                })
-                if (!storage || !storage._id) throw new Error('Storage not found.')
-            } else {
-                storage = await IndexSchema.Storage.findOne({
-                    sub: payload.sub,
-                    _id: payload._id,
-                })
-                if (!storage || !storage._id) throw new Error('Storage not found.')
-            }
+            const project = await IndexSchema.Project.findOne({ _id: storage.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return {storage, payload}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({storage, payload}) {
+        try {
 
             const textDataStart = new Date()
             const textData = Buffer.from(payload.storageValue, 'utf8')
@@ -87,7 +98,7 @@ module.exports = {
             await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
             storage.storageValue = String(textData)
-            return storage
+            return storage.toJSON()
         } catch(err) {
             throw new Error(err)
         }

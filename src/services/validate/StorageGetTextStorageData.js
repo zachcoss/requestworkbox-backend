@@ -8,7 +8,7 @@ const
     IndexSchema = require('../tools/schema').schema,
     Stats = require('../tools/stats').stats,
     S3 = require('../tools/s3').S3,
-    keys = ['_id','active','name','permissions','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','sensitiveData'];
     
 
@@ -35,12 +35,36 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const storage = await IndexSchema.Storage.findOne(payload)
+            const 
+                requesterSub = payload.sub,
+                storageId = payload._id;
+            
+            const storage = await IndexSchema.Storage.findOne({ _id: storageId })
             if (!storage || !storage._id) throw new Error('Storage not found.')
 
+            if (payload.projectId && payload.projectId !== storage.projectId.toString()) throw new Error('Project not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: storage.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
+            return storage
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(storage) {
+        try {
+            
             const storageValueStart = new Date()
             const storageValue = await S3.getObject({
                 Bucket: process.env.STORAGE_BUCKET,

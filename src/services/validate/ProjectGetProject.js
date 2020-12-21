@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','permissions','createdAt','updatedAt'],
+    keys = ['_id','active','name','createdAt','updatedAt'],
     permissionKeys = ['returnWorkflow','queueWorkflow','scheduleWorkflow','statuscheckWorkflow','webhookEndpoint'];
 
 module.exports = {
