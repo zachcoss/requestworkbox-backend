@@ -38,26 +38,36 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            let instance;
-
-            if (payload.projectId) {
-                instance = await IndexSchema.Instance.findOne({
-                    sub: payload.sub,
-                    _id: payload._id,
-                    projectId: payload.projectId,
-                }, '_id stats')
-            } else {
-                instance = await IndexSchema.Instance.findOne({
-                    sub: payload.sub,
-                    _id: payload._id,
-                }, '_id stats')
-            }
-
+            const 
+                requesterSub = payload.sub,
+                instanceId = payload._id;
+            
+            const instance = await IndexSchema.Instance.findOne({_id: instanceId })
             if (!instance || !instance._id) throw new Error('Instance not found.')
 
+            if (payload.projectId && instance.projectId.toString() !== payload.projectId) throw new Error('Project not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: instance.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
+            return {payload, instance}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({payload, instance}) {
+        try {
+            
             let 
                 statId = payload.statId,
                 statExists = false,

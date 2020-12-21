@@ -33,13 +33,36 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const instance = await IndexSchema.Instance.findOne(payload)
+            const 
+                requesterSub = payload.sub,
+                instanceId = payload._id;
+            
+            const instance = await IndexSchema.Instance.findOne({_id: instanceId })
             if (!instance || !instance._id) throw new Error('Instance not found.')
 
+            if (payload.projectId && instance.projectId.toString() !== payload.projectId) throw new Error('Project not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: instance.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
             return instance
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(instance) {
+        try {
+            return instance.toJSON()
         } catch(err) {
             throw new Error(err)
         }
