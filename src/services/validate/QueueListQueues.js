@@ -47,12 +47,43 @@ module.exports = {
 
         return payload
     },
+    authorize: async function(payload) {
+        try {
+            const 
+                requesterSub = payload.sub,
+                workflowId = payload.workflowId;
+            
+            const workflow = await IndexSchema.Workflow.findOne({_id: workflowId })
+            if (!workflow || !workflow._id) throw new Error('Workflow not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            
+            return payload
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
     request: async function(payload) {
         try {
 
-            const queues = await IndexSchema.Queue.find(payload)
-            .sort({createdAt: -1})
+            const queues = await IndexSchema.Queue.find({
+                sub: payload.sub,
+                workflowId: payload.workflowId,
+                queueType: payload.queueType,
+                date: payload.date,
+            })
+            .sort({date: 1})
             .limit(25)
+            .lean()
 
             return queues
         } catch(err) {

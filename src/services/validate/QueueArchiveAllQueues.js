@@ -45,10 +45,43 @@ module.exports = {
 
         return payload
     },
+    authorize: async function(payload) {
+        try {
+            const 
+                requesterSub = payload.sub,
+                workflowId = payload.workflowId;
+            
+            const workflow = await IndexSchema.Instance.findOne({_id: workflowId }).lean()
+            if (!workflow || !workflow._id) throw new Error('Instance not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return payload
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
     request: async function(payload) {
         try {
 
-            const queues = await IndexSchema.Queue.find(payload).limit(25)
+            const queues = await IndexSchema.Queue.find({
+                sub: payload.sub,
+                workflowId: payload.workflowId,
+                date: payload.date,
+                queueType: payload.queueType,
+            })
+            .sort({date: 1})
+            .limit(25)
 
             for (queue of queues) {
                 await Stats.updateQueueStats({ queue, status: 'archived' }, IndexSchema, socketService)

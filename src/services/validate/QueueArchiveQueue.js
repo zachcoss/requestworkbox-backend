@@ -25,15 +25,38 @@ module.exports = {
 
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-
-            const queue = await IndexSchema.Queue.findOne(payload)
+            const 
+                requesterSub = payload.sub,
+                queueId = payload._id;
+            
+            const queue = await IndexSchema.Queue.findOne({_id: queueId })
             if (!queue || !queue._id) throw new Error('Queue not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: queue.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+            
+            return queue
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function(queue) {
+        try {
 
             await Stats.updateQueueStats({ queue, status: 'archived' }, IndexSchema, socketService)
 
-            return queue
+            return queue.toJSON()
         } catch(err) {
             throw new Error(err)
         }
