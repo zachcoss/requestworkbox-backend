@@ -9,8 +9,6 @@ const
     Instance = require('../../../services/middleware/Instance'),
     Storage = require('../../../services/middleware/Storage'),
     Queue = require('../../../services/middleware/Queue'),
-    Statuscheck = require('../../../services/middleware/Statuscheck'),
-    Webhook = require('../../../services/middleware/Webhook'),
     Feedback = require('../../../services/middleware/Feedback'),
     Team = require('../../../services/middleware/Team');
 
@@ -46,7 +44,6 @@ module.exports.config = function () {
     router.post('/return-workflow/:workflowId', Workflow.startWorkflow)
     router.post('/queue-workflow/:workflowId', Workflow.startWorkflow)
     router.post('/schedule-workflow/:workflowId', Workflow.startWorkflow)
-    router.post('/statuscheck-workflow/:workflowId', Workflow.startWorkflow)
 
     router.post('/create-storage', Storage.createStorage)
     router.post('/list-storages', Storage.listStorages)
@@ -69,20 +66,6 @@ module.exports.config = function () {
     router.post('/list-queues', Queue.listQueues)
     router.post('/archive-all-queues', Queue.archiveAllQueues)
     router.post('/archive-queue', Queue.archiveQueue)
-
-    router.post('/list-statuschecks', Statuscheck.listStatuschecks)
-    router.post('/get-statuscheck', Statuscheck.getStatuscheck)
-    router.post('/save-statuscheck-changes', Statuscheck.saveStatuscheckChanges)
-    router.post('/start-statuscheck', Statuscheck.startStatuscheck)
-    router.post('/stop-statuscheck', Statuscheck.stopStatuscheck)
-
-    router.post('/create-webhook', Webhook.createWebhook)
-    router.post('/list-webhooks', Webhook.listWebhooks)
-    router.post('/get-webhook', Webhook.getWebhook)
-    router.post('/save-webhook-changes', Webhook.saveWebhookChanges)
-    router.post('/get-webhook-details', Webhook.getWebhookDetails)
-    router.post('/webhooks/:webhookId', Webhook.acceptWebhook)
-    router.post('/download-webhook-detail', Webhook.downloadWebhookDetail)
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 

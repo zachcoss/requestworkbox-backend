@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     moment = require('moment'),
-    keys = ['_id','active','status','stats','instanceId','workflowId','workflowName','storageInstanceId','queueType','statuscheckId','date','createdAt','updatedAt'],
+    keys = ['_id','active','status','stats','instanceId','workflowId','workflowName','storageInstanceId','queueType','date','createdAt','updatedAt'],
     queueStatKeys = ['_id','active','status','statusText','error','instanceId','queueId','createdAt','updatedAt'];
 
 module.exports = {
@@ -20,7 +20,6 @@ module.exports = {
         let payload = {
             sub: req.user.sub,
             workflowId: req.body.workflowId,
-            queueType: { $nin: ['statuscheck'] },
         }
 
         if (req.body.date) {

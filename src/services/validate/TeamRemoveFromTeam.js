@@ -24,12 +24,9 @@ module.exports = {
     },
     error: function(err, res) {
         if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing webhook id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect webhook id type.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect id type.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
         else if (err.message === 'Error: Only JSON payloads accepted.') return res.status(400).send('Only JSON payloads accepted.')
-        else if (err.message === 'Error: Webhook not found.') return res.status(400).send('Webhook not found.')
         else {
             console.log('Remove from team error', err)
             return res.status(500).send('Request error')

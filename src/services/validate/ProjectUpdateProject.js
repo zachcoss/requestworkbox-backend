@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','createdAt','updatedAt'],
-    permissionKeys = ['returnWorkflow','queueWorkflow','scheduleWorkflow','statuscheckWorkflow','webhookEndpoint'],
+    permissionKeys = ['returnWorkflow','queueWorkflow','scheduleWorkflow'],
     projectPermissionValues = ['owner','team','public'];
 
 module.exports = {
@@ -32,12 +32,6 @@ module.exports = {
         }
         if (req.body.scheduleWorkflow && _.includes(projectPermissionValues, req.body.scheduleWorkflow)) {
             payload.scheduleWorkflow = req.body.scheduleWorkflow
-        }
-        if (req.body.statuscheckWorkflow && _.includes(projectPermissionValues, req.body.statuscheckWorkflow)) {
-            payload.statuscheckWorkflow = req.body.statuscheckWorkflow
-        }
-        if (req.body.webhookEndpoint && _.includes(projectPermissionValues, req.body.webhookEndpoint)) {
-            payload.webhookEndpoint = req.body.webhookEndpoint
         }
 
         return payload

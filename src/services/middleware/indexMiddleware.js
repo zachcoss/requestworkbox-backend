@@ -23,8 +23,6 @@ module.exports = {
                 if (_.includes(req.path, '/return-workflow/')) return next()
                 else if (_.includes(req.path, '/queue-workflow/')) return next()
                 else if (_.includes(req.path, '/schedule-workflow/')) return next()
-                else if (_.includes(req.path, '/statuscheck-workflow/')) return next()
-                else if (_.includes(req.path, '/webhooks/')) return next()
 
                 return res.status(401).send('Authorization not found.')
             }

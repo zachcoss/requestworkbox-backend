@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','createdAt','updatedAt'],
-    permissionKeys = ['returnWorkflow','queueWorkflow','scheduleWorkflow','statuscheckWorkflow','webhookEndpoint'];
+    permissionKeys = ['returnWorkflow','queueWorkflow','scheduleWorkflow'];
 
 module.exports = {
     validate: function(req, res) {
@@ -51,8 +51,6 @@ module.exports = {
 
             project.active = false
             await project.save()
-
-            const statuschecks = await IndexSchema.Statuscheck.updateMany({ projectId: project._id, status: 'running', }, { status: 'stopped' })
 
             return project.toJSON()
         } catch(err) {

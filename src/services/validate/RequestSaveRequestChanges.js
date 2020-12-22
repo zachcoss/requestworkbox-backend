@@ -26,8 +26,7 @@ module.exports = {
         if (!validUrl.isWebUri(req.body.url)) throw new Error('Not valid URL.')
         if (_.includes(req.body.url, '/return-workflow') || 
             _.includes(req.body.url, '/queue-workflow') || 
-            _.includes(req.body.url, '/schedule-workflow') || 
-            _.includes(req.body.url, '/statuscheck-workflow')) {
+            _.includes(req.body.url, '/schedule-workflow')) {
                 throw new Error('Recursive URLs not allowed.')
         }
 

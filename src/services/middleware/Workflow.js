@@ -1,5 +1,10 @@
 const
-    _ = require('lodash'),
+    _ = require('lodash')
+    .mixin({
+        isHex: function(string) {
+            return /^[a-f0-9]{24}$/.test(string)
+        }
+    }),
     moment = require('moment'),
     socketService = require('../tools/socket'),
     IndexSchema = require('../tools/schema').schema,
@@ -93,61 +98,66 @@ module.exports = {
     startWorkflow: async (req, res, next) => {
         try {
 
-            let workflowType = ''
-
             if (_.includes(req.path, '/return-workflow/')) {
                 workflowType = 'returnWorkflow'
             } else if (_.includes(req.path, '/queue-workflow/')) {
                 workflowType = 'queueWorkflow'
             } else if (_.includes(req.path, '/schedule-workflow/')) {
                 workflowType = 'scheduleWorkflow'
-            } else if (_.includes(req.path, '/statuscheck-workflow/')) {
-                workflowType = 'statuscheckWorkflow'
             } else {
-                return res.status(500).send('Workflow type not found')
+                return res.status(400).send('Workflow type not found.')
+            }
+
+            if (!req.params.workflowId) return res.status(400).send('Missing workflow id.')
+            if (!_.isHex(req.params.workflowId)) return res.status(400).send('Incorrect workflow id type.')
+
+            let workflowId = req.params.workflowId,
+                workflowType;
+            
+            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
+            if (!workflow || !workflow._id) return res.status(400).send('Workflow not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
+            if (!project || !project._id) return res.status(400).send('Project not found.')
+            if (!project.active) return res.status(400).send('Project is archived. Please restore and try again.')
+            if (project.globalWorkflowStatus !== 'running') return res.status(400).send('Project global workflow status is stopped.')
+            if (!project.projectType) return res.status(400).send('Missing project type.')
+
+            const projectType = project.projectType
+
+            const requiredPermissions = project[workflowType]
+            
+            let member,
+                ipAddress = req.ip;
+
+            if (req.user && req.user.sub && _.isString(req.user.sub)) {
+                member = await IndexSchema.Member.findOne({
+                    sub: req.user.sub,
+                    projectId: project._id,
+                }).lean()
+            }
+
+            if (requiredPermissions === 'owner') {
+                if (!member || !member._id) return res.status(401).send('Permission error.')
+                if (!member.owner) return res.status(401).send('Permission error.')
+                if (!member.active) return res.status(401).send('Permission error.')
+                if (member.status !== 'accepted') return res.status(401).send('Permission error.')
+                if (member.permission !== 'write') return res.status(401).send('Permission error.')
+            } else if (requiredPermissions === 'team') {
+                if (!member || !member._id) return res.status(401).send('Permission error.')
+                if (!member.active) return res.status(401).send('Permission error.')
+                if (member.status !== 'accepted') return res.status(401).send('Permission error.')
+            } else if (requiredPermissions === 'public') {
+                req.user = { sub: project.sub }
             }
 
             const workflowTypeCount = `${workflowType}Count`
             const workflowTypeLast = `${workflowType}Last`
 
-            // Check Statuscheck
-            let statuscheck;
-            let statuscheckInterval = 60
-            if (workflowType === 'statuscheckWorkflow') {
-                statuscheck = await IndexSchema.Statuscheck.findOne({ workflowId: req.params.workflowId })
-                if (!statuscheck) return res.status(500).send('Statuscheck not found')
-                if (!statuscheck.active) return res.status(500).send('Statuscheck is archived. Please restore and try again.')
-                if (statuscheck.status === 'stopped') return res.status(500).send('Statuscheck is stopped. Please change status to running.')
-
-                statuscheckInterval = statuscheck.interval || 60
-
-                req.user = { sub: statuscheck.sub }
-            }
-
-            // Find Queue
-            const workflow = await IndexSchema.Workflow.findOne({ _id: req.params.workflowId, sub: req.user.sub })
-            if (!workflow) return res.status(500).send('Workflow not found')
-
-            // Find Settings
-            const setting = await IndexSchema.Setting.findOne({ sub: req.user.sub })
-            if (!setting) return res.status(500).send('Settings not found')
-            if (setting.globalWorkflowStatus !== 'running') return res.status(500).send('Global Workflow Status is stopped.')
-
-            // Find Project
-            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId, sub: req.user.sub })
-            if (!project) return res.status(500).send('Project not found')
-            if (!project.active) return res.status(500).send('Project is archived. Please restore and try again.')
-
-            // Check Account Type
-            const billing = await IndexSchema.Billing.findOne({ sub: req.user.sub })
-            if (!billing || !billing.accountType) return res.status(500).send('Billing not found')
-            
-            const accountType = billing.accountType
-
             // Check Last Returned and Count
-            const count = billing[workflowTypeCount] || 0
+            const count = project[workflowTypeCount] || 0
             const currentTime = moment(new Date())
-            const lastTime = moment(billing[workflowTypeLast] || new Date())
+            const lastTime = moment(project[workflowTypeLast] || new Date())
             const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
 
             // Storage settings
@@ -162,34 +172,34 @@ module.exports = {
             let rateLimitCount = 0
             let taskLimitCount = 0
 
-            if (accountType === 'free') {
+            if (projectType === 'free') {
                 queueDelaySeconds = 30
                 scheduleWindowSeconds = 5 * 60
                 rateLimitCount = 5
                 taskLimitCount = 2
-            } else if (accountType === 'standard') {
+            } else if (projectType === 'standard') {
                 queueDelaySeconds = 15
                 scheduleWindowSeconds = 60 * 60
                 rateLimitCount = 25
                 taskLimitCount = 3
-            } else if (accountType === 'developer') {
+            } else if (projectType === 'developer') {
                 queueDelaySeconds = 5
                 scheduleWindowSeconds = (60 * 60) * 12
                 rateLimitCount = 60
                 taskLimitCount = 5
-            } else if (accountType === 'professional') {
+            } else if (projectType === 'professional') {
                 queueDelaySeconds = 1
                 scheduleWindowSeconds = (60 * 60) * 24
                 rateLimitCount = 250
                 taskLimitCount = 15
             } else {
-                return res.status(500).send('Account type not found')
+                return res.status(500).send('Project type not found.')
             }
 
             // Confirm task size
             const taskCount = _.size(workflow.tasks)
             if (taskCount > taskLimitCount) {
-                const message = `${_.upperFirst(accountType)} accounts are limited to ${taskLimitCount} tasks. Please update your workflow and try again.`
+                const message = `${_.upperFirst(projectType)} projects are limited to ${taskLimitCount} tasks. Please update your workflow and try again.`
                 return res.status(400).send(message)
             }
 
@@ -207,20 +217,17 @@ module.exports = {
 
             // Rate limit functionality
             if (rateLimitLeft > 0) {
-                billing[workflowTypeCount] = (billing[workflowTypeCount] || 0) + 1
-                billing[workflowTypeLast] = new Date()
-                await billing.save()
+                project[workflowTypeCount] = (project[workflowTypeCount] || 0) + 1
+                project[workflowTypeLast] = new Date()
+                await project.save()
             } else if (rateLimitLeft === 0) {
-                console.log(2)
                 if (!rateLimit) {
-                    console.log(3)
-                    billing[workflowTypeCount] = 1
-                    billing[workflowTypeLast] = new Date()
-                    await billing.save()
+                    project[workflowTypeCount] = 1
+                    project[workflowTypeLast] = new Date()
+                    await project.save()
                 } else {
-                    console.log(4)
                     const returnHeader = { 'Retry-After': retryAfter }
-                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds`)
+                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds.`)
                 }
             }
 
@@ -230,6 +237,7 @@ module.exports = {
                 projectId: workflow.projectId,
                 workflowId: workflow._id,
                 workflowName: workflow.name,
+                ipAddress,
             })
             await instance.save()
 
@@ -243,6 +251,7 @@ module.exports = {
                 projectId: workflow.projectId,
                 storageInstanceId: '',
                 stats: [],
+                ipAddress,
             })
             await queue.save()
 
@@ -307,14 +316,6 @@ module.exports = {
             } else if (workflowType === 'scheduleWorkflow') {
                 queue.queueType = 'schedule'
                 queue.date = moment(req.query.date)
-            } else if (workflowType === 'statuscheckWorkflow') {
-                queue.queueType = 'statuscheck'
-                queue.date = moment().add(statuscheckInterval, 'seconds')
-                queue.statuscheckId = statuscheck._id
-
-                statuscheck.nextQueueId = queue._id
-                statuscheck.nextQueueDate = queue.date
-                await statuscheck.save()
             }
 
             // Update instance and save
@@ -328,13 +329,13 @@ module.exports = {
             // Send to jobs
             if (workflowType === 'returnWorkflow') {
                 return res.redirect(`${process.env.JOBS_URL}/return-workflow?queueid=${queue._id}`)
-            } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow' || 'statuscheckWorkflow') {
+            } else if (workflowType === 'queueWorkflow' || 'scheduleWorkflow') {
                 return res.status(200).send(queue._id)
             }
 
         } catch (err) {
-            console.log(err)
-            return res.status(500).send(err)
+            console.log('Workflow error', err)
+            return res.status(500).send('Workflow error.')
         }
     },
 }

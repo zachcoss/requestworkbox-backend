@@ -8,7 +8,7 @@ const
     IndexSchema = require('../tools/schema').schema,
     socketService = require('../tools/socket'),
     Stats = require('../tools/stats').stats,
-    keys = ['_id','active','status','stats','instanceId','workflowId','workflowName','storageInstanceId','queueType','statuscheckId','date','createdAt','updatedAt'],
+    keys = ['_id','active','status','stats','instanceId','workflowId','workflowName','storageInstanceId','queueType','date','createdAt','updatedAt'],
     queueStatKeys = ['_id','active','status','statusText','error','instanceId','queueId','createdAt','updatedAt'];
 
 module.exports = {

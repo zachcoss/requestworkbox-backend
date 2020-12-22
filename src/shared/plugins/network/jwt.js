@@ -34,8 +34,6 @@ module.exports.config = () => {
                 if (_.includes(req.path, '/return-workflow/')) return true
                 else if (_.includes(req.path, '/queue-workflow/')) return true
                 else if (_.includes(req.path, '/schedule-workflow/')) return true
-                else if (_.includes(req.path, '/statuscheck-workflow/')) return true
-                else if (_.includes(req.path, '/webhooks/')) return true
                 else return false
             }
         },

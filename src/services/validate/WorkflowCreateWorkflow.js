@@ -54,13 +54,6 @@ module.exports = {
                 projectId: project._id,
             })
             await workflow.save()
-
-            const statuscheck = new IndexSchema.Statuscheck({
-                sub: project.sub,
-                projectId: project._id,
-                workflowId: workflow._id,
-            })
-            await statuscheck.save()
             
             return workflow.toJSON()
         } catch(err) {

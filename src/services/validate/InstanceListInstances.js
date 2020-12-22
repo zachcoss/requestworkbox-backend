@@ -50,7 +50,6 @@ module.exports = {
 
             const instances = await IndexSchema.Instance.find({
                 projectId: payload.projectId,
-                queueType: { $nin: ['statuscheck'] },
             })
             .sort({createdAt: -1})
             .limit(5)

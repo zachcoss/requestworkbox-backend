@@ -57,11 +57,6 @@ module.exports = {
             workflow.active = false
             await workflow.save()
 
-            const findPayloadStatuscheck = { sub: workflow.sub, workflowId: workflow._id }
-            const statuscheck = await IndexSchema.Statuscheck.findOne(findPayloadStatuscheck)
-            statuscheck.status = 'stopped'
-            await statuscheck.save()
-
             return workflow.toJSON()
         } catch(err) {
             throw new Error(err)
