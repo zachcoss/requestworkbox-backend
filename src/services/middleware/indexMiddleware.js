@@ -1,9 +1,59 @@
 const
     _ = require('lodash'),
+    moment = require('moment'),
     IndexSchema = require('../tools/schema').schema,
     Tokens = require('../tools/tokens').tokens;
 
+let 
+    api = {},
+    apiEnd = moment(),
+
+    workflow = {},
+    workflowEnd = moment(),
+
+    workflowPaths = ['/return-workflow/','/queue-workflow/','/schedule-workflow/'];
+
 module.exports = {
+    ratelimit: async function (req, res, next) {
+        try {
+
+            let ipAddress;
+
+            if (req.hostname === 'localhost') ipAddress = 'localhost'
+            else ipAddress = req.ip
+
+            if (_.includes(workflowPaths, req.path)) {
+                if (moment().isAfter(workflowEnd)) {
+                    workflow = {}
+                    workflowEnd = moment().add(60, 'second')
+                }
+
+                if (!workflow[ipAddress]) workflow[ipAddress] = 1
+                else workflow[ipAddress] = workflow[ipAddress] + 1
+
+                if (workflow[ipAddress] <= 250) return next()
+
+                console.log('Rate limiting Workflow: ', ipAddress)
+                return res.sendStatus(429)
+            } else {
+                if (moment().isAfter(apiEnd)) {
+                    api = {}
+                    apiEnd = moment().add(5, 'second')
+                }
+
+                if (!api[ipAddress]) api[ipAddress] = 1
+                else api[ipAddress] = api[ipAddress] + 1
+
+                if (api[ipAddress] <= 50) return next()
+
+                console.log('Rate limiting API: ', ipAddress)
+                return res.sendStatus(429)
+            }
+        } catch (err) {
+            console.log('Rate limit error', err)
+            return res.status(500).send('Rate limit error.')
+        }
+    },
     healthcheck: async function (req, res, next) {
         try {
             return res.status(200).send('OK')

@@ -14,6 +14,7 @@ const
 
 module.exports.config = function () {
 
+    router.all('*', indexMiddleware.ratelimit)
     router.get('/', indexMiddleware.healthcheck)
     router.all('*', indexMiddleware.interceptor)
 
