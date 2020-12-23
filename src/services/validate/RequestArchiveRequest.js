@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','url','name','method','active','projectId','query','headers','body','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse','healthcheckEndpoint'];
+    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
 module.exports = {

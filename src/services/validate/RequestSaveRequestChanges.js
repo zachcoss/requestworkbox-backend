@@ -8,7 +8,7 @@ const
     validUrl = require('valid-url'),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','url','name','method','active','projectId','query','headers','body','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse','healthcheckEndpoint'];
+    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
 module.exports = {
@@ -24,10 +24,16 @@ module.exports = {
         
         if (!req.body.url) throw new Error('Missing URL.')
         if (!validUrl.isWebUri(req.body.url)) throw new Error('Not valid URL.')
-        if (_.includes(req.body.url, '/return-workflow') || 
+        if (_.includes(req.body.url, '/return-request') || 
+            _.includes(req.body.url, '/return-workflow') || 
+            _.includes(req.body.url, '/queue-request') || 
             _.includes(req.body.url, '/queue-workflow') || 
+            _.includes(req.body.url, '/schedule-request') || 
             _.includes(req.body.url, '/schedule-workflow')) {
                 throw new Error('Recursive URLs not allowed.')
+        }
+        if (_.includes(req.body.url, 'requestworkbox.com')) {
+            if (req.path !== '/') throw new Error('Recursive URLs not allowed.')
         }
 
         let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'query', 'headers', 'body'])

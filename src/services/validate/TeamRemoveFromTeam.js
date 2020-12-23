@@ -9,12 +9,64 @@ const
 
 module.exports = {
     validate: function(req, res) {
-        let payload;
+
+        if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
+        if (!req.body.projectId) throw new Error('Missing project id.')
+        if (!req.body.memberId) throw new Error('Missing member id.')
+        if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
+        if (!_.isHex(req.body.memberId)) throw new Error('Incorrect member id type.')
+
+        let payload = {
+            sub: req.user.sub,
+            projectId: req.body.projectId,
+            memberId: req.body.memberId,
+        }
+
         return payload
+    },
+    authorize: async function(payload) {
+        try {
+            const 
+                requesterSub = payload.sub;
+
+            const project = await IndexSchema.Project.findOne({ _id: payload.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.owner) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
+
+            if (member._id === payload.memberId) throw new Error('Cannot remove owner from team.')
+            
+            return payload
+        } catch(err) {
+            throw new Error(err)
+        }
     },
     request: async function(payload) {
         try {
-            return 'OK'
+
+            const member = await IndexSchema.Member.findOne({
+                sub: payload.sub,
+                projectId: payload.projectId,
+                _id: payload.memberId,
+            })
+
+            member.owner = false
+            member.active = false
+            member.status = 'removed'
+            member.permission = 'none'
+            member.includeSensitive = false
+
+            await member.save()
+
+            return member.toJSON()
         } catch(err) {
             throw new Error(err)
         }

@@ -33,6 +33,15 @@ module.exports = {
         if (req.body.scheduleWorkflow && _.includes(projectPermissionValues, req.body.scheduleWorkflow)) {
             payload.scheduleWorkflow = req.body.scheduleWorkflow
         }
+        if (req.body.returnRequest && _.includes(projectPermissionValues, req.body.returnRequest)) {
+            payload.returnRequest = req.body.returnRequest
+        }
+        if (req.body.queueRequest && _.includes(projectPermissionValues, req.body.queueRequest)) {
+            payload.queueRequest = req.body.queueRequest
+        }
+        if (req.body.scheduleRequest && _.includes(projectPermissionValues, req.body.scheduleRequest)) {
+            payload.scheduleRequest = req.body.scheduleRequest
+        }
 
         return payload
     },

@@ -5,10 +5,7 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','url','name','method','active','projectId','query','headers','body','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
-    
+    IndexSchema = require('../tools/schema').schema;
 
 module.exports = {
     validate: function(req, res) {
@@ -37,8 +34,10 @@ module.exports = {
                 projectId: project._id,
             }).lean()
             if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.owner) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'write') throw new Error('Permission error.')
             
             return project
         } catch(err) {
@@ -48,30 +47,28 @@ module.exports = {
     request: async function(project) {
         try {
 
-            const requests = await IndexSchema.Request.find({ projectId: project._id })
-            .sort({createdAt: -1})
+            const members = await IndexSchema.Member.find({
+                active: true,
+                projectId: project._id,
+            })
             .limit(20)
             .lean()
 
-            return requests
+            return members
         } catch(err) {
             throw new Error(err)
         }
     },
     response: function(request, res) {
-        const response = _.map(request, (request) => {
-            let responseData = _.pickBy(request, function(value, key) {
-                return _.includes(keys.concat(permissionKeys), key)
-            })
-            return responseData
-        })
-        return res.status(200).send(response)
+        return res.status(200).send(request)
     },
     error: function(err, res) {
         if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
+        else if (err.message === 'Incorrect id type.') return res.status(400).send(err.message)
         else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
+        else if (err.message === 'Error: Only JSON payloads accepted.') return res.status(400).send('Only JSON payloads accepted.')
         else {
-            console.log('Get requests error', err)
+            console.log('Team list error', err)
             return res.status(500).send('Request error')
         }
     },

@@ -9,12 +9,48 @@ const
 
 module.exports = {
     validate: function(req, res) {
-        let payload;
+
+        if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
+        if (!req.body.projectId) throw new Error('Missing project id.')
+        if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
+
+        let payload = {
+            sub: req.user.sub,
+            projectId: req.body.projectId,
+        }
+
         return payload
     },
-    request: async function(payload) {
+    authorize: async function(payload) {
         try {
-            return 'OK'
+            const 
+                requesterSub = payload.sub;
+
+            const project = await IndexSchema.Project.findOne({ _id: payload.projectId }).lean()
+            if (!project || !project._id) throw new Error('Project not found.')
+
+            const member = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            })
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (member.status !== 'invited') throw new Error('Permission error.')
+            
+            return {project, member}
+        } catch(err) {
+            throw new Error(err)
+        }
+    },
+    request: async function({project, member}) {
+        try {
+
+            member.owner = false
+            member.active = true
+            member.status = 'accepted'
+            await member.save()
+
+            return project.toJSON()
         } catch(err) {
             throw new Error(err)
         }
