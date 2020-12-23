@@ -6,8 +6,8 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','createdAt','updatedAt'],
-    permissionKeys = ['returnWorkflow','queueWorkflow','scheduleWorkflow'];
+    keys = ['_id','active','name','projectType','globalWorkflowStatus','requestCount','requestLast','workflowCount','workflowLast','createdAt','updatedAt'],
+    permissionKeys = ['returnRequest','returnWorkflow','queueRequest','queueWorkflow','scheduleRequest','scheduleWorkflow'];
 
 module.exports = {
     validate: function(req, res) {
