@@ -38,7 +38,8 @@ module.exports = {
             }).lean()
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
-            if (member.status === 'invited') throw new Error('Permission error.')
+            if (member.status === 'removed') throw new Error('Permission error.')
+            if (member.permission === 'none') throw new Error('Permission error.')
             
             return project
         } catch(err) {

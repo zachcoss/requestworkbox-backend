@@ -23,7 +23,10 @@ module.exports = {
     authorize: async function(payload) {
         try {
             const requesterSub = payload.sub;
-            const members = await IndexSchema.Member.find({ sub: requesterSub })
+            const members = await IndexSchema.Member.find({
+                active: true,
+                sub: requesterSub,
+            }).lean()
             
             return members
         } catch(err) {

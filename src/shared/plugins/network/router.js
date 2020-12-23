@@ -34,6 +34,10 @@ module.exports.config = function () {
     router.post('/archive-request', Request.archiveRequest)
     router.post('/restore-request', Request.restoreRequest)
 
+    router.post('/return-request/:requestId', Workflow.startRequest, Workflow.initializeWorkflow)
+    router.post('/queue-request/:requestId', Workflow.startRequest, Workflow.initializeWorkflow)
+    router.post('/schedule-request/:requestId', Workflow.startRequest, Workflow.initializeWorkflow)
+
     router.post('/create-workflow', Workflow.createWorkflow)
     router.post('/list-workflows', Workflow.listWorkflows)
     router.post('/get-workflow', Workflow.getWorkflow)
@@ -42,9 +46,10 @@ module.exports.config = function () {
     router.post('/delete-workflow-task', Workflow.deleteWorkflowTask)
     router.post('/archive-workflow', Workflow.archiveWorkflow)
     router.post('/restore-workflow', Workflow.restoreWorkflow)
-    router.post('/return-workflow/:workflowId', Workflow.startWorkflow)
-    router.post('/queue-workflow/:workflowId', Workflow.startWorkflow)
-    router.post('/schedule-workflow/:workflowId', Workflow.startWorkflow)
+
+    router.post('/return-workflow/:workflowId', Workflow.startWorkflow, Workflow.initializeWorkflow)
+    router.post('/queue-workflow/:workflowId', Workflow.startWorkflow, Workflow.initializeWorkflow)
+    router.post('/schedule-workflow/:workflowId', Workflow.startWorkflow, Workflow.initializeWorkflow)
 
     router.post('/create-storage', Storage.createStorage)
     router.post('/list-storages', Storage.listStorages)
@@ -72,6 +77,7 @@ module.exports.config = function () {
 
     router.post('/create-invite', Team.createInvite)
     router.post('/accept-invite', Team.acceptInvite)
+    router.post('/list-team', Team.listTeam)
     router.post('/remove-from-team', Team.removeFromTeam)
 
     return router;

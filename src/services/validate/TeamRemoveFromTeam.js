@@ -43,6 +43,13 @@ module.exports = {
             if (member.permission !== 'write') throw new Error('Permission error.')
 
             if (member._id === payload.memberId) throw new Error('Cannot remove owner from team.')
+
+            const archivedMembers = await IndexSchema.Member.countDocuments({
+                active: false,
+                projectId: project._id,
+            })
+
+            if (archivedMembers >= 10) throw new Error('Rate limit error.')
             
             return payload
         } catch(err) {
