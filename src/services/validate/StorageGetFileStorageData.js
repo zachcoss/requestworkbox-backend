@@ -67,7 +67,7 @@ module.exports = {
             const storageValueStart = new Date()
             const storageValue = await S3.getObject({
                 Bucket: process.env.STORAGE_BUCKET,
-                Key: `${storage.sub}/storage/${storage._id}`,
+                Key: `${storage.projectId}/storage-data/${storage._id}`,
             }).promise()
 
             const usages = [{

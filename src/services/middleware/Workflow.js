@@ -279,7 +279,7 @@ module.exports = {
                 // Store payload
                 await S3.upload({
                     Bucket: process.env.STORAGE_BUCKET,
-                    Key: `${req.user.sub}/request-payloads/${instance._id}`,
+                    Key: `${workflow.projectId}/workflow-payloads/${instance._id}`,
                     Body: payloadBuffer
                 }).promise()
 

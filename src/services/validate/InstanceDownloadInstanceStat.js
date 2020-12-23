@@ -86,7 +86,7 @@ module.exports = {
             const fullStatBufferStart = new Date()
             const fullStatBuffer = await S3.getObject({
                 Bucket: process.env.STORAGE_BUCKET,
-                Key: `${payload.sub}/instance-statistics/${instance._id}/${statId}`,
+                Key: `${instance.projectId}/instance-statistics/${instance._id}/${statId}`,
             }).promise()
 
             let bufferBodyJSON = fullStatBuffer.Body.toJSON()

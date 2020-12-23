@@ -73,7 +73,7 @@ module.exports = {
 
             await S3.upload({
                 Bucket: process.env.STORAGE_BUCKET,
-                Key: `${storage.sub}/storage/${storage._id}`,
+                Key: `${storage.projectId}/storage-data/${storage._id}`,
                 Body: file
             }).promise()
 
