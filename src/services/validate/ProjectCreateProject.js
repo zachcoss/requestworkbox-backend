@@ -33,6 +33,13 @@ module.exports = {
             let setting = await IndexSchema.Setting.findOne(payload)
             if (!setting || !setting._id) throw new Error('Settings not found.')
 
+            const activeProjects = await IndexSchema.Project.countDocuments({
+                sub: setting.sub,
+                active: true,
+            })
+
+            if (activeProjects >= 10) throw new Error('Rate limit error.')
+
             // Create project
             let project = new IndexSchema.Project(payload)
             // Create member

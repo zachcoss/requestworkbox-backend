@@ -42,9 +42,15 @@ module.exports = {
             }).lean()
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
-            if (!member.owner) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
+
+            const activeStorages = await IndexSchema.Storage.countDocuments({
+                active: true,
+                projectId: project._id,
+            })
+
+            if (activeStorages >= 10) throw new Error('Rate limit error.')
             
             return storage
         } catch(err) {

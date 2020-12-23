@@ -40,6 +40,13 @@ module.exports = {
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
+
+            const activeRequests = await IndexSchema.Request.countDocuments({
+                active: true,
+                projectId: project._id,
+            })
+
+            if (activeRequests >= 10) throw new Error('Rate limit error.')
             
             return payload
         } catch(err) {

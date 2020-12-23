@@ -40,6 +40,13 @@ module.exports = {
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
+
+            const activeWorkflows = await IndexSchema.Workflow.countDocuments({
+                active: true,
+                projectId: project._id,
+            })
+
+            if (activeWorkflows >= 10) throw new Error('Rate limit error.')
             
             return {project, requesterSub}
         } catch(err) {

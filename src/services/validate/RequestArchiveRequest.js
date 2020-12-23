@@ -42,9 +42,15 @@ module.exports = {
             }).lean()
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
-            if (!member.owner) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
+
+            const archivedRequests = await IndexSchema.Request.countDocuments({
+                active: false,
+                projectId: project._id,
+            })
+
+            if (archivedRequests >= 10) throw new Error('Rate limit error.')
             
             return request
         } catch(err) {

@@ -98,21 +98,25 @@ module.exports = {
     startWorkflow: async (req, res, next) => {
         try {
 
-            if (_.includes(req.path, '/return-workflow/')) {
-                workflowType = 'returnWorkflow'
-            } else if (_.includes(req.path, '/queue-workflow/')) {
-                workflowType = 'queueWorkflow'
-            } else if (_.includes(req.path, '/schedule-workflow/')) {
-                workflowType = 'scheduleWorkflow'
-            } else {
-                return res.status(400).send('Workflow type not found.')
-            }
-
             if (!req.params.workflowId) return res.status(400).send('Missing workflow id.')
             if (!_.isHex(req.params.workflowId)) return res.status(400).send('Incorrect workflow id type.')
 
             let workflowId = req.params.workflowId,
-                workflowType;
+                workflowType,
+                isWorkflow = false;
+
+            if (_.includes(req.path, '/return-workflow/')) {
+                workflowType = 'returnWorkflow'
+                isWorkflow = true
+            } else if (_.includes(req.path, '/queue-workflow/')) {
+                workflowType = 'queueWorkflow'
+                isWorkflow = true
+            } else if (_.includes(req.path, '/schedule-workflow/')) {
+                workflowType = 'scheduleWorkflow'
+                isWorkflow = true
+            } else {
+                return res.status(400).send('Workflow type not found.')
+            }
             
             const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
             if (!workflow || !workflow._id) return res.status(400).send('Workflow not found.')
@@ -151,13 +155,21 @@ module.exports = {
                 req.user = { sub: project.sub }
             }
 
-            const workflowTypeCount = `${workflowType}Count`
-            const workflowTypeLast = `${workflowType}Last`
+            let rateCount,
+                rateLast;
+
+            if (isWorkflow) {
+                rateCount = 'workflowCount'
+                rateLast = 'workflowLast'
+            } else {
+                rateCount = 'requestCount'
+                rateLast = 'requestLast'
+            }
 
             // Check Last Returned and Count
-            const count = project[workflowTypeCount] || 0
+            const count = project[rateCount] || 0
             const currentTime = moment(new Date())
-            const lastTime = moment(project[workflowTypeLast] || new Date())
+            const lastTime = moment(project[rateLast] || new Date())
             const secondsSinceLast = currentTime.diff(lastTime, 'seconds')
 
             // Storage settings
@@ -196,13 +208,6 @@ module.exports = {
                 return res.status(500).send('Project type not found.')
             }
 
-            // Confirm task size
-            const taskCount = _.size(workflow.tasks)
-            if (taskCount > taskLimitCount) {
-                const message = `${_.upperFirst(projectType)} projects are limited to ${taskLimitCount} tasks. Please update your workflow and try again.`
-                return res.status(400).send(message)
-            }
-
             // Filter date
             if (workflowType === 'scheduleWorkflow') {
                 if (!req.query.date) return res.status(400).send('Missing date')
@@ -217,17 +222,17 @@ module.exports = {
 
             // Rate limit functionality
             if (rateLimitLeft > 0) {
-                project[workflowTypeCount] = (project[workflowTypeCount] || 0) + 1
-                project[workflowTypeLast] = new Date()
+                project[rateCount] = (project[rateCount] || 0) + 1
+                project[rateLast] = new Date()
                 await project.save()
             } else if (rateLimitLeft === 0) {
                 if (!rateLimit) {
-                    project[workflowTypeCount] = 1
-                    project[workflowTypeLast] = new Date()
+                    project[rateCount] = 1
+                    project[rateLast] = new Date()
                     await project.save()
                 } else {
                     const returnHeader = { 'Retry-After': retryAfter }
-                    return res.set(returnHeader).status(429).send(`Retry again in ${retryAfter} seconds.`)
+                    return res.set(returnHeader).sendStatus(429)
                 }
             }
 

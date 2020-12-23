@@ -34,6 +34,8 @@ module.exports = {
             const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
+            if (_.size(workflow.tasks) >= 10) throw new Error('Rate limit error.')
+
             const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
 

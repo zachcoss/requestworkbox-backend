@@ -40,6 +40,8 @@ module.exports = {
             const request = await IndexSchema.Request.findOne({ _id: requestId })
             if (!request || !request._id) throw new Error('Request not found.')
 
+            if (_.size(request[payload.requestDetailOption]) >= 10) throw new Error('Rate limit error.')
+
             const project = await IndexSchema.Project.findOne({ _id: request.projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
 
