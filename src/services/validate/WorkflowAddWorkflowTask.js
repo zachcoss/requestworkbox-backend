@@ -43,6 +43,8 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
+            if (workflow.lockedResource && workflow.lockedResource === true && !member.owner) throw new Error('Permission error.')
+
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')

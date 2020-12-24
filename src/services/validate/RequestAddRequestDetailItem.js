@@ -49,6 +49,8 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
+            if (request.lockedResource && request.lockedResource === true && !member.owner) throw new Error('Permission error.')
+            
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')

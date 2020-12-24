@@ -56,6 +56,8 @@ module.exports = {
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
+
+            if (storage.sensitiveResponse && storage.sensitiveResponse === true && member.permission !== 'write') throw new Error('Permission error.')
             
             return storage
         } catch(err) {
