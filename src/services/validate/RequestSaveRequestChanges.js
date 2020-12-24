@@ -38,6 +38,35 @@ module.exports = {
 
         let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'query', 'headers', 'body'])
         updates.sub = req.user.sub
+
+        if (req.body.authorizationType === 'header') {
+            if (!req.body.authorization) throw new Error()
+            // x-api-key
+            if (!req.body.authorization.key) throw new Error()
+            // DSF@-SDF@@DCSD-@#$DAEAFD-ASDFSF
+            if (!req.body.authorization.value) throw new Error()
+            // textInput
+            if (!req.body.authorization.valueType) throw new Error()
+        }
+
+        if (req.body.authorizationType === 'basicAuth') {
+            if (!req.body.authorization) throw new Error()
+            // username
+            if (!req.body.authorization.key) throw new Error()
+            // DSF@-SDF@@DCSD-@#$DAEAFD-ASDFSF
+            if (!req.body.authorization.value) throw new Error()
+            // textInput
+            if (!req.body.authorization.valueType) throw new Error()
+            
+            // password
+            if (!req.body.authorization.key) throw new Error()
+            // DSF@-SDF@@DCSD-@#$DAEAFD-ASDFSF
+            if (!req.body.authorization.value) throw new Error()
+            // textInput
+            if (!req.body.authorization.valueType) throw new Error()
+        }
+
+
         return updates
     },
     authorize: async function(updates) {
