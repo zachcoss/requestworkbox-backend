@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource','sensitiveData'];
+    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
 module.exports = {
@@ -17,9 +17,32 @@ module.exports = {
         if (!req.body._id) throw new Error('Missing storage id.')
         if (!_.isHex(req.body._id)) throw new Error('Incorrect storage id type.')
 
-        let updates = _.pick(req.body, ['_id','name'])
+        let updates = _.pick(req.body, ['_id','sub'])
 
-        updates.sub = req.user.sub
+        if (req.body.name) {
+            if (!_.isString(req.body.name)) throw new Error('Incorrect name type.')
+            updates.name = req.body.name
+        }
+
+        if (req.body.lockedResource && !_.isBoolean(req.body.lockedResource))
+        if (req.body.preventExecution && !_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect locked resource type.')
+        if (req.body.sensitiveResponse && !_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect locked resource type.')
+
+        if (req.body.lockedResource) {
+            if (!_.isBoolean(req.body.lockedResource)) throw new Error('Incorrect locked resource type.')
+            updates.lockedResource = req.body.lockedResource
+        }
+
+        if (req.body.preventExecution) {
+            if (!_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect prevent execution type.')
+            updates.preventExecution = req.body.preventExecution
+        }
+
+        if (req.body.sensitiveResponse) {
+            if (!_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect sensitive response type.')
+            updates.sensitiveResponse = req.body.sensitiveResponse
+        }
+
         return updates
     },
     authorize: async function(updates) {
@@ -45,6 +68,12 @@ module.exports = {
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
             
+            if (!member.owner) {
+                delete updates.lockedResource
+                delete updates.preventExecution
+                delete updates.sensitiveResponse
+            }
+            
             return {storage, updates}
         } catch(err) {
             throw new Error(err)
@@ -53,9 +82,11 @@ module.exports = {
     request: async function({storage, updates}) {
         try {
 
-            const updateData = _.omit(updates, ['_id', 'sub'])
+            if (updates.name) storage.name  = updates.name
 
-            _.each(updateData, (value, key) => {
+            const lockingOptions = _.pick(updates, ['lockedResource','preventExecution','sensitiveResponse'])
+
+            _.each(lockingOptions, (value, key) => {
                 storage[key] = value
             })
 

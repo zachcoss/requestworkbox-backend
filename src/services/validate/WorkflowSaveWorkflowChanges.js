@@ -8,7 +8,7 @@ const
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
     taskKeys = ['_id','requestId','runtimeResultName'],
-    permissionKeys = ['lockedResource'];
+    permissionKeys = ['lockedResource','preventExecution'];
     
 
 module.exports = {
@@ -27,8 +27,19 @@ module.exports = {
         if (req.body.tasks && !_.isArray(req.body.tasks)) throw new Error('Incorrect tasks type.')
         if (req.body.webhooks && !_.isArray(req.body.webhooks)) throw new Error('Incorrect webhooks type.')
 
-        if (req.body.name) {
-            updates.name = req.body.name
+        if (req.body.name) updates.name = req.body.name
+
+        if (req.body.lockedResource && !_.isBoolean(req.body.lockedResource))
+        if (req.body.preventExecution && !_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect locked resource type.')
+
+        if (req.body.lockedResource) {
+            if (!_.isBoolean(req.body.lockedResource)) throw new Error('Incorrect locked resource type.')
+            updates.lockedResource = req.body.lockedResource
+        }
+
+        if (req.body.preventExecution) {
+            if (!_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect prevent execution type.')
+            updates.preventExecution = req.body.preventExecution
         }
 
         if (req.body.tasks && _.size(req.body.tasks) > 0 && _.size(req.body.tasks) <= 10) {
@@ -103,6 +114,12 @@ module.exports = {
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
+
+            if (!member.owner) {
+                delete updates.lockedResource
+                delete updates.preventExecution
+                delete updates.sensitiveResponse
+            }
             
             return {workflow, updates}
         } catch(err) {
@@ -112,9 +129,9 @@ module.exports = {
     request: async function({workflow, updates}) {
         try {
 
-            const updateData = _.omit(updates, ['_id', 'sub'])
+            const updateData = _.pick(updates, ['name','tasks','webhooks'])
 
-            if (updates.name) workflow.name = updates.name
+            if (updateData.name) workflow.name = updateData.name
 
             if (workflow.tasks && updateData.tasks) {
                 // if the same size
@@ -151,6 +168,12 @@ module.exports = {
             if (workflow.webhooks && updateData.webhooks) {
                 workflow.webhooks = updateData.webhooks
             }
+
+            const lockingOptions = _.pick(updates, ['lockedResource','preventExecution','sensitiveResponse'])
+
+            _.each(lockingOptions, (value, key) => {
+                workflow[key] = value
+            })
 
             await workflow.save()
             return workflow.toJSON()

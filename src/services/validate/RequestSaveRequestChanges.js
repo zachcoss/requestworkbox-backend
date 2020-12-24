@@ -39,6 +39,25 @@ module.exports = {
         let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'query', 'headers', 'body'])
         updates.sub = req.user.sub
 
+        if (req.body.lockedResource && !_.isBoolean(req.body.lockedResource))
+        if (req.body.preventExecution && !_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect locked resource type.')
+        if (req.body.sensitiveResponse && !_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect locked resource type.')
+
+        if (req.body.lockedResource) {
+            if (!_.isBoolean(req.body.lockedResource)) throw new Error('Incorrect locked resource type.')
+            updates.lockedResource = req.body.lockedResource
+        }
+
+        if (req.body.preventExecution) {
+            if (!_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect prevent execution type.')
+            updates.preventExecution = req.body.preventExecution
+        }
+
+        if (req.body.sensitiveResponse) {
+            if (!_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect sensitive response type.')
+            updates.sensitiveResponse = req.body.sensitiveResponse
+        }
+
         if (req.body.authorizationType === 'header') {
             if (!req.body.authorization) throw new Error()
             // x-api-key
@@ -91,6 +110,12 @@ module.exports = {
             if (!member.active) throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
+
+            if (!member.owner) {
+                delete updates.lockedResource
+                delete updates.preventExecution
+                delete updates.sensitiveResponse
+            }
             
             return {request, updates}
         } catch(err) {
@@ -100,15 +125,19 @@ module.exports = {
     request: async function({request, updates}) {
         try {
 
-            const updateInfo = _.omit(updates, ['_id', 'sub'])
+            const requestOptions = _.pick(updates, ['url', 'name', 'method', 'query', 'headers', 'body'])
 
-            _.each(updateInfo, (value, key) => {
+            _.each(requestOptions, (value, key) => {
                 request[key] = value
             })
-
-            // fix headers
             _.each(request.headers, (headerObj) => {
                 headerObj.key = headerObj.key.replace(/ /g,'-')
+            })
+
+            const lockingOptions = _.pick(updates, ['lockedResource','preventExecution','sensitiveResponse'])
+
+            _.each(lockingOptions, (value, key) => {
+                request[key] = value
             })
 
             await request.save()

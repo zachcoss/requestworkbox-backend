@@ -159,7 +159,7 @@ module.exports = {
             if (!project || !project._id) return res.status(400).send('Project not found.')
             if (!project.active) return res.status(400).send('Project is archived. Please restore and try again.')
             if (!project.projectType) return res.status(400).send('Missing project type.')
-            if (project.globalWorkflowStatus !== 'running') return res.status(400).send('Project global workflow status is stopped.')
+            if (project.globalWorkflowStatus !== 'running') return res.status(400).send(`Project global workflow status is ${project.globalWorkflowStatus}.`)
             if (!_.includes(['free','standard','developer','professional'], project.projectType)) return res.status(400).send('Incorrect project type.')
 
             const
