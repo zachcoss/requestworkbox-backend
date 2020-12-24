@@ -59,14 +59,14 @@ module.exports = {
             
             return storage.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function(storage) {
         try {
             return storage
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -83,14 +83,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing storage id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect storage id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Storage not found.') return res.status(400).send('Storage not found.')
-        else {
-            console.log('Get storage usage error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Storage: get storage usage error.', err)
+        return res.status(400).send(`Storage: get storage usage error. ${err.message}`)
     },
 }

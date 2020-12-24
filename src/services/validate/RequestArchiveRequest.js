@@ -56,7 +56,7 @@ module.exports = {
             
             return request
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function(request) {
@@ -67,7 +67,7 @@ module.exports = {
 
             return request.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -77,14 +77,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing request id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect request id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Request not found.') return res.status(400).send('Request not found.')
-        else if (err.message === 'Error: Project not found.') return res.status(400).send('Project not found.')
-        else {
-            console.log('Archive request error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Request: archive request error.', err)
+        return res.status(400).send(`Request: archive request error. ${err.message}`)
     },
 }

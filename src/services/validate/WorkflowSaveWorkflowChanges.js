@@ -123,7 +123,7 @@ module.exports = {
             
             return {workflow, updates}
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function({workflow, updates}) {
@@ -178,7 +178,7 @@ module.exports = {
             await workflow.save()
             return workflow.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -188,20 +188,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing workflow id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect workflow id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect name type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect tasks type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect webhooks type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect task object type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect webhook object type.') return res.status(400).send(err.message)
-        else if (err.message === 'Duplicate runtime result names not allowed.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Workflow not found.') return res.status(400).send('Workflow not found.')
-        else if (err.message === 'Error: Incorrect tasks array.') return res.status(400).send('Incorrect tasks array.')
-        else {
-            console.log('Save workflow changes error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Workflow: save workflow changes error.', err)
+        return res.status(400).send(`Workflow: save workflow changes error. ${err.message}`)
     },
 }

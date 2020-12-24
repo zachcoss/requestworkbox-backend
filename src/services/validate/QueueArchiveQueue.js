@@ -48,7 +48,7 @@ module.exports = {
             
             return queue
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function(queue) {
@@ -58,7 +58,7 @@ module.exports = {
 
             return queue.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -75,13 +75,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing queue id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect queue id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Queue not found.') return res.status(400).send('Queue not found.')
-        else {
-            console.log('Archive queue error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Queue: archive queue error.', err)
+        return res.status(400).send(`Queue: archive queue error. ${err.message}`)
     },
 }

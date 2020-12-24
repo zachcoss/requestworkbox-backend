@@ -30,7 +30,7 @@ module.exports = {
             
             return members
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function(members) {
@@ -41,7 +41,7 @@ module.exports = {
             const projects = await IndexSchema.Project.find({ _id: { $in: projectIds }}).lean()
             return projects
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -54,10 +54,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else {
-            console.log('Get projects error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Project: list projects error.', err)
+        return res.status(400).send(`Project: list projects error. ${err.message}`)
     },
 }

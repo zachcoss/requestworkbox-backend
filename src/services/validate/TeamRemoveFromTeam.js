@@ -53,7 +53,7 @@ module.exports = {
             
             return payload
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function(payload) {
@@ -73,22 +73,16 @@ module.exports = {
 
             await member.save()
 
-            return member.toJSON()
+            return 'OK'
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
         return res.status(200).send(request)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Incorrect id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Only JSON payloads accepted.') return res.status(400).send('Only JSON payloads accepted.')
-        else {
-            console.log('Remove from team error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Team: remove from team error.', err)
+        return res.status(400).send(`Team: remove from team error. ${err.message}`)
     },
 }

@@ -41,7 +41,7 @@ module.exports = {
             
             return project
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function(project) {
@@ -54,7 +54,7 @@ module.exports = {
 
             return storages
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -67,11 +67,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
-        else {
-            console.log('List storages error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Storage: list storages error.', err)
+        return res.status(400).send(`Storage: list storages error. ${err.message}`)
     },
 }

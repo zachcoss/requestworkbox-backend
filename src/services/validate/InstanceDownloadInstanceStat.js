@@ -63,7 +63,7 @@ module.exports = {
             
             return {payload, instance}
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function({payload, instance}) {
@@ -127,24 +127,14 @@ module.exports = {
 
             return filePath
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
         return res.sendFile(request)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing instance id.') return res.status(400).send(err.message)
-        else if (err.message === 'Missing stat id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect instance id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect stat id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Instance not found.') return res.status(400).send('Instance not found.')
-        else if (err.message === 'Error: Stat not found.') return res.status(400).send('Stat not found.')
-        else {
-            console.log('Download instance stat error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Instance: download instance stat error.', err)
+        return res.status(400).send(`Instance: download instance stat error. ${err.message}`)
     },
 }

@@ -119,7 +119,7 @@ module.exports = {
             
             return {request, updates}
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function({request, updates}) {
@@ -144,7 +144,7 @@ module.exports = {
 
             return request.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -154,17 +154,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing request id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect method type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect name type.') return res.status(400).send(err.message)
-        else if (err.message === 'Missing URL.') return res.status(400).send(err.message)
-        else if (err.message === 'Not valid URL.') return res.status(400).send(err.message)
-        else if (err.message === 'Recursive URLs not allowed.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Request not found.') return res.status(400).send('Request not found.')
-        else {
-            console.log('Save request changes error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Request: save request changes error.', err)
+        return res.status(400).send(`Request: save request changes error. ${err.message}`)
     },
 }

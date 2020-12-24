@@ -65,7 +65,7 @@ module.exports = {
             
             return { project, payload }
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function({ project, payload }) {
@@ -81,7 +81,7 @@ module.exports = {
 
             return project.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -91,15 +91,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Error: Permission error.') return res.status(401).send('Permission error.')
-        else if (err.message === 'Missing project id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect project name type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Project not found.') return res.status(400).send('Project not found.')
-        else {
-            console.log('Update project error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Project: update project error.', err)
+        return res.status(400).send(`Project: update project error. ${err.message}`)
     },
 }

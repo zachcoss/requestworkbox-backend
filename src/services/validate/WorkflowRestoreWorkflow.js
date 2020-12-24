@@ -56,7 +56,7 @@ module.exports = {
             
             return workflow
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function(workflow) {
@@ -67,7 +67,7 @@ module.exports = {
 
             return workflow.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -77,13 +77,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing workflow id.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect workflow id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Workflow not found.') return res.status(400).send('Workflow not found.')
-        else {
-            console.log('Restore workflow error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Workflow: restore workflow error.', err)
+        return res.status(400).send(`Workflow: restore workflow error. ${err.message}`)
     },
 }

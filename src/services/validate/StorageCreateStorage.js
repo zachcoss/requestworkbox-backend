@@ -55,7 +55,7 @@ module.exports = {
             
             return {payload, project, requesterSub}
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function({payload, project, requesterSub}) {
@@ -70,7 +70,7 @@ module.exports = {
             
             return storage.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -80,15 +80,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing project id.') return res.status(400).send(err.message)
-        else if (err.message === 'Missing storage type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect storage type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Project not found.') return res.status(400).send('Project not found.')
-        else {
-            console.log('Create storage error', err)
-            return res.status(500).send('Request error')
-        }
+        console.log('Storage: create storage error.', err)
+        return res.status(400).send(`Storage: create storage error. ${err.message}`)
     },
 }

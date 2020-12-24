@@ -64,7 +64,7 @@ module.exports = {
             
             return {storage, payload}
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     request: async function({storage, payload}) {
@@ -107,7 +107,7 @@ module.exports = {
 
             return storage.toJSON()
         } catch(err) {
-            throw new Error(err)
+            throw new Error(err.message)
         }
     },
     response: function(request, res) {
@@ -117,17 +117,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        if (err.message === 'Invalid or missing token.') return res.status(401).send(err.message)
-        else if (err.message === 'Missing storage id in query parameters.') return res.status(400).send(err.message)
-        else if (err.message === 'Missing file path.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect file path type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect storage id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Incorrect project id type.') return res.status(400).send(err.message)
-        else if (err.message === 'Error: Storage not found.') return res.status(400).send('Storage not found.')
-        else if (err.message === 'NoSuchKey: The specified key does not exist.') return res.status(400).send('No storage value.')
-        else {
-            console.log('Update file storage data error', err.message)
-            return res.status(500).send('Request error')
-        }
+        console.log('Storage: update file storage data error.', err)
+        return res.status(400).send(`Storage: update file storage data error. ${err.message}`)
     },
 }
