@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectType','globalWorkflowStatus','requestCount','requestLast','workflowCount','workflowLast','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectType','globalWorkflowStatus','workflowCount','workflowLast','createdAt','updatedAt','usage','usageRemaining','usageTotal'],
     permissionKeys = ['returnRequest','returnWorkflow','queueRequest','queueWorkflow','scheduleRequest','scheduleWorkflow'];
 
 module.exports = {

@@ -8,7 +8,7 @@ const
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
     taskKeys = ['_id','requestId','runtimeResultName'],
-    permissionKeys = ['lockedResource','preventExecution'];
+    permissionKeys = ['lockedResource', 'preventExecution'];
     
 
 module.exports = {

@@ -20,7 +20,7 @@ module.exports = {
 
         if (!_.isHex(req.body._id)) throw new Error('Incorrect request id type.')
         if (!_.isHex(req.body.requestDetailItemId)) throw new Error('Incorrect request detail item id type.')
-        if (!_.includes(['query','headers','body','authorization'], req.body.requestDetailOption)) {
+        if (!_.includes(['query','headers','body'], req.body.requestDetailOption)) {
             throw new Error('Incorrect request detail option type.')
         }
 

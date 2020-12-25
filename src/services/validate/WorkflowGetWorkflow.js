@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource'];
+    permissionKeys = ['lockedResource', 'preventExecution'];
     
 
 module.exports = {
@@ -15,11 +15,8 @@ module.exports = {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
 
-        if (!req.body.workflowId) {
-            throw new Error('Missing workflow id.')
-        } else {
-            if (!_.isHex(req.body.workflowId)) throw new Error('Incorrect workflow id type.')
-        }
+        if (!req.body.workflowId) throw new Error('Missing workflow id.')
+        if (!_.isHex(req.body.workflowId)) throw new Error('Incorrect workflow id type.')
 
         let payload = {
             sub: req.user.sub,

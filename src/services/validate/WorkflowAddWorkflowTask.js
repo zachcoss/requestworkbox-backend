@@ -8,7 +8,7 @@ const
     mongoose = require('mongoose'),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource'];
+    permissionKeys = ['lockedResource', 'preventExecution'];
     
 
 module.exports = {

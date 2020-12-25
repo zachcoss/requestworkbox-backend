@@ -15,11 +15,8 @@ module.exports = {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
 
-        if (!req.body.instanceId) {
-            throw new Error('Missing instance id.')
-        } else {
-            if (!_.isHex(req.body.instanceId)) throw new Error('Incorrect instance id type.')
-        }
+        if (!req.body.instanceId) throw new Error('Missing instance id.')
+        if (!_.isHex(req.body.instanceId)) throw new Error('Incorrect instance id type.')
 
         let payload = {
             sub: req.user.sub,

@@ -15,12 +15,14 @@ module.exports = {
     createStorage: createStorage,
     listStorages: listStorages,
     getStorage: getStorage,
-    getTextStorageData: getTextStorageData,
-    getFileStorageData: getFileStorageData,
-    updateTextStorageData: updateTextStorageData,
-    updateFileStorageData: updateFileStorageData,
     saveStorageChanges: saveStorageChanges,
     archiveStorage: archiveStorage,
     restoreStorage: restoreStorage,
+
+    getTextStorageData: getTextStorageData,
+    getFileStorageData: getFileStorageData,
     getStorageUsage: getStorageUsage,
+
+    updateTextStorageData: updateTextStorageData,
+    updateFileStorageData: updateFileStorageData,
 }

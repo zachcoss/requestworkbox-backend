@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectType','globalWorkflowStatus','requestCount','requestLast','workflowCount','workflowLast','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectType','globalWorkflowStatus','workflowCount','workflowLast','createdAt','updatedAt','usage','usageRemaining','usageTotal'],
     permissionKeys = ['returnRequest','returnWorkflow','queueRequest','queueWorkflow','scheduleRequest','scheduleWorkflow'];
 
 module.exports = {
@@ -14,9 +14,7 @@ module.exports = {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
 
-        const payload = {
-            sub: req.user.sub,
-        }
+        const payload = { sub: req.user.sub, }
 
         return payload
     },

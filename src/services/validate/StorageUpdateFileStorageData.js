@@ -12,7 +12,7 @@ const
     Stats = require('../tools/stats').stats,
     S3 = require('../tools/s3').S3,
     keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource','sensitiveData'];
+    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
 module.exports = {

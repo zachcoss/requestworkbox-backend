@@ -9,7 +9,7 @@ const
     // includes usage
     keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','usage','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
     usageKeys = ['_id','active','usageType','usageDirection','usageAmount','usageMeasurement','usageLocation','usageId','usageDetail','createdAt','updatedAt'],
-    permissionKeys = ['lockedResource','sensitiveData'];
+    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
 module.exports = {
@@ -17,11 +17,8 @@ module.exports = {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
 
-        if (!req.body.storageId) {
-            throw new Error('Missing storage id.')
-        } else {
-            if (!_.isHex(req.body.storageId)) throw new Error('Incorrect storage id type.')
-        }
+        if (!req.body.storageId) throw new Error('Missing storage id.')
+        if (!_.isHex(req.body.storageId)) throw new Error('Incorrect storage id type.')
 
         let payload = {
             sub: req.user.sub,
