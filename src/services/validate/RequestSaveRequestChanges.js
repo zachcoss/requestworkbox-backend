@@ -23,15 +23,8 @@ module.exports = {
         if (!_.isString(req.body.name)) throw new Error('Incorrect name type.')
         
         if (!req.body.url) throw new Error('Missing URL.')
+        if (!/^https?:\/\//) throw new Error('Must be secure URL.')
         if (!validUrl.isWebUri(req.body.url)) throw new Error('Not valid URL.')
-        if (_.includes(req.body.url, '/return-request') || 
-            _.includes(req.body.url, '/return-workflow') || 
-            _.includes(req.body.url, '/queue-request') || 
-            _.includes(req.body.url, '/queue-workflow') || 
-            _.includes(req.body.url, '/schedule-request') || 
-            _.includes(req.body.url, '/schedule-workflow')) {
-                throw new Error('Recursive URLs not allowed.')
-        }
         if (_.includes(req.body.url, 'requestworkbox.com')) {
             if (req.path !== '/') throw new Error('Recursive URLs not allowed.')
         }
