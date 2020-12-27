@@ -42,9 +42,15 @@ module.exports = {
             }).lean()
             if (request.lockedResource && request.lockedResource === true && !member.owner) throw new Error('Permission error.')
             
+            // Requires owner permission
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
+            if (!member.owner) throw new Error('Permission error.')
+            if (member.status === 'removed') throw new Error('Permission error.')
+            if (member.status === 'invited') throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission === 'none') throw new Error('Permission error.')
+            if (member.permission === 'read') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
 
             const activeRequests = await IndexSchema.Request.countDocuments({

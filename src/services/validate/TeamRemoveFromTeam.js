@@ -32,17 +32,37 @@ module.exports = {
             const project = await IndexSchema.Project.findOne({ _id: payload.projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
 
+            // Member
             const member = await IndexSchema.Member.findOne({
-                sub: requesterSub,
+                _id: payload.memberId,
                 projectId: project._id,
             }).lean()
             if (!member || !member._id) throw new Error('Permission error.')
-            if (!member.owner) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
-            if (member.status !== 'accepted') throw new Error('Permission error.')
-            if (member.permission !== 'write') throw new Error('Permission error.')
+            if (member.status === 'removed') throw new Error('Permission error.')
+            if (member.status !== 'invited' && 
+                member.status !== 'accepted') throw new Error('Permission error.')
+            if (member.permission !== 'none' && 
+                member.permission !== 'read' && 
+                member.permission !== 'write') throw new Error('Permission error.')
 
-            if (member._id === payload.memberId) throw new Error('Cannot remove owner from team.')
+            // Requester
+            const requester = await IndexSchema.Member.findOne({
+                sub: requesterSub,
+                projectId: project._id,
+            }).lean()
+            if (!requester || !requester._id) throw new Error('Permission error.')
+            if (!requester.active) throw new Error('Permission error.')
+            if (requester.status === 'removed') throw new Error('Permission error.')
+            if (requester.status !== 'invited' && 
+                requester.status !== 'accepted') throw new Error('Permission error.')
+            if (requester.permission !== 'none' && 
+                requester.permission !== 'read' && 
+                requester.permission !== 'write') throw new Error('Permission error.')
+            
+            if (!requester.owner) {
+                if (requester._id !== member._id) throw new Error('Cannot remove owner from team.')
+            }
 
             const archivedMembers = await IndexSchema.Member.countDocuments({
                 active: false,
