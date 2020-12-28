@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectType','globalWorkflowStatus','workflowCount','workflowLast','createdAt','updatedAt','usage','usageRemaining','usageTotal'],
+    keys = ['_id','active','name','owner','projectType','globalWorkflowStatus','workflowCount','workflowLast','usage','usageRemaining','usageTotal','createdAt','updatedAt'],
     permissionKeys = ['returnRequest','returnWorkflow','queueRequest','queueWorkflow','scheduleRequest','scheduleWorkflow'];
 
 module.exports = {
@@ -43,8 +43,11 @@ module.exports = {
             if (member.status === 'invited') throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission === 'none') throw new Error('Permission error.')
-            if (member.permission !== 'read' || 
+            if (member.permission !== 'read' && 
                 member.permission !== 'write' ) throw new Error('Permission error.')
+            
+            if (member.owner) project.owner = true
+            else project.owner = false
             
             return project
         } catch(err) {

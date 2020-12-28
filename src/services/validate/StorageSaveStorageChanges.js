@@ -89,7 +89,7 @@ module.exports = {
 
             if (updates.name) storage.name  = updates.name
 
-            const lockingOptions = _.pick(updates, ['lockedResource','preventExecution','sensitiveResponse'])
+            const lockingOptions = _.pick(updates, permissionKeys)
 
             _.each(lockingOptions, (value, key) => {
                 storage[key] = value

@@ -5,7 +5,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','url','name','method','active','projectId','query','headers','body','createdAt','updatedAt'],
+    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
@@ -64,10 +64,32 @@ module.exports = {
             const newRequest = new IndexSchema.Request({
                 sub: payload.sub,
                 projectId: payload._id,
-                authorizationType: 'noAuth',
-                authorization: {},
+                authorization: [{
+                    active: true,
+                    key: 'username',
+                    value: '',
+                    valueType: 'textInput',
+                },{
+                    active: true,
+                    key: 'password',
+                    value: '',
+                    valueType: 'textInput',
+                }],
             })
             await newRequest.save()
+
+            const requestWorkflow = new IndexSchema.Workflow({
+                sub: payload.sub,
+                projectId: payload._id,
+                requestId: newRequest._id,
+                workflowType: 'request',
+                name: 'Dedicated request workflow',
+                tasks: [{
+                    active: true,
+                    requestId: newRequest._id,
+                }]
+            })
+            await requestWorkflow.save()
 
             return newRequest.toJSON()
         } catch(err) {

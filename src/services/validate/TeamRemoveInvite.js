@@ -5,21 +5,22 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    keys = ['_id','active','status','projectId','projectName','projectUsername','owner','username','permission','includeSensitive'];
 
 module.exports = {
     validate: function(req, res) {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
         if (!req.body.projectId) throw new Error('Missing project id.')
-        if (!req.body.memberId) throw new Error('Missing member id.')
+        if (!req.body.username) throw new Error('Missing username.')
         if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-        if (!_.isHex(req.body.memberId)) throw new Error('Incorrect member id type.')
+        if (!/^[a-zA-Z0-9_]*$/.test(req.body.username)) throw new Error('Incorrect username type.')
 
         let payload = {
             sub: req.user.sub,
             projectId: req.body.projectId,
-            memberId: req.body.memberId,
+            username: req.body.username,
         }
 
         return payload
@@ -34,9 +35,9 @@ module.exports = {
 
             // Member
             const member = await IndexSchema.Member.findOne({
-                _id: payload.memberId,
+                username: payload.username,
                 projectId: project._id,
-            }).lean()
+            })
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status === 'removed') throw new Error('Permission error.')
@@ -61,7 +62,7 @@ module.exports = {
                 requester.permission !== 'write') throw new Error('Permission error.')
             
             if (!requester.owner) {
-                if (requester._id !== member._id) throw new Error('Cannot remove owner from team.')
+                if (String(requester._id) !== String(member._id)) throw new Error('Permission error.')
             }
 
             const archivedMembers = await IndexSchema.Member.countDocuments({
@@ -71,19 +72,13 @@ module.exports = {
 
             if (archivedMembers >= 10) throw new Error('Rate limit error.')
             
-            return payload
+            return member
         } catch(err) {
             throw new Error(err.message)
         }
     },
-    request: async function(payload) {
+    request: async function(member) {
         try {
-
-            const member = await IndexSchema.Member.findOne({
-                sub: payload.sub,
-                projectId: payload.projectId,
-                _id: payload.memberId,
-            })
 
             member.owner = false
             member.active = false
@@ -102,7 +97,7 @@ module.exports = {
         return res.status(200).send(request)
     },
     error: function(err, res) {
-        console.log('Team: remove from team error.', err)
-        return res.status(400).send(`Team: remove from team error. ${err.message}`)
+        console.log('Team: remove invite error.', err)
+        return res.status(400).send(`Team: remove invite error. ${err.message}`)
     },
 }

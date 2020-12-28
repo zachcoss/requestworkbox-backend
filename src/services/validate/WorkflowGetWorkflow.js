@@ -36,7 +36,7 @@ module.exports = {
                 requesterSub = payload.sub,
                 workflowId = payload._id;
             
-            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
+            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId, workflowType: 'workflow' })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
             if (payload.projectId && payload.projectId !== workflow.projectId.toString()) throw new Error('Project not found.')
@@ -55,7 +55,7 @@ module.exports = {
             if (member.status === 'invited') throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission === 'none') throw new Error('Permission error.')
-            if (member.permission !== 'read' || 
+            if (member.permission !== 'read' && 
                 member.permission !== 'write' ) throw new Error('Permission error.')
             
             return workflow.toJSON()

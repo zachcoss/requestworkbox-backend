@@ -43,7 +43,7 @@ module.exports = {
             if (member.status === 'invited') throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission === 'none') throw new Error('Permission error.')
-            if (member.permission !== 'read' || 
+            if (member.permission !== 'read' && 
                 member.permission !== 'write' ) throw new Error('Permission error.')
             
             return project
@@ -54,7 +54,7 @@ module.exports = {
     request: async function(project) {
         try {
 
-            const workflows = await IndexSchema.Workflow.find({ projectId: project._id })
+            const workflows = await IndexSchema.Workflow.find({ projectId: project._id, workflowType: 'workflow' })
             .sort({createdAt: -1})
             .limit(20)
             .lean()

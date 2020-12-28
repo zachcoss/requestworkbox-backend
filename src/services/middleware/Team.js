@@ -32,14 +32,34 @@ module.exports = {
             return ValidateTeam.listTeam.error(err, res)
         }
     },
-    removeFromTeam: async (req, res, next) => {
+    listInvites: async (req, res, next) => {
         try {
-            const payload = ValidateTeam.removeFromTeam.validate(req)
-            const authorize = await ValidateTeam.removeFromTeam.authorize(payload)
-            const request = await ValidateTeam.removeFromTeam.request(authorize)
-            return ValidateTeam.removeFromTeam.response(request, res)
+            const payload = ValidateTeam.listInvites.validate(req)
+            const authorize = await ValidateTeam.listInvites.authorize(payload)
+            const request = await ValidateTeam.listInvites.request(authorize)
+            return ValidateTeam.listInvites.response(request, res)
         } catch (err) {
-            return ValidateTeam.removeFromTeam.error(err, res)
+            return ValidateTeam.listInvites.error(err, res)
+        }
+    },
+    removeInvite: async (req, res, next) => {
+        try {
+            const payload = ValidateTeam.removeInvite.validate(req)
+            const authorize = await ValidateTeam.removeInvite.authorize(payload)
+            const request = await ValidateTeam.removeInvite.request(authorize)
+            return ValidateTeam.removeInvite.response(request, res)
+        } catch (err) {
+            return ValidateTeam.removeInvite.error(err, res)
+        }
+    },
+    updateTeam: async (req, res, next) => {
+        try {
+            const payload = ValidateTeam.updateTeam.validate(req)
+            const authorize = await ValidateTeam.updateTeam.authorize(payload)
+            const request = await ValidateTeam.updateTeam.request(authorize)
+            return ValidateTeam.updateTeam.response(request, res)
+        } catch (err) {
+            return ValidateTeam.updateTeam.error(err, res)
         }
     },
 }

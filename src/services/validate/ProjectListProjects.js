@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectType','globalWorkflowStatus','workflowCount','workflowLast','createdAt','updatedAt','usage','usageRemaining','usageTotal'],
+    keys = ['_id','active','name','owner','projectType','globalWorkflowStatus','workflowCount','workflowLast','usage','usageRemaining','usageTotal','createdAt','updatedAt'],
     permissionKeys = ['returnRequest','returnWorkflow','queueRequest','queueWorkflow','scheduleRequest','scheduleWorkflow'];
 
 module.exports = {
@@ -24,15 +24,23 @@ module.exports = {
             const members = await IndexSchema.Member.find({
                 active: true,
                 sub: requesterSub,
-                status: { $nin: ['removed'] },
+                status: 'accepted' ,
             }).lean()
 
             const projectIds = _.map(members, 'projectId')
 
-            const projects = await IndexSchema.Project.find({
+            let projects = await IndexSchema.Project.find({
                 _id: { $in: projectIds }
             }).lean()
-            
+
+            _.each(projects, (project) => {
+                const owner = _.filter(members, (member) => {
+                    if (String(member.projectId) === String(project._id) && member.owner) return true
+                    else return false
+                })
+                project.owner  = (owner && _.size(owner)) ? true : false
+            })
+
             return projects
         } catch(err) {
             throw new Error(err.message)
@@ -40,7 +48,7 @@ module.exports = {
     },
     request: async function(projects) {
         try {
-            projects
+            return projects
         } catch(err) {
             throw new Error(err.message)
         }

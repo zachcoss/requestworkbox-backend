@@ -58,7 +58,7 @@ module.exports = {
             if (member.status === 'invited') throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission === 'none') throw new Error('Permission error.')
-            if (member.permission !== 'read' || 
+            if (member.permission !== 'read' && 
                 member.permission !== 'write' ) throw new Error('Permission error.')
             
             return storage

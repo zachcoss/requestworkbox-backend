@@ -6,7 +6,8 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    Cognito = require('../tools/cognito').Cognito;
+    Cognito = require('../tools/cognito').Cognito,
+    keys = ['_id','active','status','projectId','projectName','projectUsername','owner','username','permission','includeSensitive'];
 
 module.exports = {
     validate: function(req, res) {
@@ -15,7 +16,7 @@ module.exports = {
         if (!req.body.projectId) throw new Error('Missing project id.')
         if (!req.body.username) throw new Error('Missing username.')
         if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-        if (!req.body.username.test(/^[a-zA-Z0-9_]*$/)) throw new Error('Incorrect username type.')
+        if (!/^[a-zA-Z0-9_]*$/.test(req.body.username)) throw new Error('Incorrect username type.')
 
         let payload = {
             sub: req.user.sub,
@@ -47,6 +48,8 @@ module.exports = {
             if (member.permission === 'none') throw new Error('Permission error.')
             if (member.permission === 'read') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
+
+            if (payload.username === member.username) throw new Error('Permission error.')
 
             const activeMembers = await IndexSchema.Member.countDocuments({
                 active: true,
@@ -80,7 +83,7 @@ module.exports = {
             if (!userFound || !_.size(userFound)) return 'OK'
             if (!usernameVerified) return 'OK'
 
-            const user = userFilter[0]
+            const user = userFound[0]
             let userSub;
 
             _.each(user.Attributes, (attribute) => {
@@ -89,10 +92,12 @@ module.exports = {
                 }
             })
 
+            if (!userSub) return 'OK'
+
             const member = await IndexSchema.Member.findOne({
                 sub: userSub,
-                projectId: project._id,
-            }).lean()
+                projectId: payload.projectId,
+            })
 
             if (member && member._id) {
                 member.active = true

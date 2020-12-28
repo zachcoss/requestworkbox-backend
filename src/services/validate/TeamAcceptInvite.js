@@ -5,7 +5,8 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    IndexSchema = require('../tools/schema').schema;
+    IndexSchema = require('../tools/schema').schema,
+    keys = ['_id','active','status','projectId','projectName','projectUsername','owner','username','permission','includeSensitive'];
 
 module.exports = {
     validate: function(req, res) {

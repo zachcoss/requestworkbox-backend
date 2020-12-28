@@ -7,7 +7,7 @@ const
     }),
     IndexSchema = require('../tools/schema').schema,
     keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
-    taskKeys = ['_id','requestId','runtimeResultName'],
+    taskKeys = ['_id','active','requestId','runtimeResultName'],
     permissionKeys = ['lockedResource', 'preventExecution'];
     
 
@@ -51,6 +51,7 @@ module.exports = {
             _.each(req.body.tasks, (task) => {
                 if (!_.isPlainObject(task)) return error = true
                 if (!task._id || !_.isString(task._id) || !_.isHex(task._id)) return error = true
+                if (!_.isBoolean(task.active)) return error = true
                 if (task.requestId && !_.isHex(task.requestId)) return error = true
                 if (task.runtimeResultName && !_.isString(task.runtimeResultName))  return error = true
                 if (_.size(task.runtimeResultName) > 100) return error = true
@@ -80,6 +81,7 @@ module.exports = {
             _.each(req.body.webhooks, (webhook) => {
                 if (!_.isPlainObject(webhook)) return error = true
                 if (!webhook._id || !_.isString(webhook._id) || !_.isHex(webhook._id)) return error = true
+                if (!_.isBoolean(webhook.active)) return error = true
                 if (webhook.requestId && !_.isHex(webhook.requestId)) return error = true
             })
             if (error) throw new Error('Incorrect webhook object type.')
@@ -98,7 +100,7 @@ module.exports = {
                 requesterSub = updates.sub,
                 workflowId = updates._id;
             
-            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
+            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId, workflowType: 'workflow' })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
             const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
@@ -174,7 +176,7 @@ module.exports = {
                 workflow.webhooks = updateData.webhooks
             }
 
-            const lockingOptions = _.pick(updates, ['lockedResource','preventExecution','sensitiveResponse'])
+            const lockingOptions = _.pick(updates, permissionKeys)
 
             _.each(lockingOptions, (value, key) => {
                 workflow[key] = value

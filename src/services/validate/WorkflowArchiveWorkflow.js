@@ -30,7 +30,7 @@ module.exports = {
                 requesterSub = payload.sub,
                 workflowId = payload._id;
             
-            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
+            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId, workflowType: 'workflow' })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
             const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()

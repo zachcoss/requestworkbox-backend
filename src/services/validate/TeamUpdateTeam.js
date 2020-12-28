@@ -17,8 +17,27 @@ module.exports = {
 
         let payload = {
             sub: req.user.sub,
-            projectId: req.body.projectId
+            projectId: req.body.projectId,
+            team: [],
         }
+
+        _.each(req.body.team, (member) => {
+            if (!member._id) return
+            if (!member.active) return
+            if (member.owner) return
+            if (member.status === 'removed') return
+            if (member.permission === 'none') return
+
+            if (member.includeSensitive || member.permission) {
+                let update = { _id: member._id }
+
+                if (_.isBoolean(member.includeSensitive)) update.includeSensitive = member.includeSensitive
+                if (_.includes(['read','write'], member.permission)) update.permission = member.permission
+
+                payload.team.push(update)
+            }
+
+        })
 
         return payload
     },
@@ -45,22 +64,33 @@ module.exports = {
             if (member.permission === 'read') throw new Error('Permission error.')
             if (member.permission !== 'write') throw new Error('Permission error.')
             
-            return project
+            return { project, payload }
         } catch(err) {
             throw new Error(err.message)
         }
     },
-    request: async function(project) {
+    request: async function({ project, payload }) {
         try {
 
-            const members = await IndexSchema.Member.find({
-                active: true,
-                projectId: project._id,
-            })
-            .limit(20)
-            .lean()
+            let updates = []
 
-            return members
+            for (teamMember of payload.team) {
+                let member = await IndexSchema.Member.findOne({
+                    _id: teamMember._id,
+                    active: true,
+                    owner: false,
+                    projectId: project._id,
+                    status: { $in: ['invited','accepted'] }
+                })
+
+                if (_.includes(['read', 'write'], teamMember.permission)) member.permission = teamMember.permission
+                if (_.includes([true, false], member.includeSensitive)) member.includeSensitive = teamMember.includeSensitive
+
+                await member.save()
+                updates.push(member.toJSON())
+            }
+
+            return updates
         } catch(err) {
             throw new Error(err.message)
         }
@@ -75,7 +105,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        console.log('Team: list team error.', err)
-        return res.status(400).send(`Team: list team error. ${err.message}`)
+        console.log('Team: update team error.', err)
+        return res.status(400).send(`Team: update team error. ${err.message}`)
     },
 }

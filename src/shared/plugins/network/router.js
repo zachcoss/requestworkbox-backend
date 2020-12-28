@@ -75,10 +75,12 @@ module.exports.config = function () {
 
     router.post('/submit-feedback', Feedback.submitFeedback)
 
+    router.post('/list-team', Team.listTeam)
+    router.post('/list-invites', Team.listInvites)
     router.post('/create-invite', Team.createInvite)
     router.post('/accept-invite', Team.acceptInvite)
-    router.post('/list-team', Team.listTeam)
-    router.post('/remove-from-team', Team.removeFromTeam)
-
+    router.post('/remove-invite', Team.removeInvite)
+    router.post('/update-team', Team.updateTeam)
+    
     return router;
 }

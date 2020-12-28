@@ -100,14 +100,19 @@ module.exports = {
             if (!req.params.requestId) return res.status(400).send('Missing request id.')
             if (!_.isHex(req.params.requestId)) return res.status(400).send('Incorrect request id type.')
 
-            // res.locals.workflowId = req.params.requestId
-
             if (_.includes(req.path, '/return-request/')) res.locals.queueType = 'return'
             else if (_.includes(req.path, '/queue-request/')) res.locals.queueType = 'queue'
             else if (_.includes(req.path, '/schedule-request/')) res.locals.queueType = 'schedule'
             else return res.status(400).send('Queue type not found.')
 
-            res.locals.workflowId = ''
+            let requestWorkflow = await IndexSchema.Workflow.findOne({
+                requestId: req.params.requestId,
+            }).lean()
+
+            if (!requestWorkflow || !requestWorkflow._id) return res.status(400).send('Request workflow not found.')
+
+            res.locals.workflow = requestWorkflow
+            res.locals.workflowId = requestWorkflow._id
             res.locals.workflowType = 'request'
             res.locals.workflowPermission = `${res.locals.queueType}Request`
             return next()
@@ -126,7 +131,15 @@ module.exports = {
             else if (_.includes(req.path, '/schedule-workflow/')) res.locals.queueType = 'schedule'
             else return res.status(400).send('Queue type not found.')
 
-            res.locals.workflowId = ''
+            let workflow = await IndexSchema.Workflow.findOne({
+                _id: req.params.workflowId,
+            }).lean()
+
+            if (!workflow || !workflow._id) return res.status(400).send('Workflow not found.')
+            
+
+            res.locals.workflow = workflow
+            res.locals.workflowId = workflow.workflowId
             res.locals.workflowType = 'workflow'
             res.locals.permissionType = `${res.locals.queueType}Workflow`
             return next()
@@ -138,7 +151,12 @@ module.exports = {
     initializeWorkflow: async (req, res, next) => {
         try {
             if (!res.locals.workflowId || !res.locals.workflowType) return res.status(400).send('Missing workflow information.')
-            if (!_.isHex(res.locals.workflowId)) return res.status(400).send('Incorrect workflow id type.')
+            if (!_.isHex(res.locals.workflowId)) return res.status(400).send('Incorrect workflow information type.')
+            if (!res.locals.workflow || !res.locals.workflow._id) return res.status(400).send('Missing workflow.')
+            if (!_.isHex(res.locals.workflow._id)) return res.status(400).send('Incorrect workflow type.')
+
+            if (res.locals.workflowId !== res.locals.workflow._id) return res.status(400).send('Incorrect workflow.')
+
             if (!_.includes(['request','workflow'], res.locals.workflowType)) return res.status(400).send('Incorrect workflow type.')
             if (!_.includes(['return','queue','schedule'], res.locals.queueType)) return res.status(400).send('Incorrect queue type.')
             if (!_.includes([
@@ -147,13 +165,10 @@ module.exports = {
                 res.locals.permissionType)) return res.status(400).send('Incorrect workflow permission type.')
 
             const
-                workflowId = res.locals.workflowId;
+                workflow = res.locals.workflow,
                 workflowType = res.locals.workflowType,
                 queueType = res.locals.queueType,
                 permissionType = res.locals.permissionType;
-            
-            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId, workflowType: workflowType, })
-            if (!workflow || !workflow._id) return res.status(400).send('Workflow not found.')
 
             const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
             if (!project || !project._id) return res.status(400).send('Project not found.')

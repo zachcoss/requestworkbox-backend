@@ -64,6 +64,7 @@ module.exports = {
             const workflow = new IndexSchema.Workflow({
                 sub: requesterSub,
                 projectId: project._id,
+                workflowType: 'workflow',
             })
             await workflow.save()
             

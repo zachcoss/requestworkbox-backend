@@ -1,3 +1,5 @@
+const { update } = require('lodash');
+
 const 
     _ = require('lodash')
     .mixin({
@@ -7,7 +9,7 @@ const
     }),
     validUrl = require('valid-url'),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','url','name','method','active','projectId','query','headers','body','createdAt','updatedAt'],
+    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
@@ -26,10 +28,10 @@ module.exports = {
         if (!/^https?:\/\//) throw new Error('Must be secure URL.')
         if (!validUrl.isWebUri(req.body.url)) throw new Error('Not valid URL.')
         if (_.includes(req.body.url, 'requestworkbox.com')) {
-            if (req.path !== '/') throw new Error('Recursive URLs not allowed.')
+            if (!/.com\/$|.com$/.test(req.body.url)) throw new Error('Recursive URLs not allowed.')
         }
 
-        let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'query', 'headers', 'body'])
+        let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'authorization', 'query', 'headers', 'body'])
         updates.sub = req.user.sub
 
         if (req.body.lockedResource && !_.isBoolean(req.body.lockedResource))
@@ -49,6 +51,19 @@ module.exports = {
         if (req.body.sensitiveResponse) {
             if (!_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect sensitive response type.')
             updates.sensitiveResponse = req.body.sensitiveResponse
+        }
+
+        if (req.body.authorization) {
+            if (!_.isArray(req.body.authorization))
+            if (_.size(req.body.authorization) !== 2)
+
+            if (!_.isBoolean(req.body.authorization[0].active)) throw new Error('Incorrect authorization active type.')
+            if (!_.isBoolean(req.body.authorization[0].active)) throw new Error('Incorrect authorization active type.')
+
+            if (req.body.authorization[0].key !== 'username') throw new Error('Incorrect authorization key type.')
+            if (req.body.authorization[1].key !== 'password') throw new Error('Incorrect authorization key type.')
+
+            updates.authorization = req.body.authorization
         }
 
         if (req.body.authorizationType === 'header') {
@@ -123,16 +138,25 @@ module.exports = {
     request: async function({request, updates}) {
         try {
 
-            const requestOptions = _.pick(updates, ['url', 'name', 'method', 'query', 'headers', 'body'])
+            const requestOptions = _.pick(updates, ['url', 'name', 'method', 'authorization', 'query', 'headers', 'body'])
 
             _.each(requestOptions, (value, key) => {
+                if (key === 'authorization') {
+                    value = _.map(value, (authorizationObject) => {
+                        return _.pick(authorizationObject, ['_id','active','key','value','valueType'])
+                    })
+                } else if (key === 'headers') {
+                    value = _.map(value, (headerObj) => {
+                        headerObj.key = headerObj.key.replace(/ /g,'-')
+                        return _.pick(headerObj, ['_id','active','key','value','valueType'])
+                    })
+                }
+
                 request[key] = value
             })
-            _.each(request.headers, (headerObj) => {
-                headerObj.key = headerObj.key.replace(/ /g,'-')
-            })
+            
 
-            const lockingOptions = _.pick(updates, ['lockedResource','preventExecution','sensitiveResponse'])
+            const lockingOptions = _.pick(updates, permissionKeys)
 
             _.each(lockingOptions, (value, key) => {
                 request[key] = value
