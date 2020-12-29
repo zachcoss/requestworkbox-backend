@@ -114,6 +114,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Storage: get file storage data error.', err.message)
-        return res.status(400).send(`Storage: get file storage data error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

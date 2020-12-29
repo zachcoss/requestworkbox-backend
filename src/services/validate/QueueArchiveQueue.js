@@ -82,6 +82,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Queue: archive queue error.', err)
-        return res.status(400).send(`Queue: archive queue error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

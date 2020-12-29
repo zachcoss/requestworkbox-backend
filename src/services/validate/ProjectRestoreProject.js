@@ -77,6 +77,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Project: restore project error.', err)
-        return res.status(400).send(`Project: restore project error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

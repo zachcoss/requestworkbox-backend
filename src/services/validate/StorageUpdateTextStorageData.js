@@ -120,7 +120,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        console.log('Storage: update text storage data error.', err.message)
-        return res.status(400).send(`Storage: update text storage data error. ${err.message}`)
+        console.log('Storage: update text storage data error.', err)
+        return res.status(400).send(err.message)
     },
 }

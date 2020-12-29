@@ -196,6 +196,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Workflow: save workflow changes error.', err)
-        return res.status(400).send(`Workflow: save workflow changes error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

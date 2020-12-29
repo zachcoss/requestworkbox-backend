@@ -74,6 +74,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Storage: list storages error.', err)
-        return res.status(400).send(`Storage: list storages error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

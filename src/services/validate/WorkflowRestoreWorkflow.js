@@ -84,6 +84,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Workflow: restore workflow error.', err)
-        return res.status(400).send(`Workflow: restore workflow error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

@@ -126,6 +126,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Instance: get instance detail error.', err)
-        return res.status(400).send(`Instance: get instance detail error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

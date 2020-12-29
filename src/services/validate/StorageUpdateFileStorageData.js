@@ -123,6 +123,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Storage: update file storage data error.', err)
-        return res.status(400).send(`Storage: update file storage data error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

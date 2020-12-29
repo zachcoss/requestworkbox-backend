@@ -84,6 +84,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Request: archive request error.', err)
-        return res.status(400).send(`Request: archive request error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

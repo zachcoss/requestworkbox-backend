@@ -64,6 +64,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Project: list projects error.', err)
-        return res.status(400).send(`Project: list projects error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

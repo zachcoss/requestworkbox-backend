@@ -86,6 +86,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Storage: create storage error.', err)
-        return res.status(400).send(`Storage: create storage error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

@@ -177,6 +177,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Request: save request changes error.', err)
-        return res.status(400).send(`Request: save request changes error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

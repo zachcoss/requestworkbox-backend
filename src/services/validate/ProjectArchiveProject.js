@@ -78,6 +78,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Project: archive project error.', err)
-        return res.status(400).send(`Project: archive project error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

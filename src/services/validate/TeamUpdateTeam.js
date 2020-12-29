@@ -106,6 +106,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Team: update team error.', err)
-        return res.status(400).send(`Team: update team error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

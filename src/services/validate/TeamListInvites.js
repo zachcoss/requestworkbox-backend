@@ -82,6 +82,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Team: list invites error.', err)
-        return res.status(400).send(`Team: list invites error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

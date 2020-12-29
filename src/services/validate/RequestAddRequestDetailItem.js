@@ -89,6 +89,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Request: add request detail item error.', err)
-        return res.status(400).send(`Request: add request detail item error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

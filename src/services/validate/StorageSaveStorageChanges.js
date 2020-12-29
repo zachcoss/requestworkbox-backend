@@ -110,6 +110,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Storage: save storage changes error.', err)
-        return res.status(400).send(`Storage: save storage changes error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

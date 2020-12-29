@@ -84,6 +84,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Request: restore request error.', err)
-        return res.status(400).send(`Request: restore request error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

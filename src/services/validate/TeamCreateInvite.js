@@ -127,6 +127,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Team: create invite error.', err)
-        return res.status(400).send(`Team: create invite error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

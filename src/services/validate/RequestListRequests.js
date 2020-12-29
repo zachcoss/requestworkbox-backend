@@ -75,6 +75,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Request: list requests error.', err)
-        return res.status(400).send(`Request: list requests error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

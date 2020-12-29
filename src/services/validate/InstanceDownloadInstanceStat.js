@@ -140,6 +140,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Instance: download instance stat error.', err)
-        return res.status(400).send(`Instance: download instance stat error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

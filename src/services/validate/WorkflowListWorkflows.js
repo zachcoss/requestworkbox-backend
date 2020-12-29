@@ -75,6 +75,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Workflow: list workflows error.', err)
-        return res.status(400).send(`Workflow: list workflows error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

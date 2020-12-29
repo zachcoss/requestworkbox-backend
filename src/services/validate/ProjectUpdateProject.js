@@ -98,6 +98,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Project: update project error.', err)
-        return res.status(400).send(`Project: update project error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

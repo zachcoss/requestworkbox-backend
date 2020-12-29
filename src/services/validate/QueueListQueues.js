@@ -114,6 +114,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Queue: list queues error.', err)
-        return res.status(400).send(`Queue: list queues error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

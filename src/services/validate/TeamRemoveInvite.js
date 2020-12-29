@@ -98,6 +98,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Team: remove invite error.', err)
-        return res.status(400).send(`Team: remove invite error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

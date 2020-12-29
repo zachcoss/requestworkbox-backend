@@ -84,6 +84,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Storage: archive storage error.', err)
-        return res.status(400).send(`Storage: archive storage error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

@@ -76,6 +76,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Team: list team error.', err)
-        return res.status(400).send(`Team: list team error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }

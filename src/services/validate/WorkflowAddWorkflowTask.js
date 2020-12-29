@@ -80,6 +80,6 @@ module.exports = {
     },
     error: function(err, res) {
         console.log('Workflow: add workflow task error.', err)
-        return res.status(400).send(`Workflow: add workflow task error. ${err.message}`)
+        return res.status(400).send(err.message)
     },
 }
