@@ -53,17 +53,19 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            // Requires write permissions
+            // Requires read permissions
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status === 'removed') throw new Error('Permission error.')
             if (member.status === 'invited') throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission === 'none') throw new Error('Permission error.')
-            if (member.permission === 'read') throw new Error('Permission error.')
-            if (member.permission !== 'write') throw new Error('Permission error.')
+            if (member.permission !== 'read' && 
+                member.permission !== 'write' ) throw new Error('Permission error.')
 
-            if (storage.sensitiveResponse && storage.sensitiveResponse === true && member.permission !== 'write') throw new Error('Permission error.')
+            if (_.isBoolean(storage.sensitiveResponse) && storage.sensitiveResponse) {
+                if (member.permission === 'read' && !member.includeSensitive) throw new Error('Permission error.')
+            }
             
             return storage
         } catch(err) {

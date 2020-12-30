@@ -13,7 +13,7 @@ const
     fs = require('fs'),
     writeFile = util.promisify(fs.writeFile),
     mkdirp = require('mkdirp'),
-    statKeys = ['_id','active','requestName','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','taskId','taskField','createdAt','updatedAt'];
+    statKeys = ['_id','active','requestName','requestSize','requestType','requestId','instanceId','status','statusText','startTime','endTime','duration','responseSize','responsePayload','responseType','taskId','taskField','error','createdAt','updatedAt'];
     
 
 module.exports = {
@@ -94,7 +94,8 @@ module.exports = {
                 Key: `${instance.projectId}/instance-statistics/${instance._id}/${statId}`,
             }).promise()
 
-            let bufferBodyJSON = fullStatBuffer.Body.toJSON()
+            let bufferBodyJSON = JSON.parse(fullStatBuffer.Body)
+
             bufferBodyJSON = _.pickBy(bufferBodyJSON, function(value, key) {
                 return _.includes(statKeys, key)
             })

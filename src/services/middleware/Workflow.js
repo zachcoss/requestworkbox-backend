@@ -114,7 +114,7 @@ module.exports = {
             res.locals.workflow = requestWorkflow
             res.locals.workflowId = requestWorkflow._id
             res.locals.workflowType = 'request'
-            res.locals.workflowPermission = `${res.locals.queueType}Request`
+            res.locals.permissionType = `${res.locals.queueType}Request`
             return next()
         } catch(err) {
             console.log('Start request error', err)
@@ -136,10 +136,9 @@ module.exports = {
             }).lean()
 
             if (!workflow || !workflow._id) return res.status(400).send('Workflow not found.')
-            
 
             res.locals.workflow = workflow
-            res.locals.workflowId = workflow.workflowId
+            res.locals.workflowId = workflow._id
             res.locals.workflowType = 'workflow'
             res.locals.permissionType = `${res.locals.queueType}Workflow`
             return next()
@@ -170,7 +169,7 @@ module.exports = {
                 queueType = res.locals.queueType,
                 permissionType = res.locals.permissionType;
 
-            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
+            const project = await IndexSchema.Project.findOne({ _id: workflow.projectId })
             if (!project || !project._id) return res.status(400).send('Project not found.')
             if (!project.active) return res.status(400).send('Project is archived. Please restore and try again.')
             if (!project.projectType) return res.status(400).send('Missing project type.')
@@ -192,21 +191,18 @@ module.exports = {
                     sub: req.user.sub,
                     projectId: project._id,
                 }).lean()
+                if (!member || !member._id) return res.status(401).send('Permission error.')
+                if (!member.active) return res.status(401).send('Permission error.')
+                publicUser = false
             }
 
             if (projectPermission === 'owner') {
-                if (!member || !member._id) return res.status(401).send('Permission error.')
                 if (!member.owner) return res.status(401).send('Permission error.')
-                if (!member.active) return res.status(401).send('Permission error.')
                 if (member.status !== 'accepted') return res.status(401).send('Permission error.')
                 if (member.permission !== 'write') return res.status(401).send('Permission error.')
-                publicUser = false
             } else if (projectPermission === 'team') {
-                if (!member || !member._id) return res.status(401).send('Permission error.')
-                if (!member.active) return res.status(401).send('Permission error.')
                 if (member.status !== 'accepted') return res.status(401).send('Permission error.')
                 if (member.permission !== 'write') return res.status(401).send('Permission error.')
-                publicUser = false
             } else if (projectPermission === 'public') {
                 if ((!member || !member._id) && (!req.user || !req.user.sub)) req.user = { sub: project.sub }
             }
@@ -251,8 +247,18 @@ module.exports = {
                 taskLimitCount = 15
             }
 
+            // Check task list
+            let numberOfTasks = _.size(workflow.tasks)
+            
+            _.each(workflow.tasks, (task) => {
+                if (!task.active) numberOfTasks = numberOfTasks -1
+            })
+
+            if (numberOfTasks <= 0) return res.status(401).send('Missing active tasks.')
+            if (numberOfTasks > taskLimitCount) return res.status(401).send(`Project is limited to ${taskLimitCount} active tasks.`)
+
             // Filter date
-            if (workflowType === 'scheduleWorkflow') {
+            if (queueType === 'schedule') {
                 if (!req.query.date) return res.status(400).send('Schedule workflow error: missing date.')
 
                 const shouldSchedule = moment(req.query.date).isBetween(moment(), moment().add(scheduleWindowSeconds,'seconds'))
@@ -360,6 +366,11 @@ module.exports = {
                 queue.storageInstanceId = instance._id
             }
 
+            if (workflowType === 'request') {
+                queue.requestId = workflow.requestId
+                instance.requestId = workflow.requestId
+            }
+
             // Update queue and save
             if (queueType === 'return') queue.date = new Date()
             else if (queueType === 'queue') queue.date = moment().add(queueDelaySeconds, 'seconds')
@@ -367,7 +378,7 @@ module.exports = {
 
             // Update instance and save
             instance.queueId = queue._id
-            instance.queueType = queue
+            instance.queueType = queueType
             await instance.save()
 
             // Create Queue Pending Stat (which will call queue.save())

@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','requestId','workflowType','tasks','payloads','webhooks','createdAt','updatedAt'],
     taskKeys = ['_id','active','requestId','runtimeResultName'],
     permissionKeys = ['lockedResource', 'preventExecution'];
     
@@ -110,6 +110,10 @@ module.exports = {
             const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId, workflowType: 'workflow' })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
+            if (workflow.workflowType === 'request') {
+                delete updates.tasks
+            }
+
             const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
 
@@ -117,7 +121,7 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (workflow.lockedResource && workflow.lockedResource === true && !member.owner) throw new Error('Permission error.')
+            if (_.isBoolean(workflow.lockedResource) && workflow.lockedResource && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')

@@ -37,7 +37,7 @@ module.exports = {
                 requesterSub = payload.sub,
                 instanceId = payload._id;
             
-            const instance = await IndexSchema.Instance.findOne({_id: instanceId }, '_id usage -stats')
+            const instance = await IndexSchema.Instance.findOne({_id: instanceId }, '_id projectId usage -stats')
             if (!instance || !instance._id) throw new Error('Instance not found.')
 
             if (payload.projectId && instance.projectId.toString() !== payload.projectId) throw new Error('Project not found.')

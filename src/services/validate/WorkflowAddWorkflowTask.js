@@ -7,7 +7,7 @@ const
     }),
     mongoose = require('mongoose'),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','requestId','workflowType','tasks','payloads','webhooks','createdAt','updatedAt'],
     permissionKeys = ['lockedResource', 'preventExecution'];
 
 module.exports = {
@@ -34,6 +34,7 @@ module.exports = {
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
             if (_.size(workflow.tasks) >= 10) throw new Error('Rate limit error.')
+            if (workflow.workflowType === 'request') throw new Error('Dedicated request workflow.')
 
             const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
@@ -42,7 +43,7 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (workflow.lockedResource && workflow.lockedResource === true && !member.owner) throw new Error('Permission error.')
+            if (_.isBoolean(workflow.lockedResource) && workflow.lockedResource && !member.owner) throw new Error('Permission error.')
 
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')

@@ -9,7 +9,7 @@ const
     }),
     validUrl = require('valid-url'),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','createdAt','updatedAt'],
+    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','workflowId','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
@@ -69,7 +69,7 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (request.lockedResource && request.lockedResource === true && !member.owner) throw new Error('Permission error.')
+            if (_.isBoolean(request.lockedResource) && request.lockedResource && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')
@@ -112,7 +112,7 @@ module.exports = {
                 request[key] = value
             })
             
-            if (_.size(request.authorization) > 10) throw new Error('Authorization rate limit.')
+            if (_.size(request.authorization) !== 2) throw new Error('Authorization rate limit.')
             if (_.size(request.query) > 10) throw new Error('Query rate limit.')
             if (_.size(request.headers) > 10) throw new Error('Headers rate limit.')
             if (_.size(request.body) > 10) throw new Error('Body rate limit.')

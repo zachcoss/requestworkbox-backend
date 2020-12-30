@@ -59,7 +59,6 @@ module.exports = {
             })
             .sort({createdAt: -1})
             .limit(5)
-            .lean()
 
             return instances
         } catch(err) {

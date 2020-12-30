@@ -7,7 +7,7 @@ const
     }),
     mongoose = require('mongoose'),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','createdAt','updatedAt'],
+    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','workflowId','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 module.exports = {
@@ -18,7 +18,7 @@ module.exports = {
         if (!req.body.requestDetailOption)  throw new Error('Missing request detail option.')
 
         if (!_.isHex(req.body._id)) throw new Error('Incorrect request id type.')
-        if (!_.includes(['authorization','query','headers','body'], req.body.requestDetailOption)) {
+        if (!_.includes(['query','headers','body'], req.body.requestDetailOption)) {
             throw new Error('Incorrect request detail option type.')
         }
 
@@ -48,7 +48,7 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (request.lockedResource && request.lockedResource === true && !member.owner) throw new Error('Permission error.')
+            if (_.isBoolean(request.lockedResource) && request.lockedResource && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')

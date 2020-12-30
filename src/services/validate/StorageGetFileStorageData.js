@@ -5,15 +5,11 @@ const
             return /^[a-f0-9]{24}$/.test(string)
         }
     }),
-    util = require('util'),
-    path = require('path'),
-    fs = require('fs'),
-    writeFile = util.promisify(fs.writeFile),
-    mkdirp = require('mkdirp'),
     IndexSchema = require('../tools/schema').schema,
     Stats = require('../tools/stats').stats,
-    S3 = require('../tools/s3').S3;
-    
+    S3 = require('../tools/s3').S3,
+    keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
+    permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
 
 module.exports = {
     validate: function(req, res) {
@@ -52,17 +48,19 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            // Requires write permissions
+            // Requires read permissions
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')
             if (member.status === 'removed') throw new Error('Permission error.')
             if (member.status === 'invited') throw new Error('Permission error.')
             if (member.status !== 'accepted') throw new Error('Permission error.')
             if (member.permission === 'none') throw new Error('Permission error.')
-            if (member.permission === 'read') throw new Error('Permission error.')
-            if (member.permission !== 'write') throw new Error('Permission error.')
+            if (member.permission !== 'read' && 
+                member.permission !== 'write' ) throw new Error('Permission error.')
 
-            if (storage.sensitiveResponse && storage.sensitiveResponse === true && member.permission !== 'write') throw new Error('Permission error.')
+            if (_.isBoolean(storage.sensitiveResponse) && storage.sensitiveResponse) {
+                if (member.permission === 'read' && !member.includeSensitive) throw new Error('Permission error.')
+            }
             
             return storage
         } catch(err) {
@@ -98,19 +96,19 @@ module.exports = {
 
             await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
-            const directoryPath = `./files/downloads/${storage.filename}`
-            const filePath = path.resolve(`${directoryPath}/${storage.originalname}`)
+            const fullStorageValue = String(storageValue.Body)
+            storage.storageValue = fullStorageValue
 
-            await mkdirp(directoryPath)
-            await writeFile(filePath, storageValue.Body)
-
-            return filePath
+            return storage
         } catch(err) {
             throw new Error(err.message)
         }
     },
     response: function(request, res) {
-        return res.sendFile(request)
+        let response = _.pickBy(request, function(value, key) {
+            return _.includes(keys.concat(permissionKeys), key)
+        })
+        return res.status(200).send(response)
     },
     error: function(err, res) {
         console.log('Storage: get file storage data error.', err.message)

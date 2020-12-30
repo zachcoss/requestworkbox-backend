@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','requestId','workflowType','tasks','payloads','webhooks','createdAt','updatedAt'],
     permissionKeys = ['lockedResource', 'preventExecution'];
 
 module.exports = {

@@ -6,7 +6,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','active','name','projectId','tasks','payloads','webhooks','createdAt','updatedAt'],
+    keys = ['_id','active','name','projectId','requestId','workflowType','tasks','payloads','webhooks','createdAt','updatedAt'],
     permissionKeys = ['lockedResource', 'preventExecution'];
     
 
@@ -36,7 +36,7 @@ module.exports = {
                 requesterSub = payload.sub,
                 workflowId = payload._id;
             
-            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId, workflowType: 'workflow' })
+            const workflow = await IndexSchema.Workflow.findOne({ _id: workflowId })
             if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
             if (payload.projectId && payload.projectId !== workflow.projectId.toString()) throw new Error('Project not found.')

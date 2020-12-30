@@ -36,7 +36,7 @@ module.exports = {
                 active: true,
             })
 
-            if (activeProjects >= 10) throw new Error('Rate limit error.')
+            if (activeProjects >= 5) throw new Error('Rate limit error.')
 
             // Create project
             let project = new IndexSchema.Project(payload)

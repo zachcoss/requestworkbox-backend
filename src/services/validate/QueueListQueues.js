@@ -83,7 +83,6 @@ module.exports = {
             const queues = await IndexSchema.Queue.find({
                 sub: payload.sub,
                 workflowId: payload.workflowId,
-                queueType: payload.queueType,
                 date: payload.date,
             })
             .sort({date: 1})

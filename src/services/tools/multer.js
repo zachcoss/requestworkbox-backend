@@ -17,7 +17,7 @@ module.exports = {
             fileSize: 1000000,
             files: 1,
             parts: 1,
-            headerPairs: 0,
+            headerPairs: 1,
         },
     })
 }

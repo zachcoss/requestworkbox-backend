@@ -5,7 +5,7 @@ const
         }
     }),
     IndexSchema = require('../tools/schema').schema,
-    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','createdAt','updatedAt'],
+    keys = ['_id','url','name','method','active','projectId','authorization','authorizationType','query','headers','body','workflowId','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
     
 
@@ -90,6 +90,9 @@ module.exports = {
                 }]
             })
             await requestWorkflow.save()
+
+            newRequest.workflowId = requestWorkflow._id
+            await newRequest.save()
 
             return newRequest.toJSON()
         } catch(err) {
