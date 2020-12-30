@@ -26,21 +26,12 @@ module.exports = {
         if (req.body.name && !_.isString(req.body.name)) throw new Error('Incorrect name type.')
         if (req.body.tasks && !_.isArray(req.body.tasks)) throw new Error('Incorrect tasks type.')
         if (req.body.webhooks && !_.isArray(req.body.webhooks)) throw new Error('Incorrect webhooks type.')
+        if (req.body.payloads && !_.isArray(req.body.payloads)) throw new Error('Incorrect payloads type.')
 
         if (req.body.name) updates.name = req.body.name
 
-        if (req.body.lockedResource && !_.isBoolean(req.body.lockedResource))
-        if (req.body.preventExecution && !_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect locked resource type.')
-
-        if (req.body.lockedResource) {
-            if (!_.isBoolean(req.body.lockedResource)) throw new Error('Incorrect locked resource type.')
-            updates.lockedResource = req.body.lockedResource
-        }
-
-        if (req.body.preventExecution) {
-            if (!_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect prevent execution type.')
-            updates.preventExecution = req.body.preventExecution
-        }
+        if (_.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (_.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
 
         if (req.body.tasks && _.size(req.body.tasks) > 0 && _.size(req.body.tasks) <= 10) {
             let 
@@ -51,7 +42,7 @@ module.exports = {
             _.each(req.body.tasks, (task) => {
                 if (!_.isPlainObject(task)) return error = true
                 if (!task._id || !_.isString(task._id) || !_.isHex(task._id)) return error = true
-                if (!_.isBoolean(task.active)) return error = true
+                if (task.active && !_.isBoolean(task.active)) return error = true
                 if (task.requestId && !_.isHex(task.requestId)) return error = true
                 if (task.runtimeResultName && !_.isString(task.runtimeResultName))  return error = true
                 if (_.size(task.runtimeResultName) > 100) return error = true
@@ -81,13 +72,29 @@ module.exports = {
             _.each(req.body.webhooks, (webhook) => {
                 if (!_.isPlainObject(webhook)) return error = true
                 if (!webhook._id || !_.isString(webhook._id) || !_.isHex(webhook._id)) return error = true
-                if (!_.isBoolean(webhook.active)) return error = true
+                if (webhook.active && !_.isBoolean(webhook.active)) return error = true
                 if (webhook.requestId && !_.isHex(webhook.requestId)) return error = true
             })
             if (error) throw new Error('Incorrect webhook object type.')
             updates.webhooks = _.map(req.body.webhooks, (webhook) => {
                 return _.pickBy(webhook, function(value, key) {
                     return _.includes(taskKeys, key)
+                })
+            })
+        }
+
+        if (req.body.payloads && _.size(req.body.payloads) === 1) {
+            let error = false
+            _.each(req.body.payloads, (payload) => {
+                if (!_.isPlainObject(payload)) return error = true
+                if (!payload._id || !_.isString(payload._id) || !_.isHex(payload._id)) return error = true
+                if (payload.active && !_.isBoolean(payload.active)) return error = true
+                if (payload.requestId && !_.isHex(payload.requestId)) return error = true
+            })
+            if (error) throw new Error('Incorrect payload object type.')
+            updates.payloads = _.map(req.body.payloads, (payload) => {
+                return _.pickBy(payload, function(value, key) {
+                    return _.includes(_.omit(taskKeys, 'requestId'), key)
                 })
             })
         }
@@ -125,7 +132,6 @@ module.exports = {
             if (!member.owner) {
                 delete updates.lockedResource
                 delete updates.preventExecution
-                delete updates.sensitiveResponse
             }
             
             return {workflow, updates}
@@ -136,7 +142,7 @@ module.exports = {
     request: async function({workflow, updates}) {
         try {
 
-            const updateData = _.pick(updates, ['name','tasks','webhooks'])
+            const updateData = _.pick(updates, ['name','tasks','webhooks','payloads'])
 
             if (updateData.name) workflow.name = updateData.name
 
@@ -174,6 +180,10 @@ module.exports = {
 
             if (workflow.webhooks && updateData.webhooks) {
                 workflow.webhooks = updateData.webhooks
+            }
+
+            if (workflow.payloads && updateData.payloads) {
+                workflow.payloads = updateData.payloads
             }
 
             const lockingOptions = _.pick(updates, permissionKeys)

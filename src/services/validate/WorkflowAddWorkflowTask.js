@@ -64,6 +64,7 @@ module.exports = {
 
             workflow.tasks.push({
                 _id: mongoose.Types.ObjectId(),
+                active: true,
             })
             await workflow.save()
 

@@ -34,24 +34,9 @@ module.exports = {
         let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'authorization', 'query', 'headers', 'body'])
         updates.sub = req.user.sub
 
-        if (req.body.lockedResource && !_.isBoolean(req.body.lockedResource))
-        if (req.body.preventExecution && !_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect locked resource type.')
-        if (req.body.sensitiveResponse && !_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect locked resource type.')
-
-        if (req.body.lockedResource) {
-            if (!_.isBoolean(req.body.lockedResource)) throw new Error('Incorrect locked resource type.')
-            updates.lockedResource = req.body.lockedResource
-        }
-
-        if (req.body.preventExecution) {
-            if (!_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect prevent execution type.')
-            updates.preventExecution = req.body.preventExecution
-        }
-
-        if (req.body.sensitiveResponse) {
-            if (!_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect sensitive response type.')
-            updates.sensitiveResponse = req.body.sensitiveResponse
-        }
+        if (_.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (_.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (_.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
 
         if (req.body.authorization) {
             if (!_.isArray(req.body.authorization))
@@ -65,34 +50,6 @@ module.exports = {
 
             updates.authorization = req.body.authorization
         }
-
-        if (req.body.authorizationType === 'header') {
-            if (!req.body.authorization) throw new Error()
-            // x-api-key
-            if (!req.body.authorization.key) throw new Error()
-            // DSF@-SDF@@DCSD-@#$DAEAFD-ASDFSF
-            if (!req.body.authorization.value) throw new Error()
-            // textInput
-            if (!req.body.authorization.valueType) throw new Error()
-        }
-
-        if (req.body.authorizationType === 'basicAuth') {
-            if (!req.body.authorization) throw new Error()
-            // username
-            if (!req.body.authorization.key) throw new Error()
-            // DSF@-SDF@@DCSD-@#$DAEAFD-ASDFSF
-            if (!req.body.authorization.value) throw new Error()
-            // textInput
-            if (!req.body.authorization.valueType) throw new Error()
-            
-            // password
-            if (!req.body.authorization.key) throw new Error()
-            // DSF@-SDF@@DCSD-@#$DAEAFD-ASDFSF
-            if (!req.body.authorization.value) throw new Error()
-            // textInput
-            if (!req.body.authorization.valueType) throw new Error()
-        }
-
 
         return updates
     },
@@ -155,6 +112,10 @@ module.exports = {
                 request[key] = value
             })
             
+            if (_.size(request.authorization) > 10) throw new Error('Authorization rate limit.')
+            if (_.size(request.query) > 10) throw new Error('Query rate limit.')
+            if (_.size(request.headers) > 10) throw new Error('Headers rate limit.')
+            if (_.size(request.body) > 10) throw new Error('Body rate limit.')
 
             const lockingOptions = _.pick(updates, permissionKeys)
 

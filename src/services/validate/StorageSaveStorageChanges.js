@@ -17,31 +17,19 @@ module.exports = {
         if (!req.body._id) throw new Error('Missing storage id.')
         if (!_.isHex(req.body._id)) throw new Error('Incorrect storage id type.')
 
-        let updates = _.pick(req.body, ['_id','sub'])
+        let updates = {
+            _id: req.body._id,
+            sub: req.user.sub,
+        }
 
         if (req.body.name) {
             if (!_.isString(req.body.name)) throw new Error('Incorrect name type.')
             updates.name = req.body.name
         }
 
-        if (req.body.lockedResource && !_.isBoolean(req.body.lockedResource))
-        if (req.body.preventExecution && !_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect locked resource type.')
-        if (req.body.sensitiveResponse && !_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect locked resource type.')
-
-        if (req.body.lockedResource) {
-            if (!_.isBoolean(req.body.lockedResource)) throw new Error('Incorrect locked resource type.')
-            updates.lockedResource = req.body.lockedResource
-        }
-
-        if (req.body.preventExecution) {
-            if (!_.isBoolean(req.body.preventExecution)) throw new Error('Incorrect prevent execution type.')
-            updates.preventExecution = req.body.preventExecution
-        }
-
-        if (req.body.sensitiveResponse) {
-            if (!_.isBoolean(req.body.sensitiveResponse)) throw new Error('Incorrect sensitive response type.')
-            updates.sensitiveResponse = req.body.sensitiveResponse
-        }
+        if (_.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (_.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (_.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
 
         return updates
     },
@@ -61,6 +49,7 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
+
             if (storage.lockedResource && storage.lockedResource === true && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions

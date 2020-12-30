@@ -70,6 +70,7 @@ module.exports = {
 
             request[payload.requestDetailOption].push({
                 _id: mongoose.Types.ObjectId(),
+                active: true,
                 key: '',
                 value: '',
                 valueType: 'textInput',
