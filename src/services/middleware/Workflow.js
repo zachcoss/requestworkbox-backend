@@ -233,18 +233,18 @@ module.exports = {
             } else if (projectType === 'standard') {
                 queueDelaySeconds = 15
                 scheduleWindowSeconds = 60 * 60
-                rateLimitCount = 25
+                rateLimitCount = 15
                 taskLimitCount = 3
             } else if (projectType === 'developer') {
                 queueDelaySeconds = 5
                 scheduleWindowSeconds = (60 * 60) * 12
-                rateLimitCount = 60
+                rateLimitCount = 50
                 taskLimitCount = 5
             } else if (projectType === 'professional') {
                 queueDelaySeconds = 1
                 scheduleWindowSeconds = (60 * 60) * 24
                 rateLimitCount = 250
-                taskLimitCount = 15
+                taskLimitCount = 10
             }
 
             // Check task list
