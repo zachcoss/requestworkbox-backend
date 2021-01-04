@@ -32,24 +32,14 @@ module.exports = {
             return ValidateStorage.getStorage.error(err, res)
         }
     },
-    getTextStorageData: async (req, res, next) => {
+    getStorageData: async (req, res, next) => {
         try {
-            const payload = ValidateStorage.getTextStorageData.validate(req)
-            const authorize = await ValidateStorage.getTextStorageData.authorize(payload)
-            const request = await ValidateStorage.getTextStorageData.request(authorize)
-            return ValidateStorage.getTextStorageData.response(request, res)
+            const payload = ValidateStorage.getStorageData.validate(req)
+            const authorize = await ValidateStorage.getStorageData.authorize(payload)
+            const request = await ValidateStorage.getStorageData.request(authorize)
+            return ValidateStorage.getStorageData.response(request, res)
         } catch (err) {
-            return ValidateStorage.getTextStorageData.error(err, res)
-        }
-    },
-    getFileStorageData: async (req, res, next) => {
-        try {
-            const payload = ValidateStorage.getFileStorageData.validate(req)
-            const authorize = await ValidateStorage.getFileStorageData.authorize(payload)
-            const request = await ValidateStorage.getFileStorageData.request(authorize)
-            return ValidateStorage.getFileStorageData.response(request, res)
-        } catch (err) {
-            return ValidateStorage.getFileStorageData.error(err, res)
+            return ValidateStorage.getStorageData.error(err, res)
         }
     },
     updateTextStorageData: async (req, res, next) => {

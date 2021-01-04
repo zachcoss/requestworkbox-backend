@@ -27,9 +27,9 @@ module.exports = {
             updates.name = req.body.name
         }
 
-        if (_.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
-        if (_.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
-        if (_.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
+        if (req.body.lockedResource && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (req.body.preventExecution && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (req.body.sensitiveResponse && _.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
 
         return updates
     },

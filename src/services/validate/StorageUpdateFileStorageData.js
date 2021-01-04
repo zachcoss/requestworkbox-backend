@@ -30,11 +30,6 @@ module.exports = {
             file: req.file,
         }
 
-        if (req.body.projectId) {
-            if (!_.isHex(req.body.projectId)) throw new Error('Incorrect project id type.')
-            payload.projectId = req.body.projectId
-        }
-
         return payload
     },
     authorize: async function(payload) {
@@ -45,6 +40,7 @@ module.exports = {
             
             const storage = await IndexSchema.Storage.findOne({ _id: storageId })
             if (!storage || !storage._id) throw new Error('Storage not found.')
+            if (storage.storageType !== 'file') throw new Error('Incorrect storage type.')
 
             if (payload.projectId && payload.projectId !== storage.projectId.toString()) throw new Error('Project not found.')
 

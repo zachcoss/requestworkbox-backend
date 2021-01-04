@@ -2,27 +2,27 @@ const
     createStorage = require('./StorageCreateStorage'),
     listStorages = require('./StorageListStorages'),
     getStorage = require('./StorageGetStorage'),
-    getTextStorageData = require('./StorageGetTextStorageData'),
-    getFileStorageData = require('./StorageGetFileStorageData'),
+    getStorageData = require('./StorageGetStorageData'),
+    getStorageUsage = require('./StorageGetStorageUsage'),
     updateTextStorageData = require('./StorageUpdateTextStorageData'),
     updateFileStorageData = require('./StorageUpdateFileStorageData'),
-    saveStorageChanges = require('./StorageSaveStorageChanges'),
     archiveStorage = require('./StorageArchiveStorage'),
     restoreStorage = require('./StorageRestoreStorage'),
-    getStorageUsage = require('./StorageGetStorageUsage');
+    saveStorageChanges = require('./StorageSaveStorageChanges');
+    
 
 module.exports = {
     createStorage: createStorage,
     listStorages: listStorages,
-    getStorage: getStorage,
-    saveStorageChanges: saveStorageChanges,
-    archiveStorage: archiveStorage,
-    restoreStorage: restoreStorage,
 
-    getTextStorageData: getTextStorageData,
-    getFileStorageData: getFileStorageData,
+    getStorage: getStorage,
+    getStorageData: getStorageData,
     getStorageUsage: getStorageUsage,
 
     updateTextStorageData: updateTextStorageData,
     updateFileStorageData: updateFileStorageData,
+
+    archiveStorage: archiveStorage,
+    restoreStorage: restoreStorage,
+    saveStorageChanges: saveStorageChanges,
 }

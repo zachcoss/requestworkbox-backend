@@ -30,8 +30,8 @@ module.exports = {
 
         if (req.body.name) updates.name = req.body.name
 
-        if (_.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
-        if (_.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (req.body.lockedResource && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (req.body.preventExecution && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
 
         if (req.body.tasks && _.size(req.body.tasks) > 0 && _.size(req.body.tasks) <= 10) {
             let 

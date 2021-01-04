@@ -45,6 +45,7 @@ module.exports = {
             
             const storage = await IndexSchema.Storage.findOne({ _id: storageId })
             if (!storage || !storage._id) throw new Error('Storage not found.')
+            if (storage.storageType !== 'text') throw new Error('Incorrect storage type.')
 
             if (payload.projectId && payload.projectId !== storage.projectId.toString()) throw new Error('Project not found.')
 

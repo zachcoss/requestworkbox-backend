@@ -261,7 +261,7 @@ module.exports = {
             if (queueType === 'schedule') {
                 if (!req.query.date) return res.status(400).send('Schedule workflow error: missing date.')
 
-                const shouldSchedule = moment(req.query.date).isBetween(moment(), moment().add(scheduleWindowSeconds,'seconds'))
+                const shouldSchedule = moment(req.query.date).isBetween(moment().add(queueDelaySeconds, 'seconds'), moment().add(scheduleWindowSeconds,'seconds'))
                 if (!shouldSchedule) return res.status(400).send(`Project dates are limited to scheduling within ${scheduleWindowSeconds} seconds of the request.`)
             }
 

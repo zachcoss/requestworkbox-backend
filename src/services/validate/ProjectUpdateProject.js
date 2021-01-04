@@ -21,8 +21,9 @@ module.exports = {
         let payload = {
             sub: req.user.sub,
             _id: req.body._id,
-            name: req.body.name,
         }
+
+        if (req.body.name) payload.name = req.body.name
 
         if (req.body.returnWorkflow && _.includes(projectPermissionValues, req.body.returnWorkflow)) {
             payload.returnWorkflow = req.body.returnWorkflow

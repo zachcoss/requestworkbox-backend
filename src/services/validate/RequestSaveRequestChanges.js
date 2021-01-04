@@ -20,23 +20,22 @@ module.exports = {
         if (!req.body._id) throw new Error('Missing request id.')
         if (!_.isHex(req.body._id)) throw new Error('Incorrect request id type.')
 
-        if (!_.includes(['GET','POST','get','post'], req.body.method)) throw new Error('Incorrect method type.')
+        if (req.body.method && !_.includes(['GET','POST','get','post'], req.body.method)) throw new Error('Incorrect method type.')
 
-        if (!_.isString(req.body.name)) throw new Error('Incorrect name type.')
+        if (req.body.name && !_.isString(req.body.name)) throw new Error('Incorrect name type.')
         
-        if (!req.body.url) throw new Error('Missing URL.')
-        if (!/^https?:\/\//) throw new Error('Must be secure URL.')
-        if (!validUrl.isWebUri(req.body.url)) throw new Error('Not valid URL.')
-        if (_.includes(req.body.url, 'requestworkbox.com')) {
+        if (req.body.url && !/^https?:\/\//.test(req.body.url)) throw new Error('Must be secure URL.')
+        if (req.body.url && !validUrl.isWebUri(req.body.url)) throw new Error('Not valid URL.')
+        if (req.body.url && _.includes(req.body.url, 'requestworkbox.com')) {
             if (!/.com\/$|.com$/.test(req.body.url)) throw new Error('Recursive URLs not allowed.')
         }
 
-        let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'authorization', 'query', 'headers', 'body'])
+        let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'query', 'headers', 'body'])
         updates.sub = req.user.sub
 
-        if (_.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
-        if (_.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
-        if (_.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
+        if (req.body.lockedResource && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (req.body.preventExecution && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (req.body.sensitiveResponse && _.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
 
         if (req.body.authorization) {
             if (!_.isArray(req.body.authorization))

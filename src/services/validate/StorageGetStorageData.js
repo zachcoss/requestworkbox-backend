@@ -10,18 +10,13 @@ const
     S3 = require('../tools/s3').S3,
     keys = ['_id','active','name','projectId','storageType','storageValue','mimetype','originalname','size','totalBytesDown','totalBytesUp','totalMs','createdAt','updatedAt'],
     permissionKeys = ['lockedResource','preventExecution','sensitiveResponse'];
-    
 
 module.exports = {
     validate: function(req, res) {
 
         if (!req.user || !req.user.sub) throw new Error('Invalid or missing token.')
-
-        if (!req.body.storageId) {
-            throw new Error('Missing storage id.')
-        } else {
-            if (!_.isHex(req.body.storageId)) throw new Error('Incorrect storage id type.')
-        }
+        if (!req.body.storageId) throw new Error('Missing storage id.')
+        if (!_.isHex(req.body.storageId)) throw new Error('Incorrect storage id type.')
 
         let payload = {
             sub: req.user.sub,
@@ -74,7 +69,7 @@ module.exports = {
     },
     request: async function(storage) {
         try {
-            
+
             const storageValueStart = new Date()
             const storageValue = await S3.getObject({
                 Bucket: process.env.STORAGE_BUCKET,
@@ -116,7 +111,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        console.log('Storage: get text storage data error.', err.message)
+        console.log('Storage: get storage data error.', err.message)
         return res.status(400).send(err.message)
     },
 }
