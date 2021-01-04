@@ -193,16 +193,17 @@ module.exports = {
                 }).lean()
                 if (!member || !member._id) return res.status(401).send('Permission error.')
                 if (!member.active) return res.status(401).send('Permission error.')
+                if (member.status !== 'accepted') return res.status(401).send('Permission error.')
+                if (member.permission !== 'write' && member.permission !== 'read') return res.status(401).send('Permission error.')
+
                 publicUser = false
             }
 
             if (projectPermission === 'owner') {
+                if (publicUser) return res.status(401).send('Permission error.') 
                 if (!member.owner) return res.status(401).send('Permission error.')
-                if (member.status !== 'accepted') return res.status(401).send('Permission error.')
-                if (member.permission !== 'write') return res.status(401).send('Permission error.')
             } else if (projectPermission === 'team') {
-                if (member.status !== 'accepted') return res.status(401).send('Permission error.')
-                if (member.permission !== 'write') return res.status(401).send('Permission error.')
+                if (publicUser) return res.status(401).send('Permission error.') 
             } else if (projectPermission === 'public') {
                 if ((!member || !member._id) && (!req.user || !req.user.sub)) req.user = { sub: project.sub }
             }

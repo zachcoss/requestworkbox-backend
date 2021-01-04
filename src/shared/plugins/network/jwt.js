@@ -31,7 +31,10 @@ module.exports.config = () => {
             else if (req.headers['x-api-key']) return true
             else if (req.headers['authorization']) return false
             else {
-                if (_.includes(req.path, '/return-workflow/')) return true
+                if (_.includes(req.path, '/return-request/')) return true
+                else if (_.includes(req.path, '/queue-request/')) return true
+                else if (_.includes(req.path, '/schedule-request/')) return true
+                else if (_.includes(req.path, '/return-workflow/')) return true
                 else if (_.includes(req.path, '/queue-workflow/')) return true
                 else if (_.includes(req.path, '/schedule-workflow/')) return true
                 else return false

@@ -11,7 +11,10 @@ let
     workflow = {},
     workflowEnd = moment(),
 
-    workflowPaths = ['/return-workflow/','/queue-workflow/','/schedule-workflow/'];
+    workflowPaths = [
+        '/return-request/','/queue-request/','/schedule-request/',
+        '/return-workflow/','/queue-workflow/','/schedule-workflow/',
+    ];
 
 module.exports = {
     ratelimit: async function (req, res, next) {
@@ -70,7 +73,10 @@ module.exports = {
 
                 return next()
             } else {
-                if (_.includes(req.path, '/return-workflow/')) return next()
+                if (_.includes(req.path, '/return-request/')) return next()
+                else if (_.includes(req.path, '/queue-request/')) return next()
+                else if (_.includes(req.path, '/schedule-request/')) return next()
+                else if (_.includes(req.path, '/return-workflow/')) return next()
                 else if (_.includes(req.path, '/queue-workflow/')) return next()
                 else if (_.includes(req.path, '/schedule-workflow/')) return next()
 
