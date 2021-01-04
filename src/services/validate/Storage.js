@@ -3,7 +3,6 @@ const
     listStorages = require('./StorageListStorages'),
     getStorage = require('./StorageGetStorage'),
     getStorageData = require('./StorageGetStorageData'),
-    getStorageUsage = require('./StorageGetStorageUsage'),
     updateTextStorageData = require('./StorageUpdateTextStorageData'),
     updateFileStorageData = require('./StorageUpdateFileStorageData'),
     archiveStorage = require('./StorageArchiveStorage'),
@@ -17,7 +16,6 @@ module.exports = {
 
     getStorage: getStorage,
     getStorageData: getStorageData,
-    getStorageUsage: getStorageUsage,
 
     updateTextStorageData: updateTextStorageData,
     updateFileStorageData: updateFileStorageData,

@@ -56,7 +56,10 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (_.isBoolean(storage.lockedResource) && storage.lockedResource && !member.owner) throw new Error('Permission error.')
+            // Requires write permissions
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (storage && _.isBoolean(storage.lockedResource) && storage.lockedResource && !member.owner) throw new Error('Permission error.')
 
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')
@@ -87,26 +90,6 @@ module.exports = {
 
             const textDataSize = Number(textData.byteLength)
             storage['size'] = textDataSize
-
-            const usages = [{
-                sub: storage.sub,
-                usageType: 'storage',
-                usageDirection: 'up',
-                usageAmount: textDataSize,
-                usageMeasurement: 'byte',
-                usageLocation: 'api',
-                usageId: storage._id,
-            }, {
-                sub: storage.sub,
-                usageType: 'storage',
-                usageDirection: 'time',
-                usageAmount: Number(new Date() - textDataStart),
-                usageMeasurement: 'ms',
-                usageLocation: 'api',
-                usageId: storage._id,
-            }]
-
-            await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
             storage.storageValue = String(textData)
             return storage.toJSON()

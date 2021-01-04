@@ -63,7 +63,7 @@ module.exports = {
             // Requires includeSensitive permission
             if (member.permission === 'read' && !member.includeSensitive) throw new Error('Permission error.')
             
-            return instanceasdf
+            return instance
         } catch(err) {
             throw new Error(err.message)
         }

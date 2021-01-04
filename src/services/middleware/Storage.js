@@ -92,14 +92,4 @@ module.exports = {
             return ValidateStorage.restoreStorage.error(err, res)
         }
     },
-    getStorageUsage: async (req, res, next) => {
-        try {
-            const payload = ValidateStorage.getStorageUsage.validate(req)
-            const authorize = await ValidateStorage.getStorageUsage.authorize(payload)
-            const request = await ValidateStorage.getStorageUsage.request(authorize)
-            return ValidateStorage.getStorageUsage.response(request, res)
-        } catch (err) {
-            return ValidateStorage.getStorageUsage.error(err, res)
-        }
-    },
 }

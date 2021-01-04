@@ -40,8 +40,7 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (_.isBoolean(storage.lockedResource) && storage.lockedResource && !member.owner) throw new Error('Permission error.')
-            
+            // Locked resource does not apply because endpoint is already "owner only"
             // Requires owner permission
             if (!member || !member._id) throw new Error('Permission error.')
             if (!member.active) throw new Error('Permission error.')

@@ -49,8 +49,8 @@ module.exports = {
                 requesterSub = payload.sub,
                 workflowId = payload.workflowId;
             
-            const workflow = await IndexSchema.Instance.findOne({_id: workflowId }).lean()
-            if (!workflow || !workflow._id) throw new Error('Instance not found.')
+            const workflow = await IndexSchema.Workflow.findOne({_id: workflowId }).lean()
+            if (!workflow || !workflow._id) throw new Error('Workflow not found.')
 
             const project = await IndexSchema.Project.findOne({ _id: workflow.projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
@@ -78,14 +78,26 @@ module.exports = {
     request: async function(payload) {
         try {
 
-            const queues = await IndexSchema.Queue.find({
-                sub: payload.sub,
-                workflowId: payload.workflowId,
-                date: payload.date,
-                queueType: payload.queueType,
-            })
-            .sort({date: 1})
-            .limit(25)
+            let queues;
+
+            if (payload.queueType) {
+                queues = await IndexSchema.Queue.find({
+                    sub: payload.sub,
+                    workflowId: payload.workflowId,
+                    date: payload.date,
+                    queueType: payload.queueType,
+                })
+                .sort({date: 1})
+                .limit(25)
+            } else {
+                queues = await IndexSchema.Queue.find({
+                    sub: payload.sub,
+                    workflowId: payload.workflowId,
+                    date: payload.date,
+                })
+                .sort({date: 1})
+                .limit(25)
+            }
 
             for (queue of queues) {
                 await Stats.updateQueueStats({ queue, status: 'archived' }, IndexSchema, socketService)

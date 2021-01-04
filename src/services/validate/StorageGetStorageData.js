@@ -58,7 +58,7 @@ module.exports = {
             if (member.permission !== 'read' && 
                 member.permission !== 'write' ) throw new Error('Permission error.')
 
-            if (_.isBoolean(storage.sensitiveResponse) && storage.sensitiveResponse) {
+            if (storage && _.isBoolean(storage.sensitiveResponse) && storage.sensitiveResponse) {
                 if (member.permission === 'read' && !member.includeSensitive) throw new Error('Permission error.')
             }
             
@@ -75,26 +75,6 @@ module.exports = {
                 Bucket: process.env.STORAGE_BUCKET,
                 Key: `${storage.projectId}/storage-data/${storage._id}`,
             }).promise()
-
-            const usages = [{
-                sub: storage.sub,
-                usageType: 'storage',
-                usageDirection: 'down',
-                usageAmount: Number(storageValue.ContentLength),
-                usageMeasurement: 'byte',
-                usageLocation: 'api',
-                usageId: storage._id,
-            }, {
-                sub: storage.sub,
-                usageType: 'storage',
-                usageDirection: 'time',
-                usageAmount: Number(new Date() - storageValueStart),
-                usageMeasurement: 'ms',
-                usageLocation: 'api',
-                usageId: storage._id,
-            }]
-
-            await Stats.updateStorageUsage({ storage, usages, }, IndexSchema)
 
             const fullStorageValue = String(storageValue.Body)
             storage.storageValue = fullStorageValue

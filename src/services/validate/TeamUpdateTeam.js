@@ -22,21 +22,25 @@ module.exports = {
         }
 
         _.each(req.body.team, (member) => {
-            if (!member._id) return
-            if (!member.active) return
-            if (member.owner) return
+            if (!_.isHex(member._id)) return
+            if (!_.isBoolean(member.active)) return
+            if (!_.isBoolean(member.owner)) return
             if (member.status === 'removed') return
             if (member.permission === 'none') return
 
-            if (member.includeSensitive || member.permission) {
-                let update = { _id: member._id }
+            let update = { _id: member._id }
 
-                if (_.isBoolean(member.includeSensitive)) update.includeSensitive = member.includeSensitive
-                if (_.includes(['read','write'], member.permission)) update.permission = member.permission
-
-                payload.team.push(update)
+            if (_.isBoolean(member.includeSensitive)) {
+                update.includeSensitive = member.includeSensitive
+            }
+            if (_.isBoolean(member.owner)) {
+                update.owner = member.owner
+            }
+            if (_.includes(['read','write'], member.permission)) {
+                update.permission = member.permission
             }
 
+            payload.team.push(update)
         })
 
         return payload
@@ -75,6 +79,8 @@ module.exports = {
             let updates = []
 
             for (teamMember of payload.team) {
+                if (teamMember.owner) continue
+
                 let member = await IndexSchema.Member.findOne({
                     _id: teamMember._id,
                     active: true,
@@ -82,9 +88,10 @@ module.exports = {
                     projectId: project._id,
                     status: { $in: ['invited','accepted'] }
                 })
+                if (!member || !member._id) throw new Error('User not found.')
 
-                if (_.includes(['read', 'write'], teamMember.permission)) member.permission = teamMember.permission
-                if (_.includes([true, false], member.includeSensitive)) member.includeSensitive = teamMember.includeSensitive
+                if (_.isBoolean(teamMember.includeSensitive)) member.includeSensitive = teamMember.includeSensitive
+                if (teamMember.permission) member.permission = teamMember.permission
 
                 await member.save()
                 updates.push(member.toJSON())

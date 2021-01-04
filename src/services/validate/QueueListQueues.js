@@ -87,7 +87,6 @@ module.exports = {
             })
             .sort({date: 1})
             .limit(25)
-            .lean()
 
             return queues
         } catch(err) {

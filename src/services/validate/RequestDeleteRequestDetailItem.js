@@ -49,7 +49,10 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (_.isBoolean(request.lockedResource) && request.lockedResource && !member.owner) throw new Error('Permission error.')
+            // Requires write permissions
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (request && _.isBoolean(request.lockedResource) && request.lockedResource && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')

@@ -110,6 +110,16 @@ module.exports = {
             }).lean()
 
             if (!requestWorkflow || !requestWorkflow._id) return res.status(400).send('Request workflow not found.')
+            if (!_.size(requestWorkflow.tasks)) return res.status(400).send('Request workflow missing tasks.')
+
+            let missingInformation = false
+            
+            _.each(requestWorkflow.tasks, (task) => {
+                if (!_.isBoolean(task.active)) return missingInformation = true
+                if (!_.isHex(task.requestId)) return missingInformation = true
+            })
+
+            if (missingInformation) return res.status(400).send('Missing request task information.')
 
             res.locals.workflow = requestWorkflow
             res.locals.workflowId = requestWorkflow._id
@@ -136,6 +146,16 @@ module.exports = {
             }).lean()
 
             if (!workflow || !workflow._id) return res.status(400).send('Workflow not found.')
+            if (!_.size(workflow.tasks)) return res.status(400).send('Workflow missing tasks.')
+
+            let missingInformation = false
+            
+            _.each(workflow.tasks, (task) => {
+                if (!_.isBoolean(task.active)) return missingInformation = true
+                if (!_.isHex(task.requestId)) return missingInformation = true
+            })
+
+            if (missingInformation) return res.status(400).send('Missing workflow task information.')
 
             res.locals.workflow = workflow
             res.locals.workflowId = workflow._id
@@ -248,15 +268,14 @@ module.exports = {
                 taskLimitCount = 10
             }
 
-            // Check task list
             let numberOfTasks = _.size(workflow.tasks)
             
             _.each(workflow.tasks, (task) => {
-                if (!task.active) numberOfTasks = numberOfTasks -1
+                if (!task.active) return numberOfTasks = numberOfTasks -1
             })
 
-            if (numberOfTasks <= 0) return res.status(401).send('Missing active tasks.')
-            if (numberOfTasks > taskLimitCount) return res.status(401).send(`Project is limited to ${taskLimitCount} active tasks.`)
+            if (numberOfTasks <= 0) return res.status(400).send('Missing active tasks.')
+            if (numberOfTasks > taskLimitCount) return res.status(400).send(`Project is limited to ${taskLimitCount} active tasks.`)
 
             // Filter date
             if (queueType === 'schedule') {

@@ -30,8 +30,8 @@ module.exports = {
 
         if (req.body.name) updates.name = req.body.name
 
-        if (req.body.lockedResource && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
-        if (req.body.preventExecution && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (req.body && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (req.body && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
 
         if (req.body.tasks && _.size(req.body.tasks) > 0 && _.size(req.body.tasks) <= 10) {
             let 
@@ -42,10 +42,10 @@ module.exports = {
             _.each(req.body.tasks, (task) => {
                 if (!_.isPlainObject(task)) return error = true
                 if (!task._id || !_.isString(task._id) || !_.isHex(task._id)) return error = true
-                if (task.active && !_.isBoolean(task.active)) return error = true
+                if (!_.isBoolean(task.active)) return error = true
                 if (task.requestId && !_.isHex(task.requestId)) return error = true
                 if (task.runtimeResultName && !_.isString(task.runtimeResultName))  return error = true
-                if (_.size(task.runtimeResultName) > 100) return error = true
+                if (task.runtimeResultName && _.size(task.runtimeResultName) > 100) return error = true
 
                 if (task.runtimeResultName === '') return
                 
@@ -72,7 +72,7 @@ module.exports = {
             _.each(req.body.webhooks, (webhook) => {
                 if (!_.isPlainObject(webhook)) return error = true
                 if (!webhook._id || !_.isString(webhook._id) || !_.isHex(webhook._id)) return error = true
-                if (webhook.active && !_.isBoolean(webhook.active)) return error = true
+                if (!_.isBoolean(webhook.active)) return error = true
                 if (webhook.requestId && !_.isHex(webhook.requestId)) return error = true
             })
             if (error) throw new Error('Incorrect webhook object type.')
@@ -88,7 +88,7 @@ module.exports = {
             _.each(req.body.payloads, (payload) => {
                 if (!_.isPlainObject(payload)) return error = true
                 if (!payload._id || !_.isString(payload._id) || !_.isHex(payload._id)) return error = true
-                if (payload.active && !_.isBoolean(payload.active)) return error = true
+                if (!_.isBoolean(payload.active)) return error = true
                 if (payload.requestId && !_.isHex(payload.requestId)) return error = true
             })
             if (error) throw new Error('Incorrect payload object type.')
@@ -121,7 +121,10 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (_.isBoolean(workflow.lockedResource) && workflow.lockedResource && !member.owner) throw new Error('Permission error.')
+            // Requires write permissions
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (workflow && _.isBoolean(workflow.lockedResource) && workflow.lockedResource && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')

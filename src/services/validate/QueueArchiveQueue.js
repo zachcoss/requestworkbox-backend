@@ -34,7 +34,10 @@ module.exports = {
             const queue = await IndexSchema.Queue.findOne({_id: queueId })
             if (!queue || !queue._id) throw new Error('Queue not found.')
 
-            const project = await IndexSchema.Project.findOne({ _id: queue.projectId }).lean()
+            const instance = await IndexSchema.Instance.findOne({ _id: queue.instanceId })
+            if (!instance || !instance._id) throw new Error('Instance not found.')
+
+            const project = await IndexSchema.Project.findOne({ _id: instance.projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
 
             const member = await IndexSchema.Member.findOne({

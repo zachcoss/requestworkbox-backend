@@ -33,11 +33,11 @@ module.exports = {
         let updates = _.pick(req.body, ['_id', 'url', 'name', 'method', 'query', 'headers', 'body'])
         updates.sub = req.user.sub
 
-        if (req.body.lockedResource && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
-        if (req.body.preventExecution && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
-        if (req.body.sensitiveResponse && _.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
+        if (req.body && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (req.body && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (req.body && _.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
 
-        if (req.body.authorization) {
+        if (req.body && req.body.authorization) {
             if (!_.isArray(req.body.authorization))
             if (_.size(req.body.authorization) !== 2)
 
@@ -68,7 +68,10 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (_.isBoolean(request.lockedResource) && request.lockedResource && !member.owner) throw new Error('Permission error.')
+            // Requires write permissions
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (request && _.isBoolean(request.lockedResource) && request.lockedResource && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')

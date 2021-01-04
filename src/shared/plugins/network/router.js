@@ -60,7 +60,6 @@ module.exports.config = function () {
     router.post('/save-storage-changes', Storage.saveStorageChanges)
     router.post('/archive-storage', Storage.archiveStorage)
     router.post('/restore-storage', Storage.restoreStorage)
-    router.post('/get-storage-usage', Storage.getStorageUsage)
 
     router.post('/list-instances', Instance.listInstances)
     router.post('/get-instance', Instance.getInstance)

@@ -29,6 +29,8 @@ module.exports = {
                 requesterSub = payload.sub,
                 projectId = payload._id;
 
+            let owner = false;
+
             const project = await IndexSchema.Project.findOne({ _id: projectId })
             if (!project || !project._id) throw new Error('Project not found.')
 
@@ -52,25 +54,31 @@ module.exports = {
                 projectId: project._id,
             })
 
-            if (activeProjects >= 10) throw new Error('Rate limit error.')
+            if (activeProjects >= 5) throw new Error('Rate limit error.')
+
+            if (member.owner) owner = true
+            else owner = false
             
-            return project
+            return { project, owner }
         } catch(err) {
             throw new Error(err.message)
         }
     },
-    request: async function(project) {
+    request: async function({ project, owner }) {
         try {
             project.active = true
             await project.save()
 
-            return project.toJSON()
+            return { project: project.toJSON(), owner }
         } catch(err) {
             throw new Error(err.message)
         }
     },
-    response: function(request, res) {
-        let response = _.pickBy(request, function(value, key) {
+    response: function({ project, owner }, res) {
+        // Set owner
+        if (owner) project.owner = true
+
+        let response = _.pickBy(project, function(value, key) {
             return _.includes(keys.concat(permissionKeys), key)
         })
         return res.status(200).send(response)

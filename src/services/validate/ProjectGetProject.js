@@ -28,6 +28,8 @@ module.exports = {
             const 
                 requesterSub = payload.sub,
                 projectId = payload._id;
+            
+            let owner = false;
 
             const project = await IndexSchema.Project.findOne({ _id: projectId }).lean()
             if (!project || !project._id) throw new Error('Project not found.')
@@ -46,23 +48,26 @@ module.exports = {
             if (member.permission !== 'read' && 
                 member.permission !== 'write' ) throw new Error('Permission error.')
             
-            if (member.owner) project.owner = true
-            else project.owner = false
+            if (member.owner) owner = true
+            else owner = false
             
-            return project
+            return { project, owner }
         } catch(err) {
             throw new Error(err.message)
         }
     },
-    request: async function(payload) {
+    request: async function({ project, owner }) {
         try {
-            return payload
+            return { project, owner }
         } catch(err) {
             throw new Error(err.message)
         }
     },
-    response: function(request, res) {
-        let response = _.pickBy(request, function(value, key) {
+    response: function({ project, owner }, res) {
+        // Set owner
+        if (owner) project.owner = true
+
+        let response = _.pickBy(project, function(value, key) {
             return _.includes(keys.concat(permissionKeys), key)
         })
         return res.status(200).send(response)

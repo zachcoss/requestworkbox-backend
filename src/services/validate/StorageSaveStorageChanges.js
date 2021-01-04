@@ -27,9 +27,9 @@ module.exports = {
             updates.name = req.body.name
         }
 
-        if (req.body.lockedResource && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
-        if (req.body.preventExecution && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
-        if (req.body.sensitiveResponse && _.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
+        if (req.body && _.isBoolean(req.body.lockedResource)) updates.lockedResource = req.body.lockedResource
+        if (req.body && _.isBoolean(req.body.preventExecution)) updates.preventExecution = req.body.preventExecution
+        if (req.body && _.isBoolean(req.body.sensitiveResponse)) updates.sensitiveResponse = req.body.sensitiveResponse
 
         return updates
     },
@@ -49,7 +49,10 @@ module.exports = {
                 sub: requesterSub,
                 projectId: project._id,
             }).lean()
-            if (_.isBoolean(storage.lockedResource) && storage.lockedResource && !member.owner) throw new Error('Permission error.')
+            // Requires write permissions
+            if (!member || !member._id) throw new Error('Permission error.')
+            if (!member.active) throw new Error('Permission error.')
+            if (storage && _.isBoolean(storage.lockedResource) && storage.lockedResource && !member.owner) throw new Error('Permission error.')
             
             // Requires write permissions
             if (!member || !member._id) throw new Error('Permission error.')

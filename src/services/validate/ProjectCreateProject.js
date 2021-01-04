@@ -62,6 +62,9 @@ module.exports = {
         }
     },
     response: function(request, res) {
+        // Set owner
+        request.owner = true
+
         let response = _.pickBy(request, function(value, key) {
             return _.includes(keys.concat(permissionKeys), key)
         })
