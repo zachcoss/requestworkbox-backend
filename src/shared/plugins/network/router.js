@@ -20,6 +20,7 @@ module.exports.config = function () {
 
     router.post('/create-project', Project.createProject)
     router.post('/list-projects', Project.listProjects)
+    router.post('/list-team-projects', Project.listTeamProjects)
     router.post('/get-project', Project.getProject)
     router.post('/update-project', Project.updateProject)
     router.post('/archive-project', Project.archiveProject)

@@ -25,7 +25,7 @@ module.exports = {
                 active: true,
                 sub: requesterSub,
                 status: 'accepted',
-                owner: true,
+                owner: false,
             }).lean()
 
             const projectIds = _.map(members, 'projectId')
@@ -33,7 +33,7 @@ module.exports = {
             let projects = await IndexSchema.Project.find({ _id: { $in: projectIds } }).lean()
 
             _.each(projects, (project) => {
-                project.owner = true
+                project.owner = false
             })
 
             return projects
@@ -58,7 +58,7 @@ module.exports = {
         return res.status(200).send(response)
     },
     error: function(err, res) {
-        console.log('Project: list projects error.', err)
+        console.log('Project: list team projects error.', err)
         return res.status(400).send(err.message)
     },
 }

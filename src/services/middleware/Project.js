@@ -22,6 +22,16 @@ module.exports = {
             return ValidateProject.listProjects.error(err, res)
         }
     },
+    listTeamProjects: async (req, res, next) => {
+        try {
+            const payload = ValidateProject.listTeamProjects.validate(req)
+            const authorize = await ValidateProject.listTeamProjects.authorize(payload)
+            const request = await ValidateProject.listTeamProjects.request(authorize)
+            return ValidateProject.listTeamProjects.response(request, res)
+        } catch (err) {
+            return ValidateProject.listTeamProjects.error(err, res)
+        }
+    },
     getProject: async (req, res, next) => {
         try {
             const payload = ValidateProject.getProject.validate(req)
